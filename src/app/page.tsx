@@ -1,5 +1,11 @@
+import React from 'react';
+
 const page = () => {
-  return <div>This is the homepage</div>;
+    return (
+        <div className="text-2xl bg-white ">
+            hi team bytecode breakers
+        </div>
+    );
 };
 
 export default page;
