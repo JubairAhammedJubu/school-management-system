@@ -1,11 +1,11 @@
-import React from 'react';
+import Banner from "@/components/Banner/Banner";
 
-const page = () => {
-    return (
-        <div className="text-2xl bg-white text-black text-center ">
-            hi team bytecode breakers
-        </div>
-    );
+const Page = () => {
+  return (
+    <div>
+      <Banner />
+    </div>
+  );
 };
 
-export default page;
+export default Page;
