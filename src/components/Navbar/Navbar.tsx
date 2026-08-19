@@ -315,15 +315,19 @@ const Navbar: React.FC = () => {
             </button>
           </div>
 
-          {/* Mobile & Medium Menu Toggle Button (Visible on screens < 1024px) */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex lg:hidden items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition-colors"
-            aria-label="Toggle navigation menu"
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <CloseIcon className="h-5.5 w-5.5 text-blue-600" /> : <MenuIcon className="h-5.5 w-5.5" />}
-          </button>
+          {/* Mobile & Medium Header Controls (Theme Toggle + Menu Bar Toggle) */}
+          <div className="flex lg:hidden items-center gap-2">
+            <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition-colors"
+              aria-label="Toggle navigation menu"
+              aria-expanded={isOpen}
+            >
+              {isOpen ? <CloseIcon className="h-5.5 w-5.5 text-blue-600" /> : <MenuIcon className="h-5.5 w-5.5" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile & Medium Navigation Menu Dropdown with Smooth Expand/Collapse Animation */}
@@ -362,62 +366,10 @@ const Navbar: React.FC = () => {
 
             {/* Action Buttons in Menu Dropdown */}
             <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
-              {/* Small Devices Layout (< sm): Theme Toggle Button on Top */}
-              <button
-                onClick={toggleTheme}
-                type="button"
-                className="sm:hidden w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  {theme === "dark" ? (
-                    <MoonIcon className="h-4 w-4 text-blue-400" />
-                  ) : (
-                    <SunIcon className="h-4 w-4 text-amber-500" />
-                  )}
-                  <span>{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
-                </span>
-                <span className="text-xs text-slate-400 font-normal">Tap to switch</span>
-              </button>
-
-              {/* Small Devices Layout (< sm): Login & Get Started Buttons */}
-              <div className="sm:hidden flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <LogInIcon className="h-4 w-4" />
-                  <span>Login</span>
-                </button>
-
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all"
-                >
-                  <SparklesIcon className="h-4 w-4" />
-                  <span>Get Started</span>
-                </button>
-              </div>
-
-              {/* Medium Devices Layout (sm:grid lg:hidden): All 3 Buttons Equal Width in One Row */}
-              <div className="hidden sm:grid grid-cols-3 gap-2">
-                <button
-                  onClick={toggleTheme}
-                  type="button"
-                  className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-95"
-                  aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-                  title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-                >
-                  {theme === "dark" ? (
-                    <MoonIcon className="h-4 w-4 text-blue-400" />
-                  ) : (
-                    <SunIcon className="h-4 w-4 text-amber-500" />
-                  )}
-                  <span>{theme === "dark" ? "Dark" : "Light"}</span>
-                </button>
-
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                   <span>Login</span>
@@ -425,7 +377,7 @@ const Navbar: React.FC = () => {
 
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-2 sm:px-3 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all"
+                  className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all"
                 >
                   <SparklesIcon className="h-4 w-4" />
                   <span className="truncate">Get Started</span>

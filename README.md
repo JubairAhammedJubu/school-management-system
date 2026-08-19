@@ -1,4 +1,4 @@
-# 🎓 EduManage — School Management System
+# 🎓 EduNexus — School Management System
 
 > A unified EdTech platform designed to simplify and modernize school management by bringing students, teachers, academic activities, and administrative operations into one centralized system.
 
@@ -10,8 +10,7 @@
 | -------------------- | ---------------------------------------------- |
 | 🚀 Live Website      | [Visit EduManage](https://school-management-system-psi-ten.vercel.app/)       |
 | 💻 GitHub Repository | [View Source Code](https://github.com/JubairAhammedJubu/school-management-system) |
-| 📄 Project Proposal  | [View Proposal](https://docs.google.com/document/d/13FT6DJzoseEc-Pd6wnyzvUCe5kQggapIKbgSh0DHdYc/edit?tab=t.0#heading=h.88wxofd6cz0b)            |
-| 📋 SRS Document      | [View SRS](YOUR_SRS_LINK)                      |
+
 
 ---
 
@@ -358,7 +357,7 @@ Main functionality:
 EduManage follows a role-based access control approach.
 
 ```text
-                    EduManage
+                    EduNexus
                         │
           ┌─────────────┼─────────────┐
           │             │             │
@@ -569,8 +568,8 @@ This project is being developed by a team of **6 members**.
 | 1   | **Jubair Ahammed Jubu** | 🏆 Team Leader | [Profile](https://github.com/JubairAhammedJubu)  |
 | 2   | **Tanzim Ahmed**        | 💻 Team Member | [Profile](https://github.com/Tah56)              |
 | 3   | **Tarif Hasan Samin**   | 💻 Team Member | [Profile](https://github.com/Samincode01)        |
-| 4   | **Md Rahim Miah**       | 💻 Team Member | [Profile](RAHIM_PROFILE_URL)                     |
-| 5   | **Tasfia Islam Raisha** | 💻 Team Member | [Profile](TASFIA_PROFILE_URL)                    |
+| 4   | **Md Rahim Miah**       | 💻 Team Member | [Profile](https://github.com/Rahim-Ahmed-10)                     |
+| 5   | **Tasfia Islam Raisha** | 💻 Team Member | [Profile](https://github.com/tash-9)                    |
 | 6   | **Amit Chandra Das**    | 💻 Team Member | [Profile](https://github.com/amitchandradas2004) |
 
 ---
@@ -634,7 +633,7 @@ We are continuously working on new features, improvements, integrations, and opt
 | Document                               | Link                                                                                                                                 |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | 📄 Project Proposal                    | [View Proposal](https://docs.google.com/document/d/13FT6DJzoseEc-Pd6wnyzvUCe5kQggapIKbgSh0DHdYc/edit?tab=t.0#heading=h.88wxofd6cz0b) |
-| 📋 Software Requirements Specification | [View SRS](YOUR_SRS_LINK)                                                                                                            |
+| 📋 Software Requirements Specification | [View SRS](https://docs.google.com/document/d/1y9T6nhDedXsRsU9_vOxTAKLPG4g3fpsdb3dIsyrz5Ns/edit?tab=t.0)                                                                                                            |
 | 💻 Source Code                         | [GitHub Repository](https://github.com/JubairAhammedJubu/school-management-system)                                                   |
 | 🌐 Live Project                        | [Visit Website](https://school-management-system-psi-ten.vercel.app)                                                                 |
 
