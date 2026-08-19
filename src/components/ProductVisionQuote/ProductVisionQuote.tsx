@@ -36,7 +36,7 @@ export default function ProductVisionQuote() {
           <div className="relative z-10 mt-8 sm:mt-10 flex items-center justify-center gap-3">
             <span className="h-[1px] w-8 bg-slate-300 dark:bg-slate-700/80" />
             <span className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] text-slate-500 dark:text-slate-400 uppercase">
-              EDUNEXUS
+              BYTECODE_BREAKERS
             </span>
             <span className="h-[1px] w-8 bg-slate-300 dark:bg-slate-700/80" />
           </div>
