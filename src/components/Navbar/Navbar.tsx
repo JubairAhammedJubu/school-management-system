@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 // Lightweight, self-contained SVG Icon Components
@@ -201,6 +202,7 @@ const Navbar: React.FC = () => {
 
   // Entrance animation on mount / sync theme state
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const isDarkMode = document.documentElement.classList.contains("dark");
     setTheme(isDarkMode ? "dark" : "light");
@@ -249,14 +251,16 @@ const Navbar: React.FC = () => {
 
   return (
     <header
-      className={`fixed top-3 sm:top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out transform ${mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
-        }`}
+      className={`fixed top-3 sm:top-4 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 transition-all duration-700 ease-out transform ${
+        mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+      }`}
     >
       <div
-        className={`relative container mx-auto container w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ${scrolled
-          ? "shadow-lg shadow-blue-900/5 dark:shadow-black/20 border-slate-300/80 dark:border-slate-700/80"
-          : "shadow-md shadow-slate-900/5"
-          }`}
+        className={`relative container mx-auto container w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ${
+          scrolled
+            ? "shadow-lg shadow-blue-900/5 dark:shadow-black/20 border-slate-300/80 dark:border-slate-700/80"
+            : "shadow-md shadow-slate-900/5"
+        }`}
       >
         <div className="flex items-center justify-between px-4 py-2 sm:px-5 sm:py-2.5 lg:py-3">
           {/* Logo */}
@@ -264,13 +268,21 @@ const Navbar: React.FC = () => {
             href="/"
             className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 cursor-pointer"
           >
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform duration-200">
-              <GraduationCapIcon className="h-5 w-5 sm:h-5.5 sm:w-5.5" />
+            <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 group-hover:scale-105 transition-transform duration-200">
+              <Image
+                src="/second_logo_transparent.png"
+                alt="EduNexus Logo"
+                fill
+                sizes="(max-width: 640px) 36px, 40px"
+                className="object-contain"
+                priority
+              />
             </div>
 
             <div>
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
-                Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
+                Edu
+                <span className="text-blue-600 dark:text-blue-400">Nexus</span>
               </h1>
               {/* <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-400 mt-1">
                 School Management
@@ -286,10 +298,11 @@ const Navbar: React.FC = () => {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${active
-                    ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-xs font-semibold"
-                    : "text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-slate-900/40"
-                    }`}
+                  className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+                    active
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-xs font-semibold"
+                      : "text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-slate-900/40"
+                  }`}
                 >
                   {item.label}
                   {active && (
@@ -331,19 +344,26 @@ const Navbar: React.FC = () => {
               aria-label="Toggle navigation menu"
               aria-expanded={isOpen}
             >
-              {isOpen ? <CloseIcon className="h-5.5 w-5.5 text-blue-600" /> : <MenuIcon className="h-5.5 w-5.5" />}
+              {isOpen ? (
+                <CloseIcon className="h-5.5 w-5.5 text-blue-600" />
+              ) : (
+                <MenuIcon className="h-5.5 w-5.5" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Compact Navigation Menu Dropdown with Smooth Expand/Collapse Animation */}
         <div
-          className={`grid xl:hidden transition-all duration-300 ease-in-out ${isOpen
-            ? "grid-rows-[1fr] opacity-100 border-t border-slate-200/80 dark:border-slate-800/80"
-            : "grid-rows-[0fr] opacity-0 border-t-0 border-transparent"
-            }`}
+          className={`grid xl:hidden transition-all duration-300 ease-in-out ${
+            isOpen
+              ? "grid-rows-[1fr] opacity-100 border-t border-slate-200/80 dark:border-slate-800/80"
+              : "grid-rows-[0fr] opacity-0 border-t-0 border-transparent"
+          }`}
         >
-          <div className={`overflow-hidden px-4 transition-all duration-300 ease-in-out ${isOpen ? "py-3.5 space-y-3" : "py-0 space-y-0"}`}>
+          <div
+            className={`overflow-hidden px-4 transition-all duration-300 ease-in-out ${isOpen ? "py-3.5 space-y-3" : "py-0 space-y-0"}`}
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {navItems.map((item) => {
                 const active = checkIsActive(item.href);
@@ -352,18 +372,24 @@ const Navbar: React.FC = () => {
                     key={item.label}
                     href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium rounded-xl transition-all cursor-pointer ${active
-                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 font-semibold"
-                      : "text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
-                      }`}
+                    className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium rounded-xl transition-all cursor-pointer ${
+                      active
+                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 font-semibold"
+                        : "text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
+                    }`}
                   >
                     <span className="flex items-center gap-2">
-                      {active && <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />}
+                      {active && (
+                        <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                      )}
                       {item.label}
                     </span>
                     <ChevronRightIcon
-                      className={`h-4 w-4 transition-transform ${active ? "text-blue-600 dark:text-blue-400" : "text-slate-400 opacity-60"
-                        }`}
+                      className={`h-4 w-4 transition-transform ${
+                        active
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-slate-400 opacity-60"
+                      }`}
                     />
                   </Link>
                 );

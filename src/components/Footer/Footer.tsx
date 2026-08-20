@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   ArrowUpRight,
   GraduationCap,
@@ -63,18 +64,16 @@ export default function Footer() {
 
   return (
     <footer className="relative w-full pt-10 pb-5 bg-slate-50 dark:bg-[#030712] text-slate-600 dark:text-slate-400 transition-colors duration-500 font-sans overflow-hidden">
-
       {/* Background Ambient Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="relative container mx-auto px-4 z-10">
-
         {/* Rounded Card Container */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          initial={{opacity: 0, y: 30}}
+          whileInView={{opacity: 1, y: 0}}
+          viewport={{once: true}}
+          transition={{duration: 0.7, ease: "easeOut"}}
           className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 shadow-2xl backdrop-blur-xl p-6 sm:p-10 lg:p-12 relative overflow-hidden"
         >
           {/* Top Accent Line */}
@@ -82,16 +81,24 @@ export default function Footer() {
 
           {/* Main Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 lg:gap-12 pb-10 sm:pb-12">
-
             {/* Brand Info Column */}
             <div className="md:col-span-5 lg:col-span-4 space-y-5 sm:space-y-6 flex flex-col items-center sm:items-start text-center sm:text-left">
               <Link href="/" className="inline-flex items-center gap-3 group">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 group-hover:scale-105 transition-transform duration-300">
-                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
+                <div className="relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 group-hover:scale-105 transition-transform duration-300">
+                  <Image
+                    src="/second_logo_transparent.png"
+                    alt="EduNexus Logo"
+                    fill
+                    sizes="(max-width: 640px) 40px, 44px"
+                    className="object-contain"
+                  />
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                    Edu<span className="text-blue-600 dark:text-blue-500">Nexus</span>
+                    Edu
+                    <span className="text-blue-600 dark:text-blue-500">
+                      Nexus
+                    </span>
                   </span>
                   <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mt-1">
                     SCHOOL MANAGEMENT SYSTEM
@@ -100,7 +107,8 @@ export default function Footer() {
               </Link>
 
               <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-sm">
-                One school. One platform. Smarter management. Transforming educational operations with an intuitive digital ecosystem.
+                One school. One platform. Smarter management. Transforming
+                educational operations with an intuitive digital ecosystem.
               </p>
 
               {/* System Status Pill */}
@@ -130,10 +138,10 @@ export default function Footer() {
                         rel="noopener noreferrer"
                         aria-label={social.name}
                         className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-xs"
-                        initial={{ opacity: 0, scale: 0.7 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.35, delay: idx * 0.08 }}
+                        initial={{opacity: 0, scale: 0.7}}
+                        whileInView={{opacity: 1, scale: 1}}
+                        viewport={{once: true}}
+                        transition={{duration: 0.35, delay: idx * 0.08}}
                       >
                         <Icon className="w-4 h-4" />
                       </motion.a>
@@ -145,7 +153,6 @@ export default function Footer() {
 
             {/* Nav Links Layout */}
             <div className="md:col-span-7 lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
-
               {/* NAVIGATION / PRODUCT */}
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
@@ -161,10 +168,11 @@ export default function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
-                            ? "text-blue-600 dark:text-blue-400 font-semibold"
-                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
-                            }`}
+                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${
+                            isActive
+                              ? "text-blue-600 dark:text-blue-400 font-semibold"
+                              : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
+                          }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
                             <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
@@ -193,10 +201,11 @@ export default function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
-                            ? "text-blue-600 dark:text-blue-400 font-semibold"
-                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
-                            }`}
+                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${
+                            isActive
+                              ? "text-blue-600 dark:text-blue-400 font-semibold"
+                              : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
+                          }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
                             <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
@@ -221,7 +230,10 @@ export default function Footer() {
                   {techStack.map((tech) => {
                     const Icon = tech.icon;
                     return (
-                      <li key={tech.name} className="group flex items-center gap-2.5">
+                      <li
+                        key={tech.name}
+                        className="group flex items-center gap-2.5"
+                      >
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
                           <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </div>
@@ -238,7 +250,6 @@ export default function Footer() {
                   })}
                 </ul>
               </div>
-
             </div>
           </div>
 
@@ -250,22 +261,29 @@ export default function Footer() {
             </div>
 
             <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 text-slate-600 dark:text-slate-400 font-medium">
-              <Link href="/login" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+              <Link
+                href="/login"
+                className="hover:text-blue-600 dark:hover:text-white transition-colors"
+              >
                 Admin
               </Link>
               <span className="text-slate-300 dark:text-slate-800">•</span>
-              <Link href="/teachers" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+              <Link
+                href="/teachers"
+                className="hover:text-blue-600 dark:hover:text-white transition-colors"
+              >
                 Teacher
               </Link>
               <span className="text-slate-300 dark:text-slate-800">•</span>
-              <Link href="/students" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+              <Link
+                href="/students"
+                className="hover:text-blue-600 dark:hover:text-white transition-colors"
+              >
                 Student
               </Link>
             </div>
           </div>
-
         </motion.div>
-
       </div>
     </footer>
   );
