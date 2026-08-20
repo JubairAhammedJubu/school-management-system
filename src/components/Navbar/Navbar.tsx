@@ -188,6 +188,7 @@ const navItems: NavItem[] = [
   { label: "Students", href: "/students" },
   { label: "Teachers", href: "/teachers" },
   { label: "Notices", href: "/notices" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
 const Navbar: React.FC = () => {
