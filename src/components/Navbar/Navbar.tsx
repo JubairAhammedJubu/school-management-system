@@ -278,8 +278,8 @@ const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation (Visible on Large devices >= 1024px) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 bg-slate-100/60 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+          {/* Desktop Navigation (Visible on Extra Large devices >= 1280px) */}
+          <nav className="hidden xl:flex items-center gap-1 xl:gap-1.5 bg-slate-100/60 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
             {navItems.map((item) => {
               const active = checkIsActive(item.href);
               return (
@@ -300,8 +300,8 @@ const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Action Buttons & Theme Toggle (Visible on Desktop >= 1024px) */}
-          <div className="hidden lg:flex items-center gap-2.5">
+          {/* Action Buttons & Theme Toggle (Visible on Extra Large devices >= 1280px) */}
+          <div className="hidden xl:flex items-center gap-2.5">
             <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
             <Link
@@ -321,8 +321,8 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          {/* Mobile & Medium Header Controls (Theme Toggle + Menu Bar Toggle) */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* Compact Header Controls (Theme Toggle + Menu Bar Toggle) */}
+          <div className="flex xl:hidden items-center gap-2">
             <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
             <button
@@ -336,9 +336,9 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile & Medium Navigation Menu Dropdown with Smooth Expand/Collapse Animation */}
+        {/* Compact Navigation Menu Dropdown with Smooth Expand/Collapse Animation */}
         <div
-          className={`grid lg:hidden transition-all duration-300 ease-in-out ${isOpen
+          className={`grid xl:hidden transition-all duration-300 ease-in-out ${isOpen
             ? "grid-rows-[1fr] opacity-100 border-t border-slate-200/80 dark:border-slate-800/80"
             : "grid-rows-[0fr] opacity-0 border-t-0 border-transparent"
             }`}
