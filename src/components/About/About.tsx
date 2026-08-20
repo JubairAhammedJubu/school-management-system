@@ -76,7 +76,7 @@ export default function About() {
 
         <div className="mt-14 grid items-stretch gap-8 lg:grid-cols-12 lg:gap-12">
           <motion.div
-            className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white/90 p-7 shadow-2xl shadow-blue-900/5 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/60 dark:shadow-blue-950/25 sm:p-10 lg:col-span-5"
+            className="relative h-full overflow-hidden rounded-3xl border border-slate-200/90 bg-white/90 p-7 shadow-2xl shadow-blue-900/5 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/60 dark:shadow-blue-950/25 sm:p-10 lg:col-span-5"
             initial={{ opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
@@ -115,13 +115,13 @@ export default function About() {
           </motion.div>
 
           <motion.div
-            className="lg:col-span-7"
+            className="flex h-full flex-col lg:col-span-7"
             initial={{ opacity: 0, x: 28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
           >
-            <div className="grid h-full gap-4 sm:grid-cols-3 lg:gap-5">
+            <div className="grid flex-1 gap-4 sm:grid-cols-3 lg:gap-5">
               {roles.map((role, index) => {
                 const Icon = role.icon;
 
