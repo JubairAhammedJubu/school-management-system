@@ -110,15 +110,13 @@ export default function Register() {
     <main
       className="
         min-h-screen
-        bg-[#f5f8ff]
+        bg-[var(--background)]
+        text-[var(--foreground)]
         px-4
         pb-8
         pt-[120px]
-        text-slate-900
         transition-colors
         duration-500
-        dark:bg-slate-950
-        dark:text-slate-100
         sm:px-6
         lg:px-8
       "
@@ -126,9 +124,11 @@ export default function Register() {
       {/* =====================================================
           TOAST
       ====================================================== */}
+
       {toast && (
         <div className="fixed right-5 top-[100px] z-[99999]">
-          {/* SUCCESS */}
+          {/* SUCCESS TOAST */}
+
           {toast === "success" && (
             <div
               className="
@@ -162,7 +162,8 @@ export default function Register() {
             </div>
           )}
 
-          {/* ERROR */}
+          {/* ERROR TOAST */}
+
           {toast === "error" && (
             <div
               className="
@@ -216,6 +217,7 @@ export default function Register() {
       {/* =====================================================
           MAIN CARD
       ====================================================== */}
+
       <div className="mx-auto flex w-full max-w-[1180px] items-start justify-center">
         <div
           className="
@@ -228,21 +230,24 @@ export default function Register() {
             transition-colors
             duration-500
             dark:bg-slate-900
-            dark:shadow-black/30
+            dark:shadow-[0_24px_70px_rgba(0,0,0,0.35)]
             lg:grid-cols-[43%_57%]
           "
         >
           {/* =====================================================
               LEFT BRANDING PANEL
           ====================================================== */}
+
           <section className="relative hidden min-h-[680px] overflow-hidden bg-[#10182d] lg:block">
             {/* Decorative glow */}
+
             <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#315cff]/20 blur-3xl" />
 
             <div className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-[#4d3df5]/20 blur-3xl" />
 
             <div className="relative z-10 flex h-full flex-col p-10 xl:p-12">
               {/* Logo */}
+
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[13px] bg-white shadow-[0_8px_24px_rgba(47,91,255,0.25)]">
                   <GraduationCap
@@ -264,6 +269,7 @@ export default function Register() {
               </div>
 
               {/* Brand Copy */}
+
               <div className="mt-20 max-w-[390px]">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#315cff]/20 bg-[#315cff]/10 px-3.5 py-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#4772ff]" />
@@ -291,6 +297,7 @@ export default function Register() {
               </div>
 
               {/* Bottom Graphic */}
+
               <div className="absolute bottom-0 left-0 right-0 h-[220px] overflow-hidden">
                 <div className="absolute -bottom-32 left-[-8%] h-[250px] w-[72%] rotate-[-10deg] rounded-[50%] bg-[#28334f]" />
 
@@ -317,9 +324,27 @@ export default function Register() {
           {/* =====================================================
               SIGNUP FORM
           ====================================================== */}
-          <section className="flex min-h-[680px] items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-16">
+
+          <section
+            className="
+              flex
+              min-h-[680px]
+              items-center
+              justify-center
+              bg-white
+              px-6
+              py-10
+              transition-colors
+              duration-500
+              dark:bg-slate-900
+              sm:px-10
+              lg:px-12
+              xl:px-16
+            "
+          >
             <div className="w-full max-w-[440px]">
               {/* Mobile Logo */}
+
               <div className="mb-8 flex items-center gap-3 lg:hidden">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#2864ff] to-[#4c3df5] text-white shadow-lg shadow-[#315cff]/20">
                   <GraduationCap size={23} />
@@ -331,8 +356,9 @@ export default function Register() {
               </div>
 
               {/* Heading */}
+
               <div className="mb-7">
-                <div className="mb-1 text-[12px] font-medium text-[#315cff] dark:text-[#5d82ff]">
+                <div className="mb-1 text-[12px] font-medium text-[#315cff] dark:text-[#6d8cff]">
                   Create an Account
                 </div>
 
@@ -345,7 +371,10 @@ export default function Register() {
                 </p>
               </div>
 
-              {/* Full Name */}
+              {/* =====================================================
+                  FULL NAME
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="fullName"
@@ -380,10 +409,12 @@ export default function Register() {
                       outline-none
                       transition
                       placeholder:text-[#a9b4ca]
+
                       focus:border-[#7c9cff]
                       focus:bg-white
                       focus:ring-2
                       focus:ring-[#315cff]/10
+
                       dark:border-slate-700
                       dark:bg-slate-800
                       dark:text-white
@@ -395,7 +426,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Email */}
+              {/* =====================================================
+                  EMAIL
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="email"
@@ -430,10 +464,12 @@ export default function Register() {
                       outline-none
                       transition
                       placeholder:text-[#a9b4ca]
+
                       focus:border-[#7c9cff]
                       focus:bg-white
                       focus:ring-2
                       focus:ring-[#315cff]/10
+
                       dark:border-slate-700
                       dark:bg-slate-800
                       dark:text-white
@@ -445,7 +481,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Role */}
+              {/* =====================================================
+                  ROLE
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="role"
@@ -477,14 +516,17 @@ export default function Register() {
                       text-[12px]
                       outline-none
                       transition
+
                       focus:border-[#7c9cff]
                       focus:bg-white
                       focus:ring-2
                       focus:ring-[#315cff]/10
+
                       dark:border-slate-700
                       dark:bg-slate-800
                       dark:focus:border-[#5d82ff]
                       dark:focus:bg-slate-800
+
                       ${
                         role
                           ? "text-[#16213b] dark:text-white"
@@ -523,7 +565,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Password */}
+              {/* =====================================================
+                  PASSWORD
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="password"
@@ -558,10 +603,12 @@ export default function Register() {
                       outline-none
                       transition
                       placeholder:text-[#a9b4ca]
+
                       focus:border-[#7c9cff]
                       focus:bg-white
                       focus:ring-2
                       focus:ring-[#315cff]/10
+
                       dark:border-slate-700
                       dark:bg-slate-800
                       dark:text-white
@@ -581,7 +628,17 @@ export default function Register() {
                         ? "Hide password"
                         : "Show password"
                     }
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71809c] transition hover:text-[#315cff] dark:text-slate-500 dark:hover:text-[#6d8cff]"
+                    className="
+                      absolute
+                      right-3.5
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#71809c]
+                      transition
+                      hover:text-[#315cff]
+                      dark:text-slate-500
+                      dark:hover:text-[#6d8cff]
+                    "
                   >
                     {showPassword ? (
                       <EyeOff size={15} />
@@ -604,7 +661,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Confirm Password */}
+              {/* =====================================================
+                  CONFIRM PASSWORD
+              ====================================================== */}
+
               <div className="mb-5">
                 <label
                   htmlFor="confirmPassword"
@@ -645,10 +705,12 @@ export default function Register() {
                       outline-none
                       transition
                       placeholder:text-[#a9b4ca]
+
                       focus:border-[#7c9cff]
                       focus:bg-white
                       focus:ring-2
                       focus:ring-[#315cff]/10
+
                       dark:border-slate-700
                       dark:bg-slate-800
                       dark:text-white
@@ -670,7 +732,17 @@ export default function Register() {
                         ? "Hide confirm password"
                         : "Show confirm password"
                     }
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71809c] transition hover:text-[#315cff] dark:text-slate-500 dark:hover:text-[#6d8cff]"
+                    className="
+                      absolute
+                      right-3.5
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#71809c]
+                      transition
+                      hover:text-[#315cff]
+                      dark:text-slate-500
+                      dark:hover:text-[#6d8cff]
+                    "
                   >
                     {showConfirmPassword ? (
                       <EyeOff size={15} />
@@ -681,7 +753,10 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Register Button */}
+              {/* =====================================================
+                  REGISTER BUTTON
+              ====================================================== */}
+
               <button
                 type="button"
                 onClick={handleRegister}
@@ -729,12 +804,20 @@ export default function Register() {
               </button>
 
               {/* Login Link */}
+
               <p className="mt-5 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Already have an account?{" "}
 
                 <a
                   href="/login"
-                  className="font-medium text-[#315cff] transition hover:text-[#4b3df4] dark:text-[#6d8cff] dark:hover:text-[#8aa2ff]"
+                  className="
+                    font-medium
+                    text-[#315cff]
+                    transition
+                    hover:text-[#4b3df4]
+                    dark:text-[#6d8cff]
+                    dark:hover:text-[#8aa2ff]
+                  "
                 >
                   Sign in
                 </a>
