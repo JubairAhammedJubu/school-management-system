@@ -35,7 +35,7 @@ const Banner = () => {
         className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-500/20 dark:bg-indigo-600/25 blur-3xl pointer-events-none"
       />
 
-      <div className="relative mx-auto w-full container overflow-hidden px-5 pt-28 sm:pt-32 pb-20 lg:pb-24">
+      <div className="relative mx-auto w-full container overflow-hidden px-4 sm:px-6 md:pr-10 xl:pl-8 pt-28 sm:pt-32 pb-20 lg:pb-24">
         <div className="grid w-full items-center gap-12 lg:gap-14 lg:grid-cols-2">
 
           {/* Left Content */}
