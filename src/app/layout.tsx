@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "School Management System",
-  description: "School Management System",
+  title: "EduNexus - School Management System",
+  description: "EduNexus - School Management System",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
