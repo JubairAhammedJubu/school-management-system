@@ -73,7 +73,7 @@ const FAQSection: React.FC = () => {
       <div className="absolute top-1/3 right-10 w-96 h-96 rounded-full bg-blue-500/10 dark:bg-blue-600/15 blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
 
-      <div className="relative container mx-auto px-4 lg:px-0 max-w-4xl">
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-8 md:px-0">
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">

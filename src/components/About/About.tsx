@@ -47,11 +47,11 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative w-full overflow-hidden bg-slate-50 px-4 py-20 text-slate-900 transition-colors duration-500 dark:bg-[#030712] dark:text-slate-100 sm:px-6 sm:py-28 lg:px-8"
+      className="relative w-full overflow-hidden bg-slate-50 px-4 py-20 text-slate-900 transition-colors duration-500 dark:bg-[#030712] dark:text-slate-100 sm:px-6 md:px-10 sm:py-28 lg:px-12"
     >
       <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 blur-[130px] dark:from-blue-600/15 dark:via-indigo-600/15 dark:to-cyan-500/10" />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto container">
         <motion.div
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 24 }}

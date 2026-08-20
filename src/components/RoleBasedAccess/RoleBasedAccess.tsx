@@ -94,7 +94,7 @@ const RoleBasedAccess: React.FC = () => {
       <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-500/10 dark:bg-blue-600/15 blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
 
-      <div className="relative container mx-auto px-5">
+      <div className="relative container mx-auto px-4 sm:px-0 md:px-6 xl:px-15">
 
         {/* Section Header */}
         <div className="max-w-3xl mb-12 sm:mb-16">
@@ -157,8 +157,8 @@ const RoleBasedAccess: React.FC = () => {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     className={`relative rounded-2xl p-5 transition-all duration-300 cursor-pointer overflow-hidden ${isSelected
-                        ? "bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 shadow-md"
-                        : "bg-transparent border border-transparent hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
+                      ? "bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 shadow-md"
+                      : "bg-transparent border border-transparent hover:bg-slate-100/70 dark:hover:bg-slate-800/50"
                       }`}
                   >
                     <div className="flex items-start justify-between gap-3">
