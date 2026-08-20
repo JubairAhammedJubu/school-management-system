@@ -75,11 +75,17 @@ export default function Footer() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.65, ease: "easeOut", staggerChildren: 0.12 }}
           className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 pb-14"
         >
           {/* Brand Info Column */}
-          <div className="md:col-span-5 space-y-6">
+          <motion.div
+            className="md:col-span-5 space-y-6"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <Link href="/" className="inline-flex items-center gap-3.5 group">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 group-hover:scale-105 transition-transform duration-300">
                 <GraduationCap className="w-6 h-6" />
@@ -118,24 +124,34 @@ export default function Footer() {
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
                   return (
-                    <a
+                    <motion.a
                       key={social.name}
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={social.name}
                       className="w-9 h-9 rounded-xl bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-sm"
+                      initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.5 }}
+                      transition={{ duration: 0.35, delay: 0.25 + socialLinks.indexOf(social) * 0.08 }}
                     >
                       <Icon className="w-4 h-4" />
-                    </a>
+                    </motion.a>
                   );
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Nav Links Layout */}
-          <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <motion.div
+            className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.55, delay: 0.15, ease: "easeOut" }}
+          >
             
             {/* NAVIGATION / PRODUCT */}
             <div>
@@ -232,11 +248,17 @@ export default function Footer() {
               </ul>
             </div>
 
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-500">
+        <motion.div
+          className="pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-500"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.25, ease: "easeOut" }}
+        >
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 animate-pulse" />
             <p>ByteCode_Breakers — School Management System · EG13-08</p>
@@ -255,7 +277,7 @@ export default function Footer() {
               Student
             </Link>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </footer>
