@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   ArrowUpRight,
   GraduationCap,
-  Sparkles,
   Code2,
   Database,
   Layers,
@@ -36,15 +35,24 @@ export default function Footer() {
   const pathname = usePathname();
 
   const productLinks = [
-    { name: "Features", href: "#features" },
-    { name: "Roles", href: "#roles" },
-    { name: "How it works", href: "#how-it-works" },
+    { name: "Home", href: "/" },
+    { name: "Students", href: "/students" },
+    { name: "Teachers", href: "/teachers" },
+    { name: "Notices", href: "/notices" },
+    { name: "Contact Us", href: "/contact" },
   ];
 
   const platformLinks = [
-    { name: "Admin Portal", href: "#admin" },
-    { name: "Teacher Portal", href: "#teacher" },
-    { name: "Student Portal", href: "#student" },
+    { name: "Admin Portal", href: "/login" },
+    { name: "Teacher Portal", href: "/teachers" },
+    { name: "Student Portal", href: "/students" },
+    { name: "Register School", href: "/register" },
+  ];
+
+  const socialLinks = [
+    { name: "GitHub", href: "https://github.com/JubairAhammedJubu/school-management-system", icon: GithubIcon },
+    { name: "LinkedIn", href: "https://linkedin.com", icon: LinkedinIcon },
+    { name: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
   ];
 
   const techStack = [
@@ -78,7 +86,7 @@ export default function Footer() {
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                  Edu<span className="text-blue-600 dark:text-blue-500">Manage</span>
+                  Edu<span className="text-blue-600 dark:text-blue-500">Nexus</span>
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mt-1.5">
                   SCHOOL MANAGEMENT SYSTEM
@@ -107,16 +115,14 @@ export default function Footer() {
                 CONNECT WITH US
               </span>
               <div className="flex items-center gap-3">
-                {[
-                  { name: "GitHub", href: "#", icon: GithubIcon },
-                  { name: "LinkedIn", href: "#", icon: LinkedinIcon },
-                  { name: "Facebook", href: "#", icon: FacebookIcon },
-                ].map((social) => {
+                {socialLinks.map((social) => {
                   const Icon = social.icon;
                   return (
                     <a
                       key={social.name}
                       href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       aria-label={social.name}
                       className="w-9 h-9 rounded-xl bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-sm"
                     >
@@ -131,11 +137,11 @@ export default function Footer() {
           {/* Nav Links Layout */}
           <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
             
-            {/* PRODUCT */}
+            {/* NAVIGATION / PRODUCT */}
             <div>
               <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
-                  PRODUCT
+                  NAVIGATION
                 </h3>
               </div>
               <ul className="space-y-3 text-sm">
@@ -164,11 +170,11 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* PLATFORM */}
+            {/* PORTALS */}
             <div>
               <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
-                  PLATFORM
+                  PORTALS
                 </h3>
               </div>
               <ul className="space-y-3 text-sm">
@@ -237,15 +243,15 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 font-medium">
-            <Link href="#admin" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="/login" className="hover:text-blue-600 dark:hover:text-white transition-colors">
               Admin
             </Link>
             <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link href="#teacher" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="/teachers" className="hover:text-blue-600 dark:hover:text-white transition-colors">
               Teacher
             </Link>
             <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link href="#student" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="/students" className="hover:text-blue-600 dark:hover:text-white transition-colors">
               Student
             </Link>
           </div>
