@@ -3,7 +3,6 @@ import MarqueeSection from "@/components/Marquee/MarqueeSection";
 import HowItWorks from "@/components/HowItWorks/HowItWorks";
 import RoleBasedAccess from "@/components/RoleBasedAccess/RoleBasedAccess";
 import ProductVision from "@/components/ProductVisionQuote/ProductVisionQuote";
-import TalkToUs from "@/components/TalkToUs/TalkToUs";
 import FAQSection from "@/components/FAQ/FAQ";
 import Footer from "@/components/Footer/Footer";
 
