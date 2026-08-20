@@ -15,7 +15,6 @@ const Page = () => {
       <HowItWorks />
       <RoleBasedAccess />
       <ProductVision />
-      <TalkToUs />
       <FAQSection />
       <Footer />
     </main>
