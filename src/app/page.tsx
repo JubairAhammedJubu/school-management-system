@@ -4,7 +4,6 @@ import HowItWorks from "@/components/HowItWorks/HowItWorks";
 import RoleBasedAccess from "@/components/RoleBasedAccess/RoleBasedAccess";
 import ProductVision from "@/components/ProductVisionQuote/ProductVisionQuote";
 import FAQSection from "@/components/FAQ/FAQ";
-import Footer from "@/components/Footer/Footer";
 
 const Page = () => {
   return (
@@ -15,7 +14,6 @@ const Page = () => {
       <RoleBasedAccess />
       <ProductVision />
       <FAQSection />
-      <Footer />
     </main>
   );
 };
