@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function ProductVisionQuote() {
   return (
-    <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
+    <section className="relative w-full py-16 sm:py-24  bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
 
       {/* Pulsing Background Subtle Glow */}
       <motion.div
@@ -21,6 +21,26 @@ export default function ProductVisionQuote() {
       />
 
       <div className="container mx-auto px-4 sm:px-8 md:px-5 xl:px-15 relative z-10">
+
+        {/* Top Badge Outside Card */}
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 20,
+              delay: 0.15,
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-500/20 shadow-sm"
+          >
+            <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" />
+            Our Vision
+          </motion.div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 35, scale: 0.96 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -39,48 +59,35 @@ export default function ProductVisionQuote() {
             className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-[3px] bg-gradient-to-r from-transparent via-blue-600 to-transparent rounded-full origin-center"
           />
 
-          {/* Top Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 20,
-              delay: 0.25,
-            }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wider uppercase bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-500/20 mb-8 sm:mb-10"
-          >
-            <Sparkles className="w-3 h-3 text-blue-500 animate-pulse" />
-            Product Vision
-          </motion.div>
-
-          {/* Quote Mark Decorative with subtle float */}
-          <motion.div
-            animate={{
-              y: [0, -6, 0],
-              rotate: [180, 183, 180],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute top-8 left-8 sm:top-10 sm:left-10 text-slate-200 dark:text-slate-800/60 pointer-events-none"
-          >
-            <Quote className="w-12 h-12 sm:w-16 sm:h-16" />
-          </motion.div>
-
-          {/* Main Quote */}
+          {/* Main Quote with Starting & Ending Quotation Icons */}
           <motion.blockquote
             initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
-            className="relative z-10 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif leading-relaxed sm:leading-snug max-w-3xl mx-auto text-slate-800 dark:text-slate-100 font-normal"
+            className="relative z-10 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif leading-relaxed sm:leading-snug max-w-4xl mx-auto text-slate-800 dark:text-slate-100 font-normal px-2 text-center"
           >
-            "The goal isn't another dashboard to check — it's one place where attendance, grades, and fees already agree with each other."
+            {/* Starting Quotation Icon at the top-start of the text */}
+            <motion.span
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-flex align-top mr-2 sm:mr-3 text-blue-600/60 dark:text-blue-400/60"
+            >
+              <Quote className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rotate-180 -mt-2 sm:-mt-3" />
+            </motion.span>
+
+            <span className="italic">
+              The goal isn&apos;t another dashboard to check — it&apos;s one place where attendance, grades, and fees already agree with each other.
+            </span>
+
+            {/* Ending Quotation Icon at the bottom-end of the text */}
+            <motion.span
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              className="inline-flex align-bottom ml-2 sm:ml-3 text-blue-600/60 dark:text-blue-400/60"
+            >
+              <Quote className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 -mb-2 sm:-mb-3" />
+            </motion.span>
           </motion.blockquote>
 
           {/* Subtitle Line & Team Identifier */}
