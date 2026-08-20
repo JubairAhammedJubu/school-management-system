@@ -1,13 +1,11 @@
 "use client";
-
-import React from "react";
 import { Quote, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ProductVisionQuote() {
   return (
     <section className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
-      
+
       {/* Pulsing Background Subtle Glow */}
       <motion.div
         animate={{
@@ -22,7 +20,7 @@ export default function ProductVisionQuote() {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-600/10 dark:from-blue-600/15 dark:via-indigo-600/15 dark:to-blue-500/15 rounded-full blur-[140px] pointer-events-none"
       />
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="container mx-auto px-4 sm:px-8 md:px-5 xl:px-15 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 35, scale: 0.96 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -31,7 +29,7 @@ export default function ProductVisionQuote() {
           whileHover={{ y: -5, transition: { duration: 0.3 } }}
           className="relative rounded-3xl p-8 sm:p-12 md:p-16 text-center border bg-white/90 dark:bg-slate-900/60 border-slate-200/90 dark:border-slate-800/80 shadow-2xl shadow-blue-900/5 dark:shadow-blue-950/30 backdrop-blur-xl transition-all duration-500"
         >
-          
+
           {/* Top Accent Line with scale expansion */}
           <motion.div
             initial={{ scaleX: 0 }}

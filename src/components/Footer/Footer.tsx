@@ -67,13 +67,13 @@ export default function Footer() {
       {/* Background Ambient Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="relative container mx-auto px-4 z-10">
+      <div className="relative container mx-auto px-4 sm:px-0 md:px-0 xl:px-8 z-10">
         {/* Rounded Card Container */}
         <motion.div
-          initial={{opacity: 0, y: 30}}
-          whileInView={{opacity: 1, y: 0}}
-          viewport={{once: true}}
-          transition={{duration: 0.7, ease: "easeOut"}}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
           className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 shadow-2xl backdrop-blur-xl p-6 sm:p-10 lg:p-12 relative overflow-hidden"
         >
           {/* Top Accent Line */}
@@ -138,10 +138,10 @@ export default function Footer() {
                         rel="noopener noreferrer"
                         aria-label={social.name}
                         className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-xs"
-                        initial={{opacity: 0, scale: 0.7}}
-                        whileInView={{opacity: 1, scale: 1}}
-                        viewport={{once: true}}
-                        transition={{duration: 0.35, delay: idx * 0.08}}
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.35, delay: idx * 0.08 }}
                       >
                         <Icon className="w-4 h-4" />
                       </motion.a>
@@ -168,11 +168,10 @@ export default function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${
-                            isActive
-                              ? "text-blue-600 dark:text-blue-400 font-semibold"
-                              : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
-                          }`}
+                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
+                            ? "text-blue-600 dark:text-blue-400 font-semibold"
+                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
+                            }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
                             <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
@@ -201,11 +200,10 @@ export default function Footer() {
                       <li key={link.name}>
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${
-                            isActive
-                              ? "text-blue-600 dark:text-blue-400 font-semibold"
-                              : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
-                          }`}
+                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
+                            ? "text-blue-600 dark:text-blue-400 font-semibold"
+                            : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
+                            }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
                             <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
