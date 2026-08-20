@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Banner = () => {
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -23,18 +25,24 @@ const Banner = () => {
               </h2>
 
               <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-                EduManage brings students, teachers, academic activities, and
+                EduNexus brings students, teachers, academic activities, and
                 school administration together in one unified platform.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <button className="rounded-xl bg-blue-600 dark:bg-blue-500 px-7 py-3.5 font-semibold text-white shadow-xl shadow-blue-200 dark:shadow-blue-900/30 transition hover:bg-blue-700 dark:hover:bg-blue-600">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 dark:bg-blue-500 px-7 py-3.5 font-semibold text-white shadow-xl shadow-blue-200 dark:shadow-blue-900/30 transition hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer active:scale-95"
+                >
                   Get Started →
-                </button>
+                </Link>
 
-                <button className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-7 py-3.5 font-semibold text-slate-700 dark:text-slate-200 transition hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800">
+                <Link
+                  href="#features"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-7 py-3.5 font-semibold text-slate-700 dark:text-slate-200 transition hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer active:scale-95"
+                >
                   Explore Features
-                </button>
+                </Link>
               </div>
 
               {/* Small Info */}
@@ -69,7 +77,7 @@ const Banner = () => {
 
                   <div className="mt-5 text-center">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                      EduManage
+                      EduNexus
                     </h3>
 
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
