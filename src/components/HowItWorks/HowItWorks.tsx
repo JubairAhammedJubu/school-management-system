@@ -84,7 +84,7 @@ const HowItWorks: React.FC = () => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-blue-500/10 dark:bg-blue-600/15 blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
 
-      <div className="relative container mx-auto  px-5">
+      <div className="relative container mx-auto px-4 sm:px-5 md:px-2 xl:px-10">
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
