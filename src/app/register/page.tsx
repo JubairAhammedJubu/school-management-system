@@ -94,7 +94,6 @@ export default function Register() {
       return;
     }
 
-    // Registration successful
     setIsRegistering(true);
     setToast("success");
 
@@ -108,48 +107,96 @@ export default function Register() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f8ff] px-4 pb-8 pt-[120px] sm:px-6 lg:px-8">
-
+    <main
+      className="
+        min-h-screen
+        bg-[var(--background)]
+        text-[var(--foreground)]
+        px-4
+        pb-8
+        pt-[120px]
+        transition-colors
+        duration-500
+        sm:px-6
+        lg:px-8
+      "
+    >
       {/* =====================================================
           TOAST
       ====================================================== */}
+
       {toast && (
         <div className="fixed right-5 top-[100px] z-[99999]">
-
           {/* SUCCESS TOAST */}
+
           {toast === "success" && (
-            <div className="flex w-[260px] items-center gap-2.5 rounded-xl border border-emerald-100 bg-white px-3 py-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50">
+            <div
+              className="
+                flex
+                w-[260px]
+                items-center
+                gap-2.5
+                rounded-xl
+                border
+                border-emerald-100
+                bg-white
+                px-3
+                py-2.5
+                shadow-[0_12px_30px_rgba(15,23,42,0.15)]
+                dark:border-emerald-900/50
+                dark:bg-slate-900
+                dark:shadow-black/30
+              "
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10">
                 <Check
                   size={16}
                   strokeWidth={2.5}
-                  className="text-emerald-500"
+                  className="text-emerald-500 dark:text-emerald-400"
                 />
               </div>
 
-              <p className="text-xs font-semibold text-[#111a31]">
+              <p className="text-xs font-semibold text-[#111a31] dark:text-white">
                 Registration successful
               </p>
             </div>
           )}
 
           {/* ERROR TOAST */}
+
           {toast === "error" && (
-            <div className="flex w-[300px] items-center gap-2.5 rounded-xl border border-red-100 bg-white px-3 py-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50">
+            <div
+              className="
+                flex
+                w-[300px]
+                items-center
+                gap-2.5
+                rounded-xl
+                border
+                border-red-100
+                bg-white
+                px-3
+                py-2.5
+                shadow-[0_12px_30px_rgba(15,23,42,0.15)]
+                dark:border-red-900/50
+                dark:bg-slate-900
+                dark:shadow-black/30
+              "
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
                 <AlertCircle
                   size={16}
                   strokeWidth={2.5}
-                  className="text-red-500"
+                  className="text-red-500 dark:text-red-400"
                 />
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#111a31]">
+                <p className="text-xs font-semibold text-[#111a31] dark:text-white">
                   Registration failed
                 </p>
 
-                <p className="mt-0.5 text-[10px] text-slate-500">
+                <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
                   {errorMessage}
                 </p>
               </div>
@@ -157,7 +204,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={closeToast}
-                className="shrink-0 text-slate-400 transition hover:text-slate-700"
+                className="shrink-0 text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
                 aria-label="Close notification"
               >
                 <X size={14} />
@@ -170,21 +217,37 @@ export default function Register() {
       {/* =====================================================
           MAIN CARD
       ====================================================== */}
-      <div className="mx-auto flex w-full max-w-[1180px] items-start justify-center">
-        <div className="grid w-full overflow-hidden rounded-[24px] bg-white shadow-[0_24px_70px_rgba(36,70,130,0.14)] lg:grid-cols-[43%_57%]">
 
+      <div className="mx-auto flex w-full max-w-[1180px] items-start justify-center">
+        <div
+          className="
+            grid
+            w-full
+            overflow-hidden
+            rounded-[24px]
+            bg-white
+            shadow-[0_24px_70px_rgba(36,70,130,0.14)]
+            transition-colors
+            duration-500
+            dark:bg-slate-900
+            dark:shadow-[0_24px_70px_rgba(0,0,0,0.35)]
+            lg:grid-cols-[43%_57%]
+          "
+        >
           {/* =====================================================
               LEFT BRANDING PANEL
           ====================================================== */}
+
           <section className="relative hidden min-h-[680px] overflow-hidden bg-[#10182d] lg:block">
+            {/* Decorative glow */}
 
             <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#315cff]/20 blur-3xl" />
 
             <div className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-[#4d3df5]/20 blur-3xl" />
 
             <div className="relative z-10 flex h-full flex-col p-10 xl:p-12">
-
               {/* Logo */}
+
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[13px] bg-white shadow-[0_8px_24px_rgba(47,91,255,0.25)]">
                   <GraduationCap
@@ -206,8 +269,8 @@ export default function Register() {
               </div>
 
               {/* Brand Copy */}
-              <div className="mt-20 max-w-[390px]">
 
+              <div className="mt-20 max-w-[390px]">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#315cff]/20 bg-[#315cff]/10 px-3.5 py-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#4772ff]" />
 
@@ -234,8 +297,8 @@ export default function Register() {
               </div>
 
               {/* Bottom Graphic */}
-              <div className="absolute bottom-0 left-0 right-0 h-[220px] overflow-hidden">
 
+              <div className="absolute bottom-0 left-0 right-0 h-[220px] overflow-hidden">
                 <div className="absolute -bottom-32 left-[-8%] h-[250px] w-[72%] rotate-[-10deg] rounded-[50%] bg-[#28334f]" />
 
                 <div className="absolute -bottom-40 left-[27%] h-[260px] w-[72%] rotate-[9deg] rounded-[50%] bg-[#6a748d]" />
@@ -261,40 +324,61 @@ export default function Register() {
           {/* =====================================================
               SIGNUP FORM
           ====================================================== */}
-          <section className="flex min-h-[680px] items-center justify-center px-6 py-10 sm:px-10 lg:px-12 xl:px-16">
-            <div className="w-full max-w-[440px]">
 
+          <section
+            className="
+              flex
+              min-h-[680px]
+              items-center
+              justify-center
+              bg-white
+              px-6
+              py-10
+              transition-colors
+              duration-500
+              dark:bg-slate-900
+              sm:px-10
+              lg:px-12
+              xl:px-16
+            "
+          >
+            <div className="w-full max-w-[440px]">
               {/* Mobile Logo */}
+
               <div className="mb-8 flex items-center gap-3 lg:hidden">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#2864ff] to-[#4c3df5] text-white shadow-lg shadow-[#315cff]/20">
                   <GraduationCap size={23} />
                 </div>
 
-                <p className="text-lg font-bold text-[#111a31]">
+                <p className="text-lg font-bold text-[#111a31] dark:text-white">
                   Edu<span className="text-[#315cff]">Nexus</span>
                 </p>
               </div>
 
               {/* Heading */}
+
               <div className="mb-7">
-                <div className="mb-1 text-[12px] font-medium text-[#315cff]">
+                <div className="mb-1 text-[12px] font-medium text-[#315cff] dark:text-[#6d8cff]">
                   Create an Account
                 </div>
 
-                <h2 className="text-[26px] font-bold tracking-[-0.03em] text-[#111a31]">
+                <h2 className="text-[26px] font-bold tracking-[-0.03em] text-[#111a31] dark:text-white">
                   Join EduNexus
                 </h2>
 
-                <p className="mt-1.5 text-[13px] leading-5 text-slate-500">
+                <p className="mt-1.5 text-[13px] leading-5 text-slate-500 dark:text-slate-400">
                   Create your account to access your administrative workspace.
                 </p>
               </div>
 
-              {/* Full Name */}
+              {/* =====================================================
+                  FULL NAME
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="fullName"
-                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d]"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d] dark:text-slate-300"
                 >
                   Full Name
                 </label>
@@ -302,7 +386,7 @@ export default function Register() {
                 <div className="relative">
                   <User
                     size={15}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                   />
 
                   <input
@@ -311,16 +395,45 @@ export default function Register() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Jane Doe"
-                    className="h-11 w-full rounded-[7px] border border-transparent bg-[#eef3ff] pl-10 pr-4 text-[12px] text-[#16213b] outline-none transition placeholder:text-[#a9b4ca] focus:border-[#7c9cff] focus:bg-white focus:ring-2 focus:ring-[#315cff]/10"
+                    className="
+                      h-11
+                      w-full
+                      rounded-[7px]
+                      border
+                      border-transparent
+                      bg-[#eef3ff]
+                      pl-10
+                      pr-4
+                      text-[12px]
+                      text-[#16213b]
+                      outline-none
+                      transition
+                      placeholder:text-[#a9b4ca]
+
+                      focus:border-[#7c9cff]
+                      focus:bg-white
+                      focus:ring-2
+                      focus:ring-[#315cff]/10
+
+                      dark:border-slate-700
+                      dark:bg-slate-800
+                      dark:text-white
+                      dark:placeholder:text-slate-500
+                      dark:focus:border-[#5d82ff]
+                      dark:focus:bg-slate-800
+                    "
                   />
                 </div>
               </div>
 
-              {/* Email */}
+              {/* =====================================================
+                  EMAIL
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d]"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d] dark:text-slate-300"
                 >
                   Institutional Email
                 </label>
@@ -328,7 +441,7 @@ export default function Register() {
                 <div className="relative">
                   <Mail
                     size={15}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                   />
 
                   <input
@@ -337,16 +450,45 @@ export default function Register() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="jane.doe@university.edu"
-                    className="h-11 w-full rounded-[7px] border border-transparent bg-[#eef3ff] pl-10 pr-4 text-[12px] text-[#16213b] outline-none transition placeholder:text-[#a9b4ca] focus:border-[#7c9cff] focus:bg-white focus:ring-2 focus:ring-[#315cff]/10"
+                    className="
+                      h-11
+                      w-full
+                      rounded-[7px]
+                      border
+                      border-transparent
+                      bg-[#eef3ff]
+                      pl-10
+                      pr-4
+                      text-[12px]
+                      text-[#16213b]
+                      outline-none
+                      transition
+                      placeholder:text-[#a9b4ca]
+
+                      focus:border-[#7c9cff]
+                      focus:bg-white
+                      focus:ring-2
+                      focus:ring-[#315cff]/10
+
+                      dark:border-slate-700
+                      dark:bg-slate-800
+                      dark:text-white
+                      dark:placeholder:text-slate-500
+                      dark:focus:border-[#5d82ff]
+                      dark:focus:bg-slate-800
+                    "
                   />
                 </div>
               </div>
 
-              {/* Role */}
+              {/* =====================================================
+                  ROLE
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="role"
-                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d]"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d] dark:text-slate-300"
                 >
                   Account Role
                 </label>
@@ -354,18 +496,43 @@ export default function Register() {
                 <div className="relative">
                   <BriefcaseBusiness
                     size={15}
-                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c]"
+                    className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                   />
 
                   <select
                     id="role"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className={`h-11 w-full appearance-none rounded-[7px] border border-transparent bg-[#eef3ff] pl-10 pr-10 text-[12px] outline-none transition focus:border-[#7c9cff] focus:bg-white focus:ring-2 focus:ring-[#315cff]/10 ${
-                      role
-                        ? "text-[#16213b]"
-                        : "text-[#a9b4ca]"
-                    }`}
+                    className={`
+                      h-11
+                      w-full
+                      appearance-none
+                      rounded-[7px]
+                      border
+                      border-transparent
+                      bg-[#eef3ff]
+                      pl-10
+                      pr-10
+                      text-[12px]
+                      outline-none
+                      transition
+
+                      focus:border-[#7c9cff]
+                      focus:bg-white
+                      focus:ring-2
+                      focus:ring-[#315cff]/10
+
+                      dark:border-slate-700
+                      dark:bg-slate-800
+                      dark:focus:border-[#5d82ff]
+                      dark:focus:bg-slate-800
+
+                      ${
+                        role
+                          ? "text-[#16213b] dark:text-white"
+                          : "text-[#a9b4ca] dark:text-slate-500"
+                      }
+                    `}
                   >
                     <option value="" disabled>
                       Select a role...
@@ -385,7 +552,7 @@ export default function Register() {
                   </select>
 
                   <svg
-                    className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2"
+                    className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                     width="13"
                     height="13"
                     viewBox="0 0 24 24"
@@ -398,11 +565,14 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Password */}
+              {/* =====================================================
+                  PASSWORD
+              ====================================================== */}
+
               <div className="mb-4">
                 <label
                   htmlFor="password"
-                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d]"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d] dark:text-slate-300"
                 >
                   Password
                 </label>
@@ -410,7 +580,7 @@ export default function Register() {
                 <div className="relative">
                   <LockKeyhole
                     size={15}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                   />
 
                   <input
@@ -419,7 +589,33 @@ export default function Register() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="h-11 w-full rounded-[7px] border border-transparent bg-[#eef3ff] pl-10 pr-10 text-[12px] text-[#16213b] outline-none transition placeholder:text-[#a9b4ca] focus:border-[#7c9cff] focus:bg-white focus:ring-2 focus:ring-[#315cff]/10"
+                    className="
+                      h-11
+                      w-full
+                      rounded-[7px]
+                      border
+                      border-transparent
+                      bg-[#eef3ff]
+                      pl-10
+                      pr-10
+                      text-[12px]
+                      text-[#16213b]
+                      outline-none
+                      transition
+                      placeholder:text-[#a9b4ca]
+
+                      focus:border-[#7c9cff]
+                      focus:bg-white
+                      focus:ring-2
+                      focus:ring-[#315cff]/10
+
+                      dark:border-slate-700
+                      dark:bg-slate-800
+                      dark:text-white
+                      dark:placeholder:text-slate-500
+                      dark:focus:border-[#5d82ff]
+                      dark:focus:bg-slate-800
+                    "
                   />
 
                   <button
@@ -427,7 +623,22 @@ export default function Register() {
                     onClick={() =>
                       setShowPassword(!showPassword)
                     }
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71809c] transition hover:text-[#315cff]"
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                    className="
+                      absolute
+                      right-3.5
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#71809c]
+                      transition
+                      hover:text-[#315cff]
+                      dark:text-slate-500
+                      dark:hover:text-[#6d8cff]
+                    "
                   >
                     {showPassword ? (
                       <EyeOff size={15} />
@@ -437,24 +648,27 @@ export default function Register() {
                   </button>
                 </div>
 
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[#9ba6ba]">
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[#9ba6ba] dark:text-slate-500">
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full border border-[#aeb8c9]" />
+                    <span className="h-1.5 w-1.5 rounded-full border border-[#aeb8c9] dark:border-slate-600" />
                     At least 8 characters
                   </span>
 
                   <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full border border-[#aeb8c9]" />
+                    <span className="h-1.5 w-1.5 rounded-full border border-[#aeb8c9] dark:border-slate-600" />
                     Contains a number
                   </span>
                 </div>
               </div>
 
-              {/* Confirm Password */}
+              {/* =====================================================
+                  CONFIRM PASSWORD
+              ====================================================== */}
+
               <div className="mb-5">
                 <label
                   htmlFor="confirmPassword"
-                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d]"
+                  className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#34415d] dark:text-slate-300"
                 >
                   Confirm Password
                 </label>
@@ -462,7 +676,7 @@ export default function Register() {
                 <div className="relative">
                   <RotateCcw
                     size={15}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#71809c] dark:text-slate-500"
                   />
 
                   <input
@@ -477,7 +691,33 @@ export default function Register() {
                       setConfirmPassword(e.target.value)
                     }
                     placeholder="••••••••"
-                    className="h-11 w-full rounded-[7px] border border-transparent bg-[#eef3ff] pl-10 pr-10 text-[12px] text-[#16213b] outline-none transition placeholder:text-[#a9b4ca] focus:border-[#7c9cff] focus:bg-white focus:ring-2 focus:ring-[#315cff]/10"
+                    className="
+                      h-11
+                      w-full
+                      rounded-[7px]
+                      border
+                      border-transparent
+                      bg-[#eef3ff]
+                      pl-10
+                      pr-10
+                      text-[12px]
+                      text-[#16213b]
+                      outline-none
+                      transition
+                      placeholder:text-[#a9b4ca]
+
+                      focus:border-[#7c9cff]
+                      focus:bg-white
+                      focus:ring-2
+                      focus:ring-[#315cff]/10
+
+                      dark:border-slate-700
+                      dark:bg-slate-800
+                      dark:text-white
+                      dark:placeholder:text-slate-500
+                      dark:focus:border-[#5d82ff]
+                      dark:focus:bg-slate-800
+                    "
                   />
 
                   <button
@@ -487,7 +727,22 @@ export default function Register() {
                         !showConfirmPassword
                       )
                     }
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71809c] transition hover:text-[#315cff]"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    className="
+                      absolute
+                      right-3.5
+                      top-1/2
+                      -translate-y-1/2
+                      text-[#71809c]
+                      transition
+                      hover:text-[#315cff]
+                      dark:text-slate-500
+                      dark:hover:text-[#6d8cff]
+                    "
                   >
                     {showConfirmPassword ? (
                       <EyeOff size={15} />
@@ -498,12 +753,38 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* Register Button */}
+              {/* =====================================================
+                  REGISTER BUTTON
+              ====================================================== */}
+
               <button
                 type="button"
                 onClick={handleRegister}
                 disabled={isRegistering}
-                className="group flex h-11 w-full items-center justify-center gap-2 rounded-[7px] bg-gradient-to-r from-[#2463ff] to-[#4b3df4] text-[12px] font-semibold text-white shadow-[0_8px_20px_rgba(49,92,255,0.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_25px_rgba(49,92,255,0.3)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70"
+                className="
+                  group
+                  flex
+                  h-11
+                  w-full
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-[7px]
+                  bg-gradient-to-r
+                  from-[#2463ff]
+                  to-[#4b3df4]
+                  text-[12px]
+                  font-semibold
+                  text-white
+                  shadow-[0_8px_20px_rgba(49,92,255,0.22)]
+                  transition
+                  duration-200
+                  hover:-translate-y-0.5
+                  hover:shadow-[0_12px_25px_rgba(49,92,255,0.3)]
+                  active:translate-y-0
+                  disabled:cursor-not-allowed
+                  disabled:opacity-70
+                "
               >
                 {isRegistering
                   ? "Registration Successful"
@@ -523,12 +804,20 @@ export default function Register() {
               </button>
 
               {/* Login Link */}
-              <p className="mt-5 text-center text-[11px] text-slate-500">
+
+              <p className="mt-5 text-center text-[11px] text-slate-500 dark:text-slate-400">
                 Already have an account?{" "}
 
                 <a
                   href="/login"
-                  className="font-medium text-[#315cff] transition hover:text-[#4b3df4]"
+                  className="
+                    font-medium
+                    text-[#315cff]
+                    transition
+                    hover:text-[#4b3df4]
+                    dark:text-[#6d8cff]
+                    dark:hover:text-[#8aa2ff]
+                  "
                 >
                   Sign in
                 </a>
