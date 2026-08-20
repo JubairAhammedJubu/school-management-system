@@ -66,14 +66,6 @@ const FAQSection: React.FC = () => {
     setOpenId((prev) => (prev === id ? null : id));
   };
 
-  const handleScrollToTalkToUs = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const element = document.getElementById("talk-to-us");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <section className="relative w-full py-20 sm:py-28 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
 
@@ -206,14 +198,13 @@ const FAQSection: React.FC = () => {
             </div>
           </div>
 
-          <a
-            href="#talk-to-us"
-            onClick={handleScrollToTalkToUs}
+          <Link
+            href="/contact"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 px-6 py-3 font-semibold text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0 active:scale-95 text-sm"
           >
             <span>Contact Support</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </motion.div>
 
       </div>
