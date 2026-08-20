@@ -152,32 +152,31 @@ export default function Footer() {
             </div>
 
             {/* Nav Links Layout */}
-            <div className="md:col-span-7 lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+            <div className="md:col-span-7 lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
               {/* NAVIGATION / PRODUCT */}
-              <div>
-                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <div className="text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                   <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     NAVIGATION
                   </h3>
                 </div>
-                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm">
+                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm flex flex-col items-center sm:items-stretch">
                   {productLinks.map((link) => {
                     const isActive = pathname === link.href;
 
                     return (
-                      <li key={link.name}>
+                      <li key={link.name} className="w-full">
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
+                          className={`group flex items-center justify-center sm:justify-between py-0.5 transition-all duration-200 ${isActive
                             ? "text-blue-600 dark:text-blue-400 font-semibold"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
                             }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
-                            <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
                             {link.name}
                           </span>
-                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-600 dark:text-blue-400" />
+                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-600 dark:text-blue-400 hidden sm:block" />
                         </Link>
                       </li>
                     );
@@ -186,30 +185,29 @@ export default function Footer() {
               </div>
 
               {/* PORTALS */}
-              <div>
-                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <div className="text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                   <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     PORTALS
                   </h3>
                 </div>
-                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm">
+                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm flex flex-col items-center sm:items-stretch">
                   {platformLinks.map((link) => {
                     const isActive = pathname === link.href;
 
                     return (
-                      <li key={link.name}>
+                      <li key={link.name} className="w-full">
                         <Link
                           href={link.href}
-                          className={`group flex items-center justify-between py-0.5 transition-all duration-200 ${isActive
+                          className={`group flex items-center justify-center sm:justify-between py-0.5 transition-all duration-200 ${isActive
                             ? "text-blue-600 dark:text-blue-400 font-semibold"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
                             }`}
                         >
                           <span className="flex items-center gap-1.5 transition-transform duration-200 group-hover:translate-x-1">
-                            <ChevronRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 text-blue-600 dark:text-blue-400" />
                             {link.name}
                           </span>
-                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-600 dark:text-blue-400" />
+                          <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-blue-600 dark:text-blue-400 hidden sm:block" />
                         </Link>
                       </li>
                     );
@@ -218,7 +216,7 @@ export default function Footer() {
               </div>
 
               {/* TECHNOLOGY */}
-              <div className="col-span-2 sm:col-span-1 pt-2 sm:pt-0">
+              <div className="hidden md:block col-span-2 sm:col-span-1 pt-2 sm:pt-0 text-center sm:text-left">
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                   <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     TECHNOLOGY
