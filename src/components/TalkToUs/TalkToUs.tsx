@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Mail,
   Phone,
@@ -9,7 +10,8 @@ import {
   Sparkles,
   CheckCircle2,
   Clock,
-  MessageSquare,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 
 export default function TalkToUs() {
@@ -22,6 +24,14 @@ export default function TalkToUs() {
     role: "School Admin / Principal",
     message: "",
   });
+  const [roleOpen, setRoleOpen] = useState(false);
+  const roleOptions = [
+    { value: "School Admin / Principal", label: "School Principal / Admin", accent: "bg-blue-500" },
+    { value: "Teacher", label: "Teacher / Educator", accent: "bg-indigo-500" },
+    { value: "IT Manager", label: "IT Manager / Coordinator", accent: "bg-cyan-500" },
+    { value: "Student / Parent", label: "Student / Parent", accent: "bg-emerald-500" },
+    { value: "Other", label: "Other", accent: "bg-slate-400" },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +51,16 @@ export default function TalkToUs() {
       <div className="max-w-6xl mx-auto relative z-10">
 
         {/* Header Section */}
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-4">
+        <motion.div
+          className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-4"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+        >
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider uppercase bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-500/20">
             <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            Let's Connect
+            Let&apos;s Connect
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -55,13 +71,19 @@ export default function TalkToUs() {
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
             Have questions or want a personalized demo? Reach out to us and our team will get back to you shortly.
           </p>
-        </div>
+        </motion.div>
 
         {/* Grid Container */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
           {/* Left Column: Contact Cards */}
-          <div className="lg:col-span-5 space-y-6">
+          <motion.div
+            className="lg:col-span-5 space-y-6"
+            initial={{ opacity: 0, x: -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+          >
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 Contact Information
@@ -72,9 +94,13 @@ export default function TalkToUs() {
             </div>
 
             <div className="space-y-4">
-              <a
+              <motion.a
                 href="mailto:contact@edunexus.com"
                 className="flex items-center gap-4 p-4 rounded-2xl border bg-white/90 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-200/50 dark:shadow-blue-950/20 hover:border-blue-500/50 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.45, delay: 0.2 }}
               >
                 <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                   <Mail className="w-5 h-5" />
@@ -87,11 +113,15 @@ export default function TalkToUs() {
                     contact@edunexus.com
                   </p>
                 </div>
-              </a>
+              </motion.a>
 
-              <a
+              <motion.a
                 href="tel:+8801700000000"
                 className="flex items-center gap-4 p-4 rounded-2xl border bg-white/90 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-200/50 dark:shadow-blue-950/20 hover:border-blue-500/50 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.45, delay: 0.3 }}
               >
                 <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                   <Phone className="w-5 h-5" />
@@ -104,9 +134,15 @@ export default function TalkToUs() {
                     +880 1700-000000
                   </p>
                 </div>
-              </a>
+              </motion.a>
 
-              <div className="flex items-center gap-4 p-4 rounded-2xl border bg-white/90 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-200/50 dark:shadow-blue-950/20">
+              <motion.div
+                className="flex items-center gap-4 p-4 rounded-2xl border bg-white/90 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 shadow-md shadow-slate-200/50 dark:shadow-blue-950/20"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.45, delay: 0.4 }}
+              >
                 <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                   <MapPin className="w-5 h-5" />
                 </div>
@@ -118,19 +154,31 @@ export default function TalkToUs() {
                     Dhaka, Bangladesh
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="p-4 rounded-2xl border bg-blue-50/50 dark:bg-slate-900/40 border-blue-100 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-start gap-3">
+            <motion.div
+              className="p-4 rounded-2xl border bg-blue-50/50 dark:bg-slate-900/40 border-blue-100 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex items-start gap-3"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.45, delay: 0.5 }}
+            >
               <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs leading-relaxed">
                 <strong className="font-semibold text-blue-600 dark:text-blue-400">Fast Response:</strong> Our support & sales teams typically respond within 2-4 business hours.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Right Column: Glassmorphism Contact Form */}
-          <div className="lg:col-span-7 rounded-3xl p-6 sm:p-10 border bg-white/90 dark:bg-slate-900/60 border-slate-200/90 dark:border-slate-800/80 shadow-2xl shadow-blue-900/5 dark:shadow-blue-950/30 backdrop-blur-xl relative">
+          <motion.div
+            className="lg:col-span-7 rounded-3xl p-6 sm:p-10 border bg-white/90 dark:bg-slate-900/60 border-slate-200/90 dark:border-slate-800/80 shadow-2xl shadow-blue-900/5 dark:shadow-blue-950/30 backdrop-blur-xl relative"
+            initial={{ opacity: 0, x: 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7, delay: 0.18, ease: "easeOut" }}
+          >
 
             {/* Top Accent Line */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-[3px] bg-gradient-to-r from-transparent via-blue-600 to-transparent rounded-full" />
@@ -200,20 +248,55 @@ export default function TalkToUs() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-2 text-slate-700 dark:text-slate-300">
+                    <label id="role-label" className="block text-xs font-semibold mb-2 text-slate-700 dark:text-slate-300">
                       Your Role
                     </label>
-                    <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border bg-slate-50 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="School Admin / Principal">School Principal / Admin</option>
-                      <option value="Teacher">Teacher / Educator</option>
-                      <option value="IT Manager">IT Manager / Coordinator</option>
-                      <option value="Student / Parent">Student / Parent</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <div className="relative group/role">
+                      <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-blue-600 dark:text-blue-400">
+                        <Sparkles className="w-4 h-4 transition-transform duration-300 group-focus-within/role:rotate-12" />
+                      </div>
+                      <button
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded={roleOpen}
+                        aria-labelledby="role-label"
+                        onClick={() => setRoleOpen(!roleOpen)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") setRoleOpen(false);
+                        }}
+                        className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-left text-sm font-medium text-slate-900 shadow-sm transition-all duration-200 hover:border-blue-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-100 dark:hover:border-blue-700"
+                      >
+                        {roleOptions.find((option) => option.value === formData.role)?.label}
+                      </button>
+                      <div className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-slate-400 transition-colors group-focus-within/role:text-blue-500">
+                        <ChevronDown className="w-4 h-4" />
+                      </div>
+                      {roleOpen && (
+                        <div
+                          role="listbox"
+                          aria-labelledby="role-label"
+                          className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-blue-100 bg-white/95 p-1.5 shadow-xl shadow-blue-900/10 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-blue-950/30"
+                        >
+                          {roleOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              role="option"
+                              aria-selected={formData.role === option.value}
+                              onClick={() => {
+                                setFormData({ ...formData, role: option.value });
+                                setRoleOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700 focus:bg-blue-50 focus:outline-none dark:text-slate-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-300 dark:focus:bg-blue-500/10"
+                            >
+                              <span className={`h-2.5 w-2.5 rounded-full ${option.accent}`} />
+                              <span className="flex-1">{option.label}</span>
+                              {formData.role === option.value && <Check className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -246,7 +329,7 @@ export default function TalkToUs() {
                 </button>
               </form>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
