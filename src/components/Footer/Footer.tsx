@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   ArrowUpRight,
   GraduationCap,
-  Sparkles,
   Code2,
   Database,
   Layers,
@@ -53,32 +52,79 @@ export default function Footer() {
     { name: "Prisma ORM", desc: "Type-safe Client", icon: Layers },
   ];
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
   return (
     <footer className="relative w-full bg-slate-50 dark:bg-[#030712] text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800/80 transition-colors duration-300 font-sans overflow-hidden">
       
       {/* Background Ambient Glows */}
-      <div className="absolute top-0 left-1/3 w-[500px] h-[300px] bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[250px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none" />
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 9,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute top-0 left-1/3 w-[500px] h-[300px] bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-[120px] pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.4, 0.7, 0.4],
+        }}
+        transition={{
+          duration: 11,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
+        className="absolute bottom-0 right-1/4 w-[400px] h-[250px] bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none"
+      />
 
       <div className="max-w-7xl mx-auto px-6 pt-16 pb-12 relative z-10">
         
         {/* Main Grid Layout */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
           className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 pb-14"
         >
           {/* Brand Info Column */}
-          <div className="md:col-span-5 space-y-6">
-            <Link href="/" className="inline-flex items-center gap-3.5 group">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 group-hover:scale-105 transition-transform duration-300">
+          <motion.div variants={itemVariants} className="md:col-span-5 space-y-6">
+            <Link href="/" className="inline-flex items-center gap-3.5 group cursor-pointer">
+              <motion.div
+                whileHover={{ scale: 1.08, rotate: 3 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-600/30 transition-transform duration-300"
+              >
                 <GraduationCap className="w-6 h-6" />
-              </div>
+              </motion.div>
               <div className="flex flex-col">
                 <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                  Edu<span className="text-blue-600 dark:text-blue-500">Manage</span>
+                  Edu<span className="text-blue-600 dark:text-blue-500">Nexus</span>
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mt-1.5">
                   SCHOOL MANAGEMENT SYSTEM
@@ -92,13 +138,16 @@ export default function Footer() {
 
             {/* System Status Pill */}
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 backdrop-blur-md">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 backdrop-blur-md cursor-pointer"
+              >
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                 </span>
                 All Systems Operational
-              </div>
+              </motion.div>
             </div>
 
             {/* Social Icons */}
@@ -108,31 +157,36 @@ export default function Footer() {
               </span>
               <div className="flex items-center gap-3">
                 {[
-                  { name: "GitHub", href: "#", icon: GithubIcon },
-                  { name: "LinkedIn", href: "#", icon: LinkedinIcon },
-                  { name: "Facebook", href: "#", icon: FacebookIcon },
+                  { name: "GitHub", href: "https://github.com/JubairAhammedJubu/school-management-system", icon: GithubIcon },
+                  { name: "LinkedIn", href: "https://www.linkedin.com", icon: LinkedinIcon },
+                  { name: "Facebook", href: "https://www.facebook.com", icon: FacebookIcon },
                 ].map((social) => {
                   const Icon = social.icon;
                   return (
-                    <a
+                    <motion.a
                       key={social.name}
                       href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       aria-label={social.name}
-                      className="w-9 h-9 rounded-xl bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-sm"
+                      whileHover={{ scale: 1.15, y: -4 }}
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      className="w-9 h-9 rounded-xl bg-slate-200/80 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-colors shadow-sm cursor-pointer"
                     >
                       <Icon className="w-4 h-4" />
-                    </a>
+                    </motion.a>
                   );
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Nav Links Layout */}
           <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
             
             {/* PRODUCT */}
-            <div>
+            <motion.div variants={itemVariants}>
               <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                   PRODUCT
@@ -146,7 +200,7 @@ export default function Footer() {
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className={`group flex items-center justify-between py-1 transition-all duration-200 ${
+                        className={`group flex items-center justify-between py-1 transition-all duration-200 cursor-pointer ${
                           isActive
                             ? "text-blue-600 dark:text-blue-400 font-semibold"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
@@ -162,10 +216,10 @@ export default function Footer() {
                   );
                 })}
               </ul>
-            </div>
+            </motion.div>
 
             {/* PLATFORM */}
-            <div>
+            <motion.div variants={itemVariants}>
               <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                   PLATFORM
@@ -179,7 +233,7 @@ export default function Footer() {
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className={`group flex items-center justify-between py-1 transition-all duration-200 ${
+                        className={`group flex items-center justify-between py-1 transition-all duration-200 cursor-pointer ${
                           isActive
                             ? "text-blue-600 dark:text-blue-400 font-semibold"
                             : "text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white"
@@ -195,10 +249,10 @@ export default function Footer() {
                   );
                 })}
               </ul>
-            </div>
+            </motion.div>
 
             {/* TECHNOLOGY */}
-            <div>
+            <motion.div variants={itemVariants}>
               <div className="flex items-center gap-2 mb-5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                   TECHNOLOGY
@@ -208,8 +262,12 @@ export default function Footer() {
                 {techStack.map((tech) => {
                   const Icon = tech.icon;
                   return (
-                    <li key={tech.name} className="group flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform duration-200">
+                    <motion.li
+                      key={tech.name}
+                      whileHover={{ x: 3 }}
+                      className="group flex items-center gap-3 cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-200">
                         <Icon className="w-4 h-4" />
                       </div>
                       <div>
@@ -220,36 +278,42 @@ export default function Footer() {
                           {tech.desc}
                         </span>
                       </div>
-                    </li>
+                    </motion.li>
                   );
                 })}
               </ul>
-            </div>
+            </motion.div>
 
           </div>
         </motion.div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-500">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-500"
+        >
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 animate-pulse" />
-            <p>ByteCode_Breakers — School Management System · EG13-08</p>
+            <p>ByteCode_Breakers — EduNexus · EG13-08</p>
           </div>
 
           <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 font-medium">
-            <Link href="#admin" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="#admin" className="hover:text-blue-600 dark:hover:text-white transition-colors cursor-pointer">
               Admin
             </Link>
             <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link href="#teacher" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="#teacher" className="hover:text-blue-600 dark:hover:text-white transition-colors cursor-pointer">
               Teacher
             </Link>
             <span className="text-slate-300 dark:text-slate-800">•</span>
-            <Link href="#student" className="hover:text-blue-600 dark:hover:text-white transition-colors">
+            <Link href="#student" className="hover:text-blue-600 dark:hover:text-white transition-colors cursor-pointer">
               Student
             </Link>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </footer>

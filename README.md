@@ -8,7 +8,7 @@
 
 | Resource             | Link                                           |
 | -------------------- | ---------------------------------------------- |
-| 🚀 Live Website      | [Visit EduManage](https://school-management-system-psi-ten.vercel.app/)       |
+| 🚀 Live Website      | [Visit EduNexus](https://school-management-system-psi-ten.vercel.app/)       |
 | 💻 GitHub Repository | [View Source Code](https://github.com/JubairAhammedJubu/school-management-system) |
 
 
@@ -16,11 +16,11 @@
 
 ## 📌 About The Project
 
-**EduManage** is a full-stack **School Management System** developed as an EdTech project.
+**EduNexus** is a full-stack **School Management System** developed as an EdTech project.
 
 The main goal of this project is to reduce dependency on manual and disconnected school management processes by providing a **unified digital platform** for managing academic and administrative activities.
 
-EduManage connects three primary user roles:
+EduNexus connects three primary user roles:
 
 - 👨‍💼 **Admin**
 - 👨‍🏫 **Teacher**
@@ -47,7 +47,7 @@ This can create several problems:
 
 ### 💡 Our Solution
 
-**EduManage** brings essential school operations together into **one unified platform**.
+**EduNexus** brings essential school operations together into **one unified platform**.
 
 The system allows administrators, teachers, and students to manage and access the information they need through a role-based system.
 
@@ -186,7 +186,7 @@ Examples include:
 
 ## 11. 🤖 AI-Powered At-Risk Student Prediction
 
-EduManage includes an AI-assisted feature designed to identify students who may require additional academic attention.
+EduNexus includes an AI-assisted feature designed to identify students who may require additional academic attention.
 
 The system can consider factors such as:
 
@@ -217,7 +217,7 @@ Examples include:
 
 # 👥 User Roles
 
-EduManage is designed around three main roles.
+EduNexus is designed around three main roles.
 
 ### 👨‍💼 Admin
 
@@ -306,7 +306,7 @@ Main functionality:
 
 ```text
                          ┌──────────────────────┐
-                         │       EduManage      │
+                         │       EduNexus       │
                          │ School Management    │
                          └──────────┬───────────┘
                                     │
@@ -354,7 +354,7 @@ Main functionality:
 
 # 🔐 Role-Based Access Control
 
-EduManage follows a role-based access control approach.
+EduNexus follows a role-based access control approach.
 
 ```text
                     EduNexus
@@ -404,7 +404,7 @@ The system is designed around real-world school operations rather than isolated 
 <!-- # 📂 Project Structure
 
 ```text
-EduManage/
+EduNexus/
 │
 ├── client/
 │   ├── app/
@@ -459,7 +459,7 @@ git clone https://github.com/JubairAhammedJubu/school-management-system.git
 ## 2. Navigate to the Project
 
 ```bash
-cd EduManage
+cd EduNexus
 ```
 
 ---
@@ -620,7 +620,7 @@ Coming soon...
 
 🚧 **Currently in Development**
 
-EduManage is actively being developed by our team.
+EduNexus is actively being developed by our team.
 
 We are continuously working on new features, improvements, integrations, and optimizations.
 
@@ -641,7 +641,7 @@ We are continuously working on new features, improvements, integrations, and opt
 
 # ⭐ Project Goals
 
-The main goals of EduManage are to:
+The main goals of EduNexus are to:
 
 - Reduce manual school operations
 - Centralize academic information
@@ -669,7 +669,7 @@ This project is being developed as a collaborative learning experience where we 
 
 <div align="center">
 
-## 🎓 EduManage
+## 🎓 EduNexus
 
 ### One School. One Platform. Smarter Management.
 
