@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "daisyui";
 @variant dark (&:where(.dark, .dark *));
 
 :root {
