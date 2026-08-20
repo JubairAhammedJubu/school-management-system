@@ -63,57 +63,57 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative w-full pt-10 pb-5 bg-slate-50 dark:bg-[#030712] text-slate-600 dark:text-slate-400 transition-colors duration-500 font-sans overflow-hidden">
+    <footer className="relative w-full pt-5 sm:pt-10 pb-4 sm:pb-5 bg-slate-50 dark:bg-[#030712] text-slate-600 dark:text-slate-400 transition-colors duration-500 font-sans overflow-hidden">
       {/* Background Ambient Glows */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/10 dark:bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="relative container mx-auto px-4 sm:px-0 md:px-0 xl:px-8 z-10">
+      <div className="relative container mx-auto px-3 sm:px-0 md:px-0 xl:px-8 z-10">
         {/* Rounded Card Container */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 shadow-2xl backdrop-blur-xl p-6 sm:p-10 lg:p-12 relative overflow-hidden"
+          className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-slate-900/90 shadow-2xl backdrop-blur-xl p-4 sm:p-10 lg:p-12 relative overflow-hidden"
         >
           {/* Top Accent Line */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-[3px] bg-gradient-to-r from-transparent via-blue-600 to-transparent rounded-full" />
 
           {/* Main Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 lg:gap-12 pb-10 sm:pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-10 lg:gap-12 pb-5 sm:pb-12">
             {/* Brand Info Column */}
-            <div className="md:col-span-5 lg:col-span-4 space-y-5 sm:space-y-6 flex flex-col items-center sm:items-start text-center sm:text-left">
-              <Link href="/" className="inline-flex items-center gap-3 group">
-                <div className="relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 group-hover:scale-105 transition-transform duration-300">
+            <div className="md:col-span-5 lg:col-span-4 space-y-3 sm:space-y-6 flex flex-col items-center sm:items-start text-center sm:text-left">
+              <Link href="/" className="inline-flex items-center gap-2.5 sm:gap-3 group">
+                <div className="relative w-8 h-8 sm:w-11 sm:h-11 shrink-0 group-hover:scale-105 transition-transform duration-300">
                   <Image
                     src="/second_logo_transparent.png"
                     alt="EduNexus Logo"
                     fill
-                    sizes="(max-width: 640px) 40px, 44px"
+                    sizes="(max-width: 640px) 32px, 44px"
                     className="object-contain"
                   />
                 </div>
                 <div className="flex flex-col text-left">
-                  <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                  <span className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
                     Edu
                     <span className="text-blue-600 dark:text-blue-500">
                       Nexus
                     </span>
                   </span>
-                  <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mt-1">
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold mt-0.5 sm:mt-1">
                     SCHOOL MANAGEMENT SYSTEM
                   </span>
                 </div>
               </Link>
 
-              <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-sm">
+              <p className="text-[11px] sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-sm">
                 One school. One platform. Smarter management. Transforming
                 educational operations with an intuitive digital ecosystem.
               </p>
 
               {/* System Status Pill */}
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 backdrop-blur-md">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 backdrop-blur-md">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -123,11 +123,11 @@ export default function Footer() {
               </div>
 
               {/* Social Icons */}
-              <div className="pt-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-900 dark:text-slate-300 tracking-wider uppercase block mb-2.5">
+              <div className="pt-0 sm:pt-1">
+                <span className="text-[9px] sm:text-[11px] font-bold text-slate-900 dark:text-slate-300 tracking-wider uppercase block mb-1.5 sm:mb-2.5">
                   CONNECT WITH US
                 </span>
-                <div className="flex items-center justify-center sm:justify-start gap-3">
+                <div className="flex items-center justify-center sm:justify-start gap-2.5 sm:gap-3">
                   {socialLinks.map((social, idx) => {
                     const Icon = social.icon;
                     return (
@@ -137,13 +137,13 @@ export default function Footer() {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={social.name}
-                        className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-xs"
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:text-white dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600 hover:border-blue-600 dark:hover:border-blue-600 transition-all duration-300 hover:-translate-y-1 shadow-xs"
                         initial={{ opacity: 0, scale: 0.7 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.35, delay: idx * 0.08 }}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </motion.a>
                     );
                   })}
@@ -152,15 +152,15 @@ export default function Footer() {
             </div>
 
             {/* Nav Links Layout */}
-            <div className="md:col-span-7 lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+            <div className="md:col-span-7 lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
               {/* NAVIGATION / PRODUCT */}
               <div className="text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 pb-1.5 sm:mb-4 sm:pb-2 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-[10px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     NAVIGATION
                   </h3>
                 </div>
-                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm flex flex-col items-center sm:items-stretch">
+                <ul className="space-y-1.5 sm:space-y-3 text-[11px] sm:text-sm flex flex-col items-center sm:items-start">
                   {productLinks.map((link) => {
                     const isActive = pathname === link.href;
 
@@ -186,12 +186,12 @@ export default function Footer() {
 
               {/* PORTALS */}
               <div className="text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 pb-1.5 sm:mb-4 sm:pb-2 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-[10px] sm:text-xs font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     PORTALS
                   </h3>
                 </div>
-                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm flex flex-col items-center sm:items-stretch">
+                <ul className="space-y-1.5 sm:space-y-3 text-[11px] sm:text-sm flex flex-col items-center sm:items-start">
                   {platformLinks.map((link) => {
                     const isActive = pathname === link.href;
 
@@ -250,13 +250,13 @@ export default function Footer() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-6 sm:pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] sm:text-xs text-slate-500 text-center sm:text-left">
+          <div className="pt-4 sm:pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-[10px] sm:text-xs text-slate-500 text-center sm:text-left">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 animate-pulse shrink-0" />
               <p>ByteCode_Breakers — School Management System · EG13-08</p>
             </div>
 
-            <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 text-slate-600 dark:text-slate-400 font-medium">
+            <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-4 text-slate-600 dark:text-slate-400 font-medium">
               <Link
                 href="/login"
                 className="hover:text-blue-600 dark:hover:text-white transition-colors"
