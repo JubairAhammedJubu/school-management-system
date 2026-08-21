@@ -64,13 +64,13 @@ const roleDetails: RoleDetail[] = [
   },
 ];
 
-const AUTO_ROTATE_INTERVAL_MS = 4000;
+const AUTO_ROTATE_INTERVAL_MS = 2500;
 
 const RoleBasedAccess: React.FC = () => {
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
 
-  // Auto-switch role every 4 seconds
+  // Auto-switch role every 2.5 seconds
   useEffect(() => {
     if (isPaused) return;
 
