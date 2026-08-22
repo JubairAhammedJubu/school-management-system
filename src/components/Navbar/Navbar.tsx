@@ -354,7 +354,7 @@ const Navbar: React.FC = () => {
     }
     return pathname?.startsWith(href) ?? false;
   };
-
+console.log("Current session:", session); // Debugging: Log the current session state
   return (
     <>
       <header
@@ -362,7 +362,7 @@ const Navbar: React.FC = () => {
           }`}
       >
         <div
-          className={`relative container mx-auto container w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ${scrolled
+          className={`relative mx-auto container w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ${scrolled
             ? "shadow-lg shadow-blue-900/5 dark:shadow-black/20 border-slate-300/80 dark:border-slate-700/80"
             : "shadow-md shadow-slate-900/5"
             }`}

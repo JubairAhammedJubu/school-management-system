@@ -29,5 +29,19 @@
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "> A unified EdTech platform designed to simplify and modernize school management by bringing students, teachers, academic activities, and administrative operations into one centralized system.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JubairAhammedJubu/school-management-system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/JubairAhammedJubu/school-management-system/issues"
+  },
+  "homepage": "https://github.com/JubairAhammedJubu/school-management-system#readme"
 }
