@@ -70,12 +70,19 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
     try {
       if (isLogin) {
+        console.log("Login Data:", { email, password });
         const {error: signInError} = await signIn.email({email, password});
         if (signInError) {
           throw new Error(signInError.message ?? "Invalid email or password.");
         }
         toast.success("Welcome back!");
       } else {
+        console.log("Register Data:", {
+          email,
+          password,
+          name,
+          role,
+        });
         const {error: signUpError} = await signUp.email({
           email,
           password,
