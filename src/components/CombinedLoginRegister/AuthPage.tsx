@@ -29,10 +29,6 @@ const LOGIN_IMAGE =
 const REGISTER_IMAGE =
   "https://images.unsplash.com/photo-1758270704286-83476deb3bd1?fm=jpg&q=80&w=1200&auto=format&fit=crop";
 
-/**
- * AuthPage component handles both user authentication (login) and registration (signup).
- * Provides interactive animated form switching and state management for user roles.
- */
 export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const router = useRouter();
 
@@ -66,7 +62,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     if (!isLogin && password !== confirmPassword) {
       setError("Passwords do not match.");
-      toast.error("Passwords do not match.");
+      toast.error("Passwords do not match. Please verify your password.");
       return;
     }
 
@@ -79,7 +75,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         if (signInError) {
           throw new Error(signInError.message ?? "Invalid email or password.");
         }
-        toast.success("Welcome back!");
+        toast.success("Welcome back! Redirecting to your workspace...");
       } else {
         const { error: signUpError } = await signUp.email({
           email,
@@ -90,7 +86,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         if (signUpError) {
           throw new Error(signUpError.message ?? "Could not create your account.");
         }
-        toast.success("Account created! Welcome to EduNexus.");
+        toast.success("Account created successfully! Welcome to EduNexus 🎉");
       }
       window.location.href = "/";
     } catch (err) {
