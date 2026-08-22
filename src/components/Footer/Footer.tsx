@@ -47,7 +47,7 @@ export default function Footer() {
     { name: "Admin Portal", href: "/login" },
     { name: "Teacher Portal", href: "/teachers" },
     { name: "Student Portal", href: "/students" },
-    { name: "Register School", href: "/register" },
+    { name: "Register School", href: "/login" },
   ];
 
   const socialLinks = [
