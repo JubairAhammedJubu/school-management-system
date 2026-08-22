@@ -277,6 +277,10 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
+
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
