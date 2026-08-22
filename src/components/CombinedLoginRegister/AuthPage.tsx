@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -16,6 +16,8 @@ import {
   ArrowLeft,
   Sparkles,
   BookOpen,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
@@ -44,6 +46,23 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<Role>("student");
+  const [roleSelectOpen, setRoleSelectOpen] = useState(false);
+  const roleSelectRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        roleSelectRef.current &&
+        !roleSelectRef.current.contains(event.target as Node)
+      ) {
+        setRoleSelectOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleAuthMode = () => {
     setIsLogin((prev) => !prev);
@@ -55,6 +74,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     setPassword("");
     setConfirmPassword("");
     setRole("student");
+    setRoleSelectOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,65 +187,121 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-1 overflow-hidden"
+                  className="space-y-0.5 relative z-20"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                    Select Account Role
+                    I am a
                   </label>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <div ref={roleSelectRef} className="relative w-full">
+                    {/* Custom Select Trigger Input */}
                     <button
                       type="button"
-                      onClick={() => setRole("student")}
-                      className={`group relative flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
-                        role === "student"
-                          ? "border-blue-500 bg-blue-50/90 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20 shadow-sm"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/80 dark:hover:bg-slate-800"
-                      }`}
+                      onClick={() => setRoleSelectOpen((prev) => !prev)}
+                      className={`w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/90 border ${
+                        roleSelectOpen
+                          ? "border-blue-500 ring-2 ring-blue-500/20"
+                          : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                      } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
                     >
-                      <div className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                        role === "student"
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
-                          : "bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
-                      }`}>
-                        <GraduationCap className="h-4 w-4" />
+                      <div className="flex items-center gap-2">
+                        {role === "student" ? (
+                          <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
+                            <GraduationCap className="h-3.5 w-3.5" />
+                          </div>
+                        ) : (
+                          <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400">
+                            <BookOpen className="h-3.5 w-3.5" />
+                          </div>
+                        )}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                          {role === "student" ? "Student" : "Teacher"}
+                        </span>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold leading-tight">Student</span>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">Learner</span>
-                      </div>
-                      {role === "student" && (
-                        <div className="absolute right-2 top-2">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      )}
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+                          roleSelectOpen ? "rotate-180 text-blue-500" : ""
+                        }`}
+                      />
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setRole("teacher")}
-                      className={`group relative flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
-                        role === "teacher"
-                          ? "border-indigo-500 bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/20 shadow-sm"
-                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/80 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      <div className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                        role === "teacher"
-                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30"
-                          : "bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
-                      }`}>
-                        <BookOpen className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold leading-tight">Teacher</span>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">Educator</span>
-                      </div>
-                      {role === "teacher" && (
-                        <div className="absolute right-2 top-2">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        </div>
+                    {/* Animated Dropdown Menu Popover */}
+                    <AnimatePresence>
+                      {roleSelectOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 4, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                          transition={{ duration: 0.15, ease: "easeOut" }}
+                          className="absolute top-full left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xl p-1 overflow-hidden backdrop-blur-xl"
+                        >
+                          {/* Student Select Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRole("student");
+                              setRoleSelectOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer ${
+                              role === "student"
+                                ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold"
+                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
+                                role === "student"
+                                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                              }`}>
+                                <GraduationCap className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="flex flex-col text-left">
+                                <span className="font-bold text-xs">Student</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                                  Student learning portal
+                                </span>
+                              </div>
+                            </div>
+                            {role === "student" && (
+                              <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                            )}
+                          </button>
+
+                          {/* Teacher Select Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRole("teacher");
+                              setRoleSelectOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${
+                              role === "teacher"
+                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold"
+                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
+                                role === "teacher"
+                                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                              }`}>
+                                <BookOpen className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="flex flex-col text-left">
+                                <span className="font-bold text-xs">Teacher</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                                  Teacher portal & grading
+                                </span>
+                              </div>
+                            </div>
+                            {role === "teacher" && (
+                              <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            )}
+                          </button>
+                        </motion.div>
                       )}
-                    </button>
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               )}
