@@ -18,6 +18,9 @@ import {
   BookOpen,
   ChevronDown,
   Check,
+  User,
+  Mail,
+  Lock,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
@@ -162,19 +165,24 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-0.5 overflow-hidden"
+                  className="space-y-1 overflow-hidden"
                 >
-                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
                     Full Name
                   </label>
-                  <input
-                    type="text"
-                    required={!isLogin}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter Your Name"
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg outline-none focus:border-blue-500 transition-all"
-                  />
+                  <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                      <User size={14} />
+                    </div>
+                    <input
+                      type="text"
+                      required={!isLogin}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Alex Morgan"
+                      className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+                    />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -307,37 +315,45 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               )}
             </AnimatePresence>
 
-            <div className="space-y-0.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
                 Email Address
               </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@edunexus.school"
-                className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg outline-none focus:border-blue-500 transition-all"
-              />
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                  <Mail size={14} />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@edunexus.school"
+                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+                />
+              </div>
             </div>
 
-            <div className="space-y-0.5">
-              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
                 Password
               </label>
-              <div className="relative">
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                  <Lock size={14} />
+                </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg outline-none focus:border-blue-500 transition-all"
+                  className="w-full pl-9 pr-9 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -353,26 +369,29 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-0.5 overflow-hidden"
+                  className="space-y-1 overflow-hidden"
                 >
-                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
                     Confirm Password
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                      <ShieldCheck size={14} />
+                    </div>
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       required={!isLogin}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg outline-none focus:border-blue-500 transition-all"
+                      className="w-full pl-9 pr-9 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
                     />
                     <button
                       type="button"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                       aria-label={
                         showConfirmPassword
                           ? "Hide confirm password"
