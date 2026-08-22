@@ -81,7 +81,7 @@ const Banner = () => {
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 opacity-50 blur-md group-hover:opacity-90 transition duration-500 animate-pulse pointer-events-none" />
 
                 <Link
-                  href="/register"
+                  href="/login"
                   className="relative group/btn overflow-hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_100%] px-3.5 sm:px-7 py-3 sm:py-3.5 font-bold text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 cursor-pointer text-xs sm:text-base whitespace-nowrap text-center w-full"
                 >
                   {/* Light Sheen Sweep */}
