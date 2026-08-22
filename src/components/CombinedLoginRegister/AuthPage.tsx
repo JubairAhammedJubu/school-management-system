@@ -90,8 +90,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         }
         toast.success("Account created! Welcome to EduNexus.");
       }
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Something went wrong. Please try again.";

@@ -285,8 +285,7 @@ const Navbar: React.FC = () => {
       setShowLogoutModal(false);
       setShowUserDropdown(false);
       setIsOpen(false);
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
     } finally {
