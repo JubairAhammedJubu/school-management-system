@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { useSession, signOut } from "@/lib/auth-client";
 
 // Lightweight, self-contained SVG Icon Components
 const GraduationCapIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
@@ -199,6 +201,16 @@ const Navbar: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Logged out.");
+    setIsOpen(false);
+    router.push("/");
+    router.refresh();
+  };
 
   // Entrance animation on mount / sync theme state
   useEffect(() => {
@@ -314,21 +326,38 @@ const Navbar: React.FC = () => {
           <div className="hidden xl:flex items-center gap-2.5">
             <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
-            <Link
-              href="/login"
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
-            >
-              <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-              <span>Login</span>
-            </Link>
+            {session ? (
+              <>
+                <span className="px-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Hi, {session.user.name?.split(" ")[0] ?? "there"}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                >
+                  <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                >
+                  <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  <span>Login</span>
+                </Link>
 
-            <Link
-              href="/register"
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
-            >
-              <SparklesIcon className="h-4 w-4" />
-              <span>Get Started</span>
-            </Link>
+                <Link
+                  href="/register"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                >
+                  <SparklesIcon className="h-4 w-4" />
+                  <span>Get Started</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Compact Header Controls (Theme Toggle + Menu Bar Toggle) */}
@@ -392,25 +421,35 @@ const Navbar: React.FC = () => {
 
             {/* Action Buttons in Menu Dropdown */}
             <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
+              {session ? (
+                <button
+                  onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                  <span>Login</span>
-                </Link>
+                  <span>Logout ({session.user.name?.split(" ")[0] ?? "you"})</span>
+                </button>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <LogInIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <span>Login</span>
+                  </Link>
 
-                <Link
-                  href="/register"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
-                >
-                  <SparklesIcon className="h-4 w-4" />
-                  <span className="truncate">Get Started</span>
-                </Link>
-              </div>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <SparklesIcon className="h-4 w-4" />
+                    <span className="truncate">Get Started</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
