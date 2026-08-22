@@ -1,3 +1,5 @@
 export default function DashboardOverviewPage() {
-  return null;
+  return (
+    <div>This is the overview page</div>
+  )
 }

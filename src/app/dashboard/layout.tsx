@@ -77,6 +77,7 @@ export default function DashboardLayout({
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Sync theme state on mount
   useEffect(() => {
@@ -114,12 +115,13 @@ export default function DashboardLayout({
       ? teacherRoutes
       : studentRoutes;
 
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
       await signOut();
       toast.success("Logged out successfully.");
+      setShowLogoutModal(false);
       window.location.href = "/";
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
@@ -243,7 +245,7 @@ export default function DashboardLayout({
 
         <button
           type="button"
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           disabled={isLoggingOut}
           className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-950/80 transition-all duration-200 cursor-pointer disabled:opacity-50"
         >
@@ -406,6 +408,65 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLogoutModal(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 16 }}
+              transition={{ type: "spring", duration: 0.35 }}
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center z-[10001] my-auto"
+            >
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 shadow-inner">
+                <LogOut className="h-7 w-7" />
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Confirm Logout
+              </h3>
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                Are you sure you want to log out of your account?
+              </p>
+
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={() => setShowLogoutModal(false)}
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 px-4 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isLoggingOut ? (
+                    <span>Logging out...</span>
+                  ) : (
+                    <>
+                      <LogOut className="h-4 w-4" />
+                      <span>Log Out</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
