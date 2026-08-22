@@ -1,9 +1,9 @@
 "use client";
 
-import {useState} from "react";
-import {useRouter} from "next/navigation";
-import {motion, AnimatePresence} from "framer-motion";
-import {toast} from "react-toastify";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 import {
   Eye,
   EyeOff,
@@ -15,7 +15,7 @@ import {
   UserPlus,
   ArrowLeft,
 } from "lucide-react";
-import {signIn, signUp} from "@/lib/auth-client";
+import { signIn, signUp } from "@/lib/auth-client";
 
 type Role = "student" | "teacher";
 
@@ -28,7 +28,7 @@ const LOGIN_IMAGE =
 const REGISTER_IMAGE =
   "https://images.unsplash.com/photo-1758270704286-83476deb3bd1?fm=jpg&q=80&w=1200&auto=format&fit=crop";
 
-export default function AuthPage({initialMode = "login"}: AuthPageProps) {
+export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const router = useRouter();
 
   const [isLogin, setIsLogin] = useState(initialMode === "login");
@@ -70,20 +70,14 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
     try {
       if (isLogin) {
-        console.log("Login Data:", { email, password });
-        const {error: signInError} = await signIn.email({email, password});
+
+        const { error: signInError } = await signIn.email({ email, password });
         if (signInError) {
           throw new Error(signInError.message ?? "Invalid email or password.");
         }
         toast.success("Welcome back!");
       } else {
-        console.log("Register Data:", {
-          email,
-          password,
-          name,
-          role,
-        });
-        const {error: signUpError} = await signUp.email({
+        const { error: signUpError } = await signUp.email({
           email,
           password,
           name,
@@ -109,16 +103,15 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-slate-950 pt-24 sm:pt-28 pb-6 p-4 font-sans transition-colors duration-500">
       <motion.div
-        initial={{opacity: 0, y: 14}}
-        animate={{opacity: 1, y: 0}}
-        transition={{duration: 0.45, ease: "easeOut"}}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
         className="relative w-full max-w-[880px] min-h-[420px] bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden flex flex-col md:flex-row transition-colors duration-500 border border-slate-200 dark:border-slate-800"
       >
         {/* --- FORM CONTAINER --- */}
         <div
-          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${
-            isLogin ? "md:translate-x-0" : "md:translate-x-full"
-          }`}
+          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
+            }`}
         >
           <div className="mb-3">
             <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
@@ -145,10 +138,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               {!isLogin && (
                 <motion.div
                   key="name"
-                  initial={{opacity: 0, height: 0, marginBottom: 0}}
-                  animate={{opacity: 1, height: "auto", marginBottom: 0}}
-                  exit={{opacity: 0, height: 0, marginBottom: 0}}
-                  transition={{duration: 0.25, ease: "easeOut"}}
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="space-y-0.5 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
@@ -170,10 +163,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               {!isLogin && (
                 <motion.div
                   key="role"
-                  initial={{opacity: 0, height: 0, marginBottom: 0}}
-                  animate={{opacity: 1, height: "auto", marginBottom: 0}}
-                  exit={{opacity: 0, height: 0, marginBottom: 0}}
-                  transition={{duration: 0.25, ease: "easeOut"}}
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="space-y-0.5 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
@@ -233,10 +226,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               {!isLogin && (
                 <motion.div
                   key="confirmPassword"
-                  initial={{opacity: 0, height: 0, marginBottom: 0}}
-                  animate={{opacity: 1, height: "auto", marginBottom: 0}}
-                  exit={{opacity: 0, height: 0, marginBottom: 0}}
-                  transition={{duration: 0.25, ease: "easeOut"}}
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="space-y-0.5 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
@@ -283,8 +276,8 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
             <motion.button
               type="submit"
               disabled={isSubmitting}
-              whileHover={{y: -1}}
-              whileTap={{scale: 0.98}}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
@@ -312,17 +305,16 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
         {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND (unchanged) --- */}
         <div
-          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${
-            isLogin ? "translate-x-full" : "translate-x-0"
-          }`}
+          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${isLogin ? "translate-x-full" : "translate-x-0"
+            }`}
         >
           <AnimatePresence initial={false}>
             <motion.div
               key={isLogin ? "login-bg" : "register-bg"}
-              initial={{opacity: 0}}
-              animate={{opacity: 1}}
-              exit={{opacity: 0}}
-              transition={{duration: 0.5}}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
               className="absolute inset-0"
               style={{
                 backgroundImage: `url('${isLogin ? LOGIN_IMAGE : REGISTER_IMAGE}')`,
@@ -352,10 +344,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
           <AnimatePresence mode="wait">
             <motion.div
               key={isLogin ? "login" : "register"}
-              initial={{opacity: 0, y: 14}}
-              animate={{opacity: 1, y: 0}}
-              exit={{opacity: 0, y: -14}}
-              transition={{duration: 0.35, ease: "easeOut"}}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
               className="relative z-10 w-full px-1"
             >
               {isLogin ? (
@@ -371,9 +363,9 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
                       ].map((c, i) => (
                         <motion.span
                           key={i}
-                          initial={{opacity: 0, scale: 0.6}}
-                          animate={{opacity: 1, scale: 1}}
-                          transition={{delay: i * 0.06}}
+                          initial={{ opacity: 0, scale: 0.6 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.06 }}
                           className={`h-7 w-7 rounded-full ${c} border-2 border-slate-950 flex items-center justify-center text-[9px] font-bold text-slate-900`}
                         >
                           {["A", "R", "S", "M"][i]}
@@ -407,23 +399,22 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
                   {/* Registration flow: 3-step setup preview */}
                   <div className="flex items-center gap-1.5 mb-4">
                     {[
-                      {label: "Details", icon: UserPlus, active: true},
-                      {label: "Verify", icon: ShieldCheck, active: false},
-                      {label: "Explore", icon: GraduationCap, active: false},
+                      { label: "Details", icon: UserPlus, active: true },
+                      { label: "Verify", icon: ShieldCheck, active: false },
+                      { label: "Explore", icon: GraduationCap, active: false },
                     ].map((step, i) => (
                       <div
                         key={step.label}
                         className="flex items-center gap-1.5"
                       >
                         <motion.div
-                          initial={{opacity: 0, scale: 0.7}}
-                          animate={{opacity: 1, scale: 1}}
-                          transition={{delay: i * 0.08}}
-                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${
-                            step.active
-                              ? "bg-emerald-400/20 border-emerald-300/40"
-                              : "bg-white/[0.06] border-white/15"
-                          }`}
+                          initial={{ opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.08 }}
+                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
+                            ? "bg-emerald-400/20 border-emerald-300/40"
+                            : "bg-white/[0.06] border-white/15"
+                            }`}
                         >
                           <step.icon
                             size={11}
@@ -432,9 +423,8 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
                             }
                           />
                           <span
-                            className={`text-[8px] font-bold uppercase tracking-wide ${
-                              step.active ? "text-emerald-200" : "text-white/50"
-                            }`}
+                            className={`text-[8px] font-bold uppercase tracking-wide ${step.active ? "text-emerald-200" : "text-white/50"
+                              }`}
                           >
                             {step.label}
                           </span>
@@ -462,11 +452,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               <motion.button
                 type="button"
                 onClick={toggleAuthMode}
-                whileHover={{gap: "10px"}}
-                whileTap={{scale: 0.97}}
-                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${
-                  isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
-                }`}
+                whileHover={{ gap: "10px" }}
+                whileTap={{ scale: 0.97 }}
+                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
+                  }`}
               >
                 {isLogin ? (
                   <>
