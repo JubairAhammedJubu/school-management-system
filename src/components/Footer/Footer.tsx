@@ -35,6 +35,10 @@ const FacebookIcon = ({ className }: { className?: string }) => (
 export default function Footer() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
+
   const productLinks = [
     { name: "Home", href: "/" },
     { name: "Students", href: "/students" },

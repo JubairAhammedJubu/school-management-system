@@ -355,6 +355,10 @@ const Navbar: React.FC = () => {
     return pathname?.startsWith(href) ?? false;
   };
 
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
+
   return (
     <>
       <header
@@ -510,10 +514,10 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer group"
                 >
-                  <LogInIcon className="h-4 w-4" />
-                  <span>Login</span>
+                  <SparklesIcon className="h-4 w-4 text-blue-200 group-hover:rotate-12 transition-transform duration-300" />
+                  <span>Get Started</span>
                 </Link>
               )}
             </div>
@@ -635,10 +639,10 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-3.5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer group"
                   >
-                    <LogInIcon className="h-4 w-4" />
-                    <span>Login</span>
+                    <SparklesIcon className="h-4 w-4 text-blue-200 group-hover:rotate-12 transition-transform duration-300" />
+                    <span>Get Started</span>
                   </Link>
                 )}
               </div>
