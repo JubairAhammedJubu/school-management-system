@@ -156,48 +156,43 @@ export default function DashboardLayout({
 
   const renderSidebarContent = () => (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
-      {/* Sidebar Header / Brand */}
-      <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform duration-300 shrink-0">
-            <GraduationCap className="h-5 w-5" />
+      {/* Compact Sidebar Header / Brand */}
+      <div className="p-3 px-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0">
+            <GraduationCap className="h-4 w-4" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
-                Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
-              </span>
-              <span
-                className={`px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-md border ${roleBadge.color}`}
-              >
-                {roleBadge.label}
-              </span>
-            </div>
-            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              Workspace
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">
+              Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
+            </span>
+            <span
+              className={`px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider rounded border ${roleBadge.color}`}
+            >
+              {roleBadge.label}
             </span>
           </div>
         </Link>
       </div>
 
-      {/* User Quick Overview */}
-      <div className="p-4 mx-3 my-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 flex items-center gap-3">
-        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
-          {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
+      {/* Compact User Quick Overview */}
+      <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2.5">
+        <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+          {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User className="h-3.5 w-3.5" />}
         </div>
         <div className="flex flex-col overflow-hidden">
-          <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight">
             {session?.user?.name ?? "EduNexus User"}
           </span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate leading-tight">
             {session?.user?.email ?? "workspace@edunexus.school"}
           </span>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <div className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
-        <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+      {/* Expanded Main Navigation Links */}
+      <div className="flex-1 px-2.5 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+        <div className="px-2.5 py-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
           Menu Navigation
         </div>
         {currentRoutes.map((route) => {
@@ -211,15 +206,15 @@ export default function DashboardLayout({
             <Link
               key={route.label}
               href={route.href}
-              className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+              className={`group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                 isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/25 dark:bg-blue-600"
+                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25 dark:bg-blue-600 font-semibold"
                   : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <Icon
-                  className={`h-4 w-4 transition-transform duration-200 group-hover:scale-110 ${
+                  className={`h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110 ${
                     isActive
                       ? "text-white"
                       : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
@@ -228,20 +223,20 @@ export default function DashboardLayout({
                 <span>{route.label}</span>
               </div>
               {isActive && (
-                <ChevronRight className="h-3.5 w-3.5 text-white/80" />
+                <ChevronRight className="h-3 w-3 text-white/80" />
               )}
             </Link>
           );
         })}
       </div>
 
-      {/* Bottom Actions (Home & Logout) */}
-      <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 bg-slate-50/50 dark:bg-slate-900/50">
+      {/* Ultra-Compact Bottom Actions (Home & Logout) */}
+      <div className="p-2 px-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1 bg-slate-50/50 dark:bg-slate-900/50">
         <Link
           href="/"
-          className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 shadow-sm cursor-pointer"
+          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 shadow-2xs cursor-pointer"
         >
-          <Home className="h-4 w-4 text-blue-500" />
+          <Home className="h-3.5 w-3.5 text-blue-500 shrink-0" />
           <span>Back to Home</span>
         </Link>
 
@@ -249,9 +244,9 @@ export default function DashboardLayout({
           type="button"
           onClick={() => setShowLogoutModal(true)}
           disabled={isLoggingOut}
-          className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-950/80 transition-all duration-200 cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-950/80 transition-all duration-200 cursor-pointer disabled:opacity-50"
         >
-          <LogOut className="h-4 w-4 text-rose-500" />
+          <LogOut className="h-3.5 w-3.5 text-rose-500 shrink-0" />
           <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
         </button>
       </div>
