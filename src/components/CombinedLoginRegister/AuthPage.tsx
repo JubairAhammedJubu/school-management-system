@@ -29,6 +29,10 @@ const LOGIN_IMAGE =
 const REGISTER_IMAGE =
   "https://images.unsplash.com/photo-1758270704286-83476deb3bd1?fm=jpg&q=80&w=1200&auto=format&fit=crop";
 
+/**
+ * AuthPage component handles both user authentication (login) and registration (signup).
+ * Provides interactive animated form switching and state management for user roles.
+ */
 export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const router = useRouter();
 
