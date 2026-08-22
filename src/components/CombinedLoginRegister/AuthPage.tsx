@@ -62,7 +62,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     if (!isLogin && password !== confirmPassword) {
       setError("Passwords do not match.");
-      toast.error("Passwords do not match.");
+      toast.error("Passwords do not match. Please verify your password.");
       return;
     }
 
@@ -71,14 +71,12 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     try {
       if (isLogin) {
-        console.log("Login data:", { email, password });
         const { error: signInError } = await signIn.email({ email, password });
         if (signInError) {
           throw new Error(signInError.message ?? "Invalid email or password.");
         }
-        toast.success("Welcome back!");
+        toast.success("Welcome back! Redirecting to your workspace...");
       } else {
-        console.log("Register data:", { name, email, password, role });
         const { error: signUpError } = await signUp.email({
           email,
           password,
@@ -88,10 +86,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         if (signUpError) {
           throw new Error(signUpError.message ?? "Could not create your account.");
         }
-        toast.success("Account created! Welcome to EduNexus.");
+        toast.success("Account created successfully! Welcome to EduNexus 🎉");
       }
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Something went wrong. Please try again.";
