@@ -10,6 +10,9 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 // with the `additionalFields` in server/src/lib/auth.ts.
 export const authClient = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/api/auth`,
+  fetchOptions: {
+    credentials: "include",
+  },
   plugins: [
     inferAdditionalFields({
       user: {
