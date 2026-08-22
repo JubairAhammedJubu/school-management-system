@@ -277,10 +277,6 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
-  if (pathname?.startsWith("/dashboard")) {
-    return null;
-  }
-
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
@@ -358,6 +354,10 @@ const Navbar: React.FC = () => {
     }
     return pathname?.startsWith(href) ?? false;
   };
+
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
 
   return (
     <>
