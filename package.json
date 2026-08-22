@@ -9,13 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "better-auth": "^1.3.34",
     "framer-motion": "^13.1.0",
     "lucide-react": "^1.33.0",
     "motion": "^13.1.0",
     "next": "^16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-fast-marquee": "^1.6.5"
+    "react-fast-marquee": "^1.6.5",
+    "react-toastify": "^11.0.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
