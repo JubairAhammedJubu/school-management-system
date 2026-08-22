@@ -13,7 +13,10 @@ import {
   Zap,
 } from "lucide-react";
 
+import { useSession } from "@/lib/auth-client";
+
 const Banner = () => {
+  const { data: session } = useSession();
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 font-sans">
 
@@ -71,35 +74,37 @@ const Banner = () => {
             {/* Action Buttons */}
             <div className="mt-8 flex flex-row items-center gap-2.5 sm:gap-4">
               {/* Primary Button Container */}
-              <motion.div
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="relative flex-1 sm:flex-none group"
-              >
-                {/* Ambient Glow Aura */}
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 opacity-50 blur-md group-hover:opacity-90 transition duration-500 animate-pulse pointer-events-none" />
-
-                <Link
-                  href="/login"
-                  className="relative group/btn overflow-hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_100%] px-3.5 sm:px-7 py-3 sm:py-3.5 font-bold text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 cursor-pointer text-xs sm:text-base whitespace-nowrap text-center w-full"
+              {!session?.user && (
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="relative flex-1 sm:flex-none group"
                 >
-                  {/* Light Sheen Sweep */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+                  {/* Ambient Glow Aura */}
+                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 opacity-50 blur-md group-hover:opacity-90 transition duration-500 animate-pulse pointer-events-none" />
 
-                  <motion.span
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="inline-block group-hover/btn:rotate-12 group-hover/btn:scale-110 transition-transform duration-300"
+                  <Link
+                    href="/login"
+                    className="relative group/btn overflow-hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_100%] px-3.5 sm:px-7 py-3 sm:py-3.5 font-bold text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 cursor-pointer text-xs sm:text-base whitespace-nowrap text-center w-full"
                   >
-                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-blue-200" />
-                  </motion.span>
-                  <span className="tracking-wide">Get Started</span>
-                  <span className="inline-block transition-transform duration-300 group-hover/btn:translate-x-1">
-                    →
-                  </span>
-                </Link>
-              </motion.div>
+                    {/* Light Sheen Sweep */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+
+                    <motion.span
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="inline-block group-hover/btn:rotate-12 group-hover/btn:scale-110 transition-transform duration-300"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-blue-200" />
+                    </motion.span>
+                    <span className="tracking-wide">Get Started</span>
+                    <span className="inline-block transition-transform duration-300 group-hover/btn:translate-x-1">
+                      →
+                    </span>
+                  </Link>
+                </motion.div>
+              )}
 
               {/* Secondary Button Container */}
               <motion.div
