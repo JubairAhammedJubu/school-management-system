@@ -235,7 +235,7 @@ const HowItWorks: React.FC = () => {
 
             <div className="shrink-0 flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
               <Link
-                href="/register"
+                href="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-bold text-slate-950 hover:bg-blue-50 transition-all shadow-lg cursor-pointer active:scale-95"
               >
                 <span>Get Started Now</span>
