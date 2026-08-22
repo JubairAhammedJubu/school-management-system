@@ -157,25 +157,27 @@ export default function DashboardLayout({
   const renderSidebarContent = () => (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
       {/* Sidebar Header / Brand */}
-      <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+      <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform duration-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform duration-300 shrink-0">
             <GraduationCap className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
-              Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">
+                Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
+              </span>
+              <span
+                className={`px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-md border ${roleBadge.color}`}
+              >
+                {roleBadge.label}
+              </span>
+            </div>
             <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               Workspace
             </span>
           </div>
         </Link>
-        <span
-          className={`px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider rounded-md border ${roleBadge.color}`}
-        >
-          {roleBadge.label}
-        </span>
       </div>
 
       {/* User Quick Overview */}
