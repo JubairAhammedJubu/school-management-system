@@ -15,6 +15,7 @@ import {
   UserPlus,
   ArrowLeft,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
@@ -166,19 +167,66 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
                   exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-0.5 overflow-hidden"
+                  className="space-y-1 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                    I am a
+                    Select Account Role
                   </label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as Role)}
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg outline-none focus:border-blue-500 transition-all"
-                  >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                  </select>
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setRole("student")}
+                      className={`group relative flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                        role === "student"
+                          ? "border-blue-500 bg-blue-50/90 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 ring-2 ring-blue-500/20 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/80 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                        role === "student"
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/30"
+                          : "bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                      }`}>
+                        <GraduationCap className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold leading-tight">Student</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">Learner</span>
+                      </div>
+                      {role === "student" && (
+                        <div className="absolute right-2 top-2">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRole("teacher")}
+                      className={`group relative flex items-center gap-2.5 p-2 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
+                        role === "teacher"
+                          ? "border-indigo-500 bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/20 shadow-sm"
+                          : "border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100/80 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                        role === "teacher"
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30"
+                          : "bg-slate-200/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                      }`}>
+                        <BookOpen className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold leading-tight">Teacher</span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">Educator</span>
+                      </div>
+                      {role === "teacher" && (
+                        <div className="absolute right-2 top-2">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
