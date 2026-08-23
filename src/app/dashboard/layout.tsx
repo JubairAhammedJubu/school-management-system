@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { toast } from "react-toastify";
 import {
   LayoutDashboard,
@@ -154,14 +154,50 @@ export default function DashboardLayout({
 
   const roleBadge = getRoleBadge(userRole);
 
+  const sidebarContainerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04,
+        delayChildren: 0.02,
+      },
+    },
+  };
+
+  const sidebarItemVariants: Variants = {
+    hidden: { opacity: 0, x: -16 },
+    show: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 350,
+        damping: 26,
+      },
+    },
+  };
+
   const renderSidebarContent = () => (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300">
+    <motion.div
+      variants={sidebarContainerVariants}
+      initial="hidden"
+      animate="show"
+      className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300 overflow-hidden"
+    >
       {/* Compact Sidebar Header / Brand */}
-      <div className="p-3 px-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+      <motion.div
+        variants={sidebarItemVariants}
+        className="p-3 px-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between"
+      >
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform duration-300 shrink-0">
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 6 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm transition-shadow duration-300 shrink-0"
+          >
             <GraduationCap className="h-4 w-4" />
-          </div>
+          </motion.div>
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">
               Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
@@ -173,13 +209,22 @@ export default function DashboardLayout({
             </span>
           </div>
         </Link>
-      </div>
+      </motion.div>
 
       {/* Compact User Quick Overview */}
-      <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2.5">
-        <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+      <motion.div
+        variants={sidebarItemVariants}
+        whileHover={{ scale: 1.01 }}
+        transition={{ duration: 0.15 }}
+        className="px-3 py-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2.5 transition-colors"
+      >
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: -6 }}
+          transition={{ type: "spring", stiffness: 400 }}
+          className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0"
+        >
           {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User className="h-3.5 w-3.5" />}
-        </div>
+        </motion.div>
         <div className="flex flex-col overflow-hidden">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-tight">
             {session?.user?.name ?? "EduNexus User"}
@@ -188,13 +233,16 @@ export default function DashboardLayout({
             {session?.user?.email ?? "workspace@edunexus.school"}
           </span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Expanded Main Navigation Links */}
       <div className="flex-1 px-2.5 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
-        <div className="px-2.5 py-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        <motion.div
+          variants={sidebarItemVariants}
+          className="px-2.5 py-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+        >
           Menu Navigation
-        </div>
+        </motion.div>
         {currentRoutes.map((route) => {
           const Icon = route.icon;
           const isActive =
@@ -203,54 +251,90 @@ export default function DashboardLayout({
               : pathname.startsWith(route.href);
 
           return (
-            <Link
+            <motion.div
               key={route.label}
-              href={route.href}
-              className={`group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25 dark:bg-blue-600 font-semibold"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              variants={sidebarItemVariants}
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-center gap-2.5">
-                <Icon
-                  className={`h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110 ${
-                    isActive
-                      ? "text-white"
-                      : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-                  }`}
-                />
-                <span>{route.label}</span>
-              </div>
-              {isActive && (
-                <ChevronRight className="h-3 w-3 text-white/80" />
-              )}
-            </Link>
+              <Link
+                href={route.href}
+                className="relative group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-200 overflow-hidden"
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeSidebarTab"
+                    className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-600 dark:to-indigo-600 rounded-lg shadow-md shadow-blue-500/25 z-0"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center gap-2.5">
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 8 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Icon
+                      className={`h-3.5 w-3.5 transition-colors duration-200 ${
+                        isActive
+                          ? "text-white"
+                          : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                      }`}
+                    />
+                  </motion.div>
+                  <span
+                    className={
+                      isActive
+                        ? "text-white font-semibold"
+                        : "text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white"
+                    }
+                  >
+                    {route.label}
+                  </span>
+                </div>
+                {isActive && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -4 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="relative z-10"
+                  >
+                    <ChevronRight className="h-3 w-3 text-white/80" />
+                  </motion.div>
+                )}
+              </Link>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Ultra-Compact Bottom Actions (Home & Logout) */}
-      <div className="p-2 px-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1 bg-slate-50/50 dark:bg-slate-900/50">
-        <Link
-          href="/"
-          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 shadow-2xs cursor-pointer"
-        >
-          <Home className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-          <span>Back to Home</span>
-        </Link>
+      <motion.div
+        variants={sidebarItemVariants}
+        className="p-2 px-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1 bg-slate-50/50 dark:bg-slate-900/50"
+      >
+        <motion.div whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}>
+          <Link
+            href="/"
+            className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-white hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 shadow-2xs cursor-pointer"
+          >
+            <Home className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+            <span>Back to Home</span>
+          </Link>
+        </motion.div>
 
-        <button
-          type="button"
-          onClick={() => setShowLogoutModal(true)}
-          disabled={isLoggingOut}
-          className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-950/80 transition-all duration-200 cursor-pointer disabled:opacity-50"
-        >
-          <LogOut className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-          <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
-        </button>
-      </div>
-    </div>
+        <motion.div whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}>
+          <button
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            disabled={isLoggingOut}
+            className="flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-950/80 transition-all duration-200 cursor-pointer disabled:opacity-50"
+          >
+            <LogOut className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+            <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
+          </button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 
   return (
@@ -261,21 +345,32 @@ export default function DashboardLayout({
       </aside>
 
       {/* Mobile & Tablet Top Bar (Small & Medium Screens) */}
-      <div className="lg:hidden sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between transition-colors">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="lg:hidden sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between transition-colors"
+      >
         <div className="flex items-center gap-3">
-          <button
+          <motion.button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             aria-label="Open navigation menu"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </motion.button>
 
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 6 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm"
+            >
               <GraduationCap className="h-4 w-4" />
-            </div>
+            </motion.div>
             <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">
               Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
             </span>
@@ -285,27 +380,49 @@ export default function DashboardLayout({
         <div className="flex items-center gap-2">
           {/* Top Theme Toggle Button */}
           {mounted && (
-            <button
+            <motion.button
               type="button"
               onClick={toggleTheme}
+              whileHover={{ scale: 1.1, rotate: 15 }}
+              whileTap={{ scale: 0.9 }}
               className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Moon className="h-4 w-4 text-blue-600" />
-              )}
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                {theme === "dark" ? (
+                  <motion.div
+                    key="sun-mobile"
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: 90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Sun className="h-4 w-4 text-amber-400" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="moon-mobile"
+                    initial={{ scale: 0, rotate: 90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: -90 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Moon className="h-4 w-4 text-blue-600" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           )}
 
-          <span
+          <motion.span
+            initial={{ scale: 0.85 }}
+            animate={{ scale: 1 }}
             className={`px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-md border ${roleBadge.color}`}
           >
             {roleBadge.label}
-          </span>
+          </motion.span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Mobile Off-Canvas Drawer (Small & Medium Screens) */}
       <AnimatePresence>
@@ -330,14 +447,16 @@ export default function DashboardLayout({
             >
               <div className="relative h-full">
                 {/* Close Button Inside Mobile Drawer */}
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
                   className="absolute top-4 right-4 z-50 p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </motion.button>
                 {renderSidebarContent()}
               </div>
             </motion.div>
@@ -348,46 +467,89 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar for Desktop (Theme Toggle & Top Status) */}
-        <header className="hidden lg:flex h-16 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-2">
+        <motion.header
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="hidden lg:flex h-16 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between sticky top-0 z-20"
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="flex items-center gap-2.5"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
             <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
               Dashboard Workspace
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400 capitalize">
+            <motion.span
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="text-xs text-slate-500 dark:text-slate-400 capitalize px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 font-semibold"
+            >
               {userRole} Portal
-            </span>
-          </div>
+            </motion.span>
+          </motion.div>
 
           <div className="flex items-center gap-4">
             {/* Very Top Theme Toggle Button */}
             {mounted && (
-              <button
+              <motion.button
                 type="button"
                 onClick={toggleTheme}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer border border-slate-200 dark:border-slate-700 shadow-2xs"
                 aria-label="Toggle light/dark theme"
               >
-                {theme === "dark" ? (
-                  <>
-                    <Sun className="h-4 w-4 text-amber-400" />
-                    <span>Light Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 text-blue-600" />
-                    <span>Dark Mode</span>
-                  </>
-                )}
-              </button>
+                <AnimatePresence mode="wait" initial={false}>
+                  {theme === "dark" ? (
+                    <motion.div
+                      key="sun"
+                      initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Sun className="h-4 w-4 text-amber-400" />
+                      <span>Light Mode</span>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="moon"
+                      initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Moon className="h-4 w-4 text-blue-600" />
+                      <span>Dark Mode</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.button>
             )}
 
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
 
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              transition={{ type: "spring", stiffness: 400 }}
+              className="flex items-center gap-2.5 cursor-pointer p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
+            >
+              <motion.div
+                whileHover={{ rotate: 12 }}
+                className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm"
+              >
                 {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "U"}
-              </div>
+              </motion.div>
               <div className="flex flex-col text-left">
                 <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
                   {session?.user?.name ?? "EduNexus User"}
@@ -396,9 +558,9 @@ export default function DashboardLayout({
                   {userRole}
                 </span>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </header>
+        </motion.header>
 
         {/* Page Content Viewport */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
