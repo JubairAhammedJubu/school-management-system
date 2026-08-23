@@ -205,11 +205,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                     <button
                       type="button"
                       onClick={() => setRoleSelectOpen((prev) => !prev)}
-                      className={`w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/90 border ${
-                        roleSelectOpen
-                          ? "border-blue-500 ring-2 ring-blue-500/20"
-                          : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                      } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
+                      className={`w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/90 border ${roleSelectOpen
+                        ? "border-blue-500 ring-2 ring-blue-500/20"
+                        : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
                     >
                       <div className="flex items-center gap-2">
                         {role === "student" ? (
@@ -226,9 +225,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                         </span>
                       </div>
                       <ChevronDown
-                        className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
-                          roleSelectOpen ? "rotate-180 text-blue-500" : ""
-                        }`}
+                        className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${roleSelectOpen ? "rotate-180 text-blue-500" : ""
+                          }`}
                       />
                     </button>
 
@@ -249,25 +247,20 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                               setRole("student");
                               setRoleSelectOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer ${
-                              role === "student"
-                                ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold"
-                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer ${role === "student"
+                              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                role === "student"
-                                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                              }`}>
+                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${role === "student"
+                                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                }`}>
                                 <GraduationCap className="h-3.5 w-3.5" />
                               </div>
                               <div className="flex flex-col text-left">
                                 <span className="font-bold text-xs">Student</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Student learning portal
-                                </span>
                               </div>
                             </div>
                             {role === "student" && (
@@ -282,25 +275,20 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                               setRole("teacher");
                               setRoleSelectOpen(false);
                             }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${
-                              role === "teacher"
-                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold"
-                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${role === "teacher"
+                              ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                role === "teacher"
-                                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                              }`}>
+                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${role === "teacher"
+                                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                }`}>
                                 <BookOpen className="h-3.5 w-3.5" />
                               </div>
                               <div className="flex flex-col text-left">
                                 <span className="font-bold text-xs">Teacher</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Teacher portal & grading
-                                </span>
                               </div>
                             </div>
                             {role === "teacher" && (
