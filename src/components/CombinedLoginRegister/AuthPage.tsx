@@ -106,7 +106,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           password,
           name,
           role,
-        });
+        } as any);
         if (signUpError) {
           throw new Error(signUpError.message ?? "Could not create your account.");
         }
