@@ -275,7 +275,7 @@ const Navbar: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
 
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
@@ -422,7 +422,14 @@ const Navbar: React.FC = () => {
             <div className="hidden lg:flex items-center gap-2.5">
               <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
-              {session ? (
+              {!mounted || isPending ? (
+                /* Skeleton Loader when logging in / checking session */
+                <div className="flex items-center gap-2.5 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 animate-pulse">
+                  <div className="h-7 w-7 rounded-lg bg-slate-300/80 dark:bg-slate-700/80 shrink-0" />
+                  <div className="h-3.5 w-16 rounded bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="h-3 w-3 rounded bg-slate-300/80 dark:bg-slate-700/80" />
+                </div>
+              ) : session ? (
                 /* User Dropdown Button */
                 <div className="relative" ref={dropdownRef}>
                   <button
@@ -583,7 +590,16 @@ const Navbar: React.FC = () => {
 
               {/* Action Buttons in Menu Dropdown (For small and medium devices when logged in) */}
               <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2">
-                {session ? (
+                {!mounted || isPending ? (
+                  /* Skeleton Loader for Mobile Menu Dropdown */
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 animate-pulse">
+                    <div className="h-8 w-8 rounded-lg bg-slate-300/80 dark:bg-slate-700/80 shrink-0" />
+                    <div className="space-y-1.5 flex-1">
+                      <div className="h-3.5 w-24 rounded bg-slate-300/80 dark:bg-slate-700/80" />
+                      <div className="h-2.5 w-32 rounded bg-slate-200/80 dark:bg-slate-800/80" />
+                    </div>
+                  </div>
+                ) : session ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
                       <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
