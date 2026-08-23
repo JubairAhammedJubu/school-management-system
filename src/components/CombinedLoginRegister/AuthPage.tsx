@@ -21,10 +21,11 @@ import {
   User,
   Mail,
   Lock,
+  Shield,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
-type Role = "student" | "teacher";
+type Role = "student" | "teacher" | "admin";
 
 interface AuthPageProps {
   initialMode?: "login" | "register";
@@ -133,8 +134,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
       >
         {/* --- FORM CONTAINER --- */}
         <div
-          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
-            }`}
+          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${
+            isLogin ? "md:translate-x-0" : "md:translate-x-full"
+          }`}
         >
           <div className="mb-3">
             <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
@@ -212,17 +214,23 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
                     >
                       <div className="flex items-center gap-2">
-                        {role === "student" ? (
+                        {role === "student" && (
                           <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
                             <GraduationCap className="h-3.5 w-3.5" />
                           </div>
-                        ) : (
+                        )}
+                        {role === "teacher" && (
                           <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400">
                             <BookOpen className="h-3.5 w-3.5" />
                           </div>
                         )}
+                        {role === "admin" && (
+                          <div className="flex h-5 w-5 items-center justify-center rounded bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400">
+                            <Shield className="h-3.5 w-3.5" />
+                          </div>
+                        )}
                         <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                          {role === "student" ? "Student" : "Teacher"}
+                          {role}
                         </span>
                       </div>
                       <ChevronDown
@@ -256,11 +264,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                role === "student"
-                                  ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                              }`}>
+                              <div
+                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
+                                  role === "student"
+                                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                }`}
+                              >
                                 <GraduationCap className="h-3.5 w-3.5" />
                               </div>
                               <div className="flex flex-col text-left">
@@ -289,11 +299,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                role === "teacher"
-                                  ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                              }`}>
+                              <div
+                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
+                                  role === "teacher"
+                                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                }`}
+                              >
                                 <BookOpen className="h-3.5 w-3.5" />
                               </div>
                               <div className="flex flex-col text-left">
@@ -305,6 +317,41 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             </div>
                             {role === "teacher" && (
                               <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            )}
+                          </button>
+
+                          {/* Admin Select Option */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRole("admin");
+                              setRoleSelectOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${
+                              role === "admin"
+                                ? "bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold"
+                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div
+                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
+                                  role === "admin"
+                                    ? "bg-purple-600 text-white shadow-sm shadow-purple-500/30"
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                }`}
+                              >
+                                <Shield className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="flex flex-col text-left">
+                                <span className="font-bold text-xs">Admin</span>
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
+                                  Full system control
+                                </span>
+                              </div>
+                            </div>
+                            {role === "admin" && (
+                              <Check className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
                             )}
                           </button>
                         </motion.div>
@@ -466,10 +513,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           </p>
         </div>
 
-        {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND (unchanged) --- */}
+        {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND --- */}
         <div
-          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${isLogin ? "translate-x-full" : "translate-x-0"
-            }`}
+          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${
+            isLogin ? "translate-x-full" : "translate-x-0"
+          }`}
         >
           <AnimatePresence initial={false}>
             <motion.div
@@ -515,7 +563,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             >
               {isLogin ? (
                 <>
-                  {/* Sign-in flow: who's waiting for you */}
                   <div className="flex items-center mb-3">
                     <div className="flex -space-x-2.5">
                       {[
@@ -559,7 +606,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 </>
               ) : (
                 <>
-                  {/* Registration flow: 3-step setup preview */}
                   <div className="flex items-center gap-1.5 mb-4">
                     {[
                       { label: "Details", icon: UserPlus, active: true },
@@ -574,10 +620,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                           initial={{ opacity: 0, scale: 0.7 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: i * 0.08 }}
-                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
-                            ? "bg-emerald-400/20 border-emerald-300/40"
-                            : "bg-white/[0.06] border-white/15"
-                            }`}
+                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${
+                            step.active
+                              ? "bg-emerald-400/20 border-emerald-300/40"
+                              : "bg-white/[0.06] border-white/15"
+                          }`}
                         >
                           <step.icon
                             size={11}
@@ -586,8 +633,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             }
                           />
                           <span
-                            className={`text-[8px] font-bold uppercase tracking-wide ${step.active ? "text-emerald-200" : "text-white/50"
-                              }`}
+                            className={`text-[8px] font-bold uppercase tracking-wide ${
+                              step.active ? "text-emerald-200" : "text-white/50"
+                            }`}
                           >
                             {step.label}
                           </span>
@@ -617,8 +665,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 onClick={toggleAuthMode}
                 whileHover={{ gap: "10px" }}
                 whileTap={{ scale: 0.97 }}
-                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
-                  }`}
+                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${
+                  isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
+                }`}
               >
                 {isLogin ? (
                   <>
