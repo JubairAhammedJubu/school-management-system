@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
+import {useState} from "react";
+import {useRouter} from "next/navigation";
+import {motion, AnimatePresence} from "framer-motion";
+import {toast} from "react-toastify";
 import {
   Eye,
   EyeOff,
@@ -15,16 +15,11 @@ import {
   UserPlus,
   ArrowLeft,
   Sparkles,
-  BookOpen,
-  ChevronDown,
-  Check,
   User,
   Mail,
   Lock,
 } from "lucide-react";
-import { signIn, signUp } from "@/lib/auth-client";
-
-type Role = "student" | "teacher";
+import {signIn, signUp} from "@/lib/auth-client";
 
 interface AuthPageProps {
   initialMode?: "login" | "register";
@@ -35,7 +30,7 @@ const LOGIN_IMAGE =
 const REGISTER_IMAGE =
   "https://images.unsplash.com/photo-1758270704286-83476deb3bd1?fm=jpg&q=80&w=1200&auto=format&fit=crop";
 
-export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
+export default function AuthPage({initialMode = "login"}: AuthPageProps) {
   const router = useRouter();
 
   const [isLogin, setIsLogin] = useState(initialMode === "login");
@@ -48,24 +43,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<Role>("student");
-  const [roleSelectOpen, setRoleSelectOpen] = useState(false);
-  const roleSelectRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        roleSelectRef.current &&
-        !roleSelectRef.current.contains(event.target as Node)
-      ) {
-        setRoleSelectOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const toggleAuthMode = () => {
     setIsLogin((prev) => !prev);
@@ -76,8 +53,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setRole("student");
-    setRoleSelectOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,27 +70,30 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     try {
       if (isLogin) {
-        const { error: signInError } = await signIn.email({ email, password });
+        const {error: signInError} = await signIn.email({email, password});
         if (signInError) {
           throw new Error(signInError.message ?? "Invalid email or password.");
         }
         toast.success("Welcome back! Redirecting to your workspace...");
       } else {
-        const { error: signUpError } = await signUp.email({
+        const {error: signUpError} = await signUp.email({
           email,
           password,
           name,
-          role,
-        } as any);
+        });
         if (signUpError) {
-          throw new Error(signUpError.message ?? "Could not create your account.");
+          throw new Error(
+            signUpError.message ?? "Could not create your account.",
+          );
         }
         toast.success("Account created successfully! Welcome to EduNexus 🎉");
       }
       window.location.href = "/";
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Something went wrong. Please try again.";
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
       setError(message);
       toast.error(message);
     } finally {
@@ -126,15 +104,16 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-slate-950 pt-24 sm:pt-28 pb-6 p-4 font-sans transition-colors duration-500">
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
+        initial={{opacity: 0, y: 14}}
+        animate={{opacity: 1, y: 0}}
+        transition={{duration: 0.45, ease: "easeOut"}}
         className="relative w-full max-w-[880px] min-h-[420px] bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden flex flex-col md:flex-row transition-colors duration-500 border border-slate-200 dark:border-slate-800"
       >
         {/* --- FORM CONTAINER --- */}
         <div
-          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
-            }`}
+          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${
+            isLogin ? "md:translate-x-0" : "md:translate-x-full"
+          }`}
         >
           <div className="mb-3">
             <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
@@ -161,10 +140,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               {!isLogin && (
                 <motion.div
                   key="name"
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  initial={{opacity: 0, height: 0, marginBottom: 0}}
+                  animate={{opacity: 1, height: "auto", marginBottom: 0}}
+                  exit={{opacity: 0, height: 0, marginBottom: 0}}
+                  transition={{duration: 0.25, ease: "easeOut"}}
                   className="space-y-1 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
@@ -187,122 +166,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               )}
             </AnimatePresence>
 
-            <AnimatePresence initial={false} mode="popLayout">
-              {!isLogin && (
-                <motion.div
-                  key="role"
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-0.5 relative z-20"
-                >
-                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                    I am a
-                  </label>
-                  <div ref={roleSelectRef} className="relative w-full">
-                    {/* Custom Select Trigger Input */}
-                    <button
-                      type="button"
-                      onClick={() => setRoleSelectOpen((prev) => !prev)}
-                      className={`w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/90 border ${roleSelectOpen
-                        ? "border-blue-500 ring-2 ring-blue-500/20"
-                        : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                        } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {role === "student" ? (
-                          <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
-                            <GraduationCap className="h-3.5 w-3.5" />
-                          </div>
-                        ) : (
-                          <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400">
-                            <BookOpen className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                          {role === "student" ? "Student" : "Teacher"}
-                        </span>
-                      </div>
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${roleSelectOpen ? "rotate-180 text-blue-500" : ""
-                          }`}
-                      />
-                    </button>
-
-                    {/* Animated Dropdown Menu Popover */}
-                    <AnimatePresence>
-                      {roleSelectOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 4, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                          transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute top-full left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xl p-1 overflow-hidden backdrop-blur-xl"
-                        >
-                          {/* Student Select Option */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRole("student");
-                              setRoleSelectOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer ${role === "student"
-                              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold"
-                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${role === "student"
-                                ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                                }`}>
-                                <GraduationCap className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-xs">Student</span>
-                              </div>
-                            </div>
-                            {role === "student" && (
-                              <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                            )}
-                          </button>
-
-                          {/* Teacher Select Option */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRole("teacher");
-                              setRoleSelectOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${role === "teacher"
-                              ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold"
-                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                              }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${role === "teacher"
-                                ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                                }`}>
-                                <BookOpen className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-xs">Teacher</span>
-                              </div>
-                            </div>
-                            {role === "teacher" && (
-                              <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                            )}
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <div className="space-y-1">
               <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
                 Email Address
@@ -316,7 +179,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@edunexus.school"
+                  placeholder="you@edunexus.std.com"
                   className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
                 />
               </div>
@@ -353,10 +216,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               {!isLogin && (
                 <motion.div
                   key="confirmPassword"
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  initial={{opacity: 0, height: 0, marginBottom: 0}}
+                  animate={{opacity: 1, height: "auto", marginBottom: 0}}
+                  exit={{opacity: 0, height: 0, marginBottom: 0}}
+                  transition={{duration: 0.25, ease: "easeOut"}}
                   className="space-y-1 overflow-hidden"
                 >
                   <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
@@ -406,18 +269,22 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             {isLogin && (
               <motion.button
                 type="button"
-                disabled={email === "demostudent@gmail.com" && password === "demostudent1234"}
+                disabled={
+                  email === "demostudent@gmail.com" &&
+                  password === "demostudent1234"
+                }
                 onClick={() => {
                   setEmail("demostudent@gmail.com");
                   setPassword("demostudent1234");
                 }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{scale: 1.01}}
+                whileTap={{scale: 0.98}}
                 className="w-full py-1.5 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Sparkles size={13} className="text-amber-500 shrink-0" />
                 <span>
-                  {email === "demostudent@gmail.com" && password === "demostudent1234"
+                  {email === "demostudent@gmail.com" &&
+                  password === "demostudent1234"
                     ? "Demo Credentials Fulfilled"
                     : "Fill Demo Student Credentials"}
                 </span>
@@ -427,8 +294,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             <motion.button
               type="submit"
               disabled={isSubmitting}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{y: -1}}
+              whileTap={{scale: 0.98}}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
@@ -456,16 +323,17 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
         {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND (unchanged) --- */}
         <div
-          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${isLogin ? "translate-x-full" : "translate-x-0"
-            }`}
+          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${
+            isLogin ? "translate-x-full" : "translate-x-0"
+          }`}
         >
           <AnimatePresence initial={false}>
             <motion.div
               key={isLogin ? "login-bg" : "register-bg"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              exit={{opacity: 0}}
+              transition={{duration: 0.5}}
               className="absolute inset-0"
               style={{
                 backgroundImage: `url('${isLogin ? LOGIN_IMAGE : REGISTER_IMAGE}')`,
@@ -495,10 +363,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           <AnimatePresence mode="wait">
             <motion.div
               key={isLogin ? "login" : "register"}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              initial={{opacity: 0, y: 14}}
+              animate={{opacity: 1, y: 0}}
+              exit={{opacity: 0, y: -14}}
+              transition={{duration: 0.35, ease: "easeOut"}}
               className="relative z-10 w-full px-1"
             >
               {isLogin ? (
@@ -514,9 +382,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       ].map((c, i) => (
                         <motion.span
                           key={i}
-                          initial={{ opacity: 0, scale: 0.6 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: i * 0.06 }}
+                          initial={{opacity: 0, scale: 0.6}}
+                          animate={{opacity: 1, scale: 1}}
+                          transition={{delay: i * 0.06}}
                           className={`h-7 w-7 rounded-full ${c} border-2 border-slate-950 flex items-center justify-center text-[9px] font-bold text-slate-900`}
                         >
                           {["A", "R", "S", "M"][i]}
@@ -550,22 +418,23 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   {/* Registration flow: 3-step setup preview */}
                   <div className="flex items-center gap-1.5 mb-4">
                     {[
-                      { label: "Details", icon: UserPlus, active: true },
-                      { label: "Verify", icon: ShieldCheck, active: false },
-                      { label: "Explore", icon: GraduationCap, active: false },
+                      {label: "Details", icon: UserPlus, active: true},
+                      {label: "Verify", icon: ShieldCheck, active: false},
+                      {label: "Explore", icon: GraduationCap, active: false},
                     ].map((step, i) => (
                       <div
                         key={step.label}
                         className="flex items-center gap-1.5"
                       >
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: i * 0.08 }}
-                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
-                            ? "bg-emerald-400/20 border-emerald-300/40"
-                            : "bg-white/[0.06] border-white/15"
-                            }`}
+                          initial={{opacity: 0, scale: 0.7}}
+                          animate={{opacity: 1, scale: 1}}
+                          transition={{delay: i * 0.08}}
+                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${
+                            step.active
+                              ? "bg-emerald-400/20 border-emerald-300/40"
+                              : "bg-white/[0.06] border-white/15"
+                          }`}
                         >
                           <step.icon
                             size={11}
@@ -574,8 +443,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             }
                           />
                           <span
-                            className={`text-[8px] font-bold uppercase tracking-wide ${step.active ? "text-emerald-200" : "text-white/50"
-                              }`}
+                            className={`text-[8px] font-bold uppercase tracking-wide ${
+                              step.active ? "text-emerald-200" : "text-white/50"
+                            }`}
                           >
                             {step.label}
                           </span>
@@ -603,10 +473,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               <motion.button
                 type="button"
                 onClick={toggleAuthMode}
-                whileHover={{ gap: "10px" }}
-                whileTap={{ scale: 0.97 }}
-                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
-                  }`}
+                whileHover={{gap: "10px"}}
+                whileTap={{scale: 0.97}}
+                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${
+                  isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
+                }`}
               >
                 {isLogin ? (
                   <>
