@@ -193,7 +193,7 @@ const FAQSection: React.FC = () => {
                 Still have questions?
               </h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                Can't find the answer you're looking for? Talk to our education specialists.
+                Can&apos;t find the answer you&apos;re looking for? Talk to our education specialists.
               </p>
             </div>
           </div>
