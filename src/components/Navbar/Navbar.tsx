@@ -277,6 +277,8 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
+  const userRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const dashboardHref = "/dashboard/teacher";
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
@@ -475,16 +477,16 @@ const Navbar: React.FC = () => {
                               </p>
                             </div>
                           </div>
-                          {(session.user as any).role && (
+                          {(session.user as { role?: string }).role && (
                             <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-md border border-blue-200/50 dark:border-blue-900/50">
-                              {(session.user as any).role}
+                              {(session.user as { role?: string }).role}
                             </span>
                           )}
                         </div>
 
                         <div className="space-y-0.5">
                           <Link
-                            href="/dashboard"
+                            href={dashboardHref}
                             onClick={() => setShowUserDropdown(false)}
                             className="flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                           >
@@ -613,16 +615,16 @@ const Navbar: React.FC = () => {
                           {session.user.email}
                         </p>
                       </div>
-                      {(session.user as any).role && (
+                      {(session.user as { role?: string }).role && (
                         <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-md shrink-0">
-                          {(session.user as any).role}
+                          {(session.user as { role?: string }).role}
                         </span>
                       )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <Link
-                        href="/dashboard"
+                        href={dashboardHref}
                         onClick={() => setIsOpen(false)}
                         className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                       >
