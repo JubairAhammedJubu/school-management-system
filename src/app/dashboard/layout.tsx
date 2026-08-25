@@ -37,7 +37,7 @@ interface RouteItem {
 }
 
 const adminRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
   { label: "Teachers", href: "/dashboard/teachers", icon: Users },
   { label: "Students", href: "/dashboard/students", icon: GraduationCap },
   { label: "Classes", href: "/dashboard/classes", icon: BookOpen },
@@ -47,16 +47,16 @@ const adminRoutes: RouteItem[] = [
 ];
 
 const teacherRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Classes", href: "/dashboard/my-classes", icon: BookOpen },
-  { label: "Assignments", href: "/dashboard/assignments", icon: FileText },
-  { label: "Results", href: "/dashboard/results", icon: Award },
-  { label: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
-  { label: "Students", href: "/dashboard/students", icon: GraduationCap },
+  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
+  { label: "My Classes", href: "/dashboard/teacher/my-classes", icon: BookOpen },
+  { label: "Assignments", href: "/dashboard/teacher/assignments", icon: FileText },
+  { label: "Results", href: "/dashboard/teacher/results", icon: Award },
+  { label: "Attendance", href: "/dashboard/teacher/attendance", icon: CalendarCheck },
+  { label: "Students", href: "/dashboard/teacher/students", icon: GraduationCap },
 ];
 
 const studentRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
   { label: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
   { label: "Results", href: "/dashboard/results", icon: Award },
   { label: "Assignments", href: "/dashboard/assignments", icon: FileText },
@@ -100,6 +100,7 @@ export default function DashboardLayout({
 
   // Close mobile drawer on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileMenuOpen(false);
   }, [pathname]);
 
@@ -112,8 +113,8 @@ export default function DashboardLayout({
     userRole === "admin"
       ? adminRoutes
       : userRole === "teacher"
-      ? teacherRoutes
-      : studentRoutes;
+        ? teacherRoutes
+        : studentRoutes;
 
   const handleLogoutConfirm = async () => {
     if (isLoggingOut) return;
@@ -245,10 +246,15 @@ export default function DashboardLayout({
         </motion.div>
         {currentRoutes.map((route) => {
           const Icon = route.icon;
-          const isActive =
-            route.href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(route.href);
+          const isOverview =
+            route.href === "/dashboard" ||
+            route.href === "/dashboard/teacher" ||
+            route.href === "/dashboard/admin" ||
+            route.href === "/dashboard/student";
+
+          const isActive = isOverview
+            ? pathname === route.href
+            : pathname === route.href || pathname.startsWith(`${route.href}/`);
 
           return (
             <motion.div
@@ -264,7 +270,7 @@ export default function DashboardLayout({
                 {isActive && (
                   <motion.div
                     layoutId="activeSidebarTab"
-                    className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-600 dark:to-indigo-600 rounded-lg shadow-md shadow-blue-500/25 z-0"
+                    className="absolute inset-0 bg-indigo-600 dark:bg-indigo-600 rounded-lg shadow-sm shadow-indigo-500/20 z-0"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -274,11 +280,10 @@ export default function DashboardLayout({
                     transition={{ type: "spring", stiffness: 400 }}
                   >
                     <Icon
-                      className={`h-3.5 w-3.5 transition-colors duration-200 ${
-                        isActive
-                          ? "text-white"
-                          : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-                      }`}
+                      className={`h-3.5 w-3.5 transition-colors duration-200 ${isActive
+                        ? "text-white"
+                        : "text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+                        }`}
                     />
                   </motion.div>
                   <span
@@ -340,7 +345,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
       {/* Desktop Permanent Left Sidebar (Large Screens Only) */}
-      <aside className="hidden lg:block w-72 h-screen sticky top-0 shrink-0 z-30">
+      <aside className="hidden lg:block w-56 h-screen sticky top-0 shrink-0 z-30">
         {renderSidebarContent()}
       </aside>
 
@@ -443,7 +448,7 @@ export default function DashboardLayout({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
-              className="lg:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl"
+              className="lg:hidden fixed inset-y-0 left-0 z-50 w-56 max-w-[75vw] h-full shadow-2xl"
             >
               <div className="relative h-full">
                 {/* Close Button Inside Mobile Drawer */}
