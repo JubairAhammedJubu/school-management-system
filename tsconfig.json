@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/app/dashboard/student/notices"  ],
   "exclude": ["node_modules"]
 }
