@@ -37,7 +37,7 @@ interface RouteItem {
 }
 
 const adminRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
+  { label: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { label: "Teachers", href: "/dashboard/teachers", icon: Users },
   { label: "Students", href: "/dashboard/students", icon: GraduationCap },
   { label: "Classes", href: "/dashboard/classes", icon: BookOpen },
@@ -56,12 +56,12 @@ const teacherRoutes: RouteItem[] = [
 ];
 
 const studentRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
-  { label: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
-  { label: "Results", href: "/dashboard/results", icon: Award },
-  { label: "Assignments", href: "/dashboard/assignments", icon: FileText },
-  { label: "Fees", href: "/dashboard/fees", icon: CreditCard },
-  { label: "Notices", href: "/dashboard/notices", icon: Bell },
+  { label: "Overview", href: "/dashboard/student", icon: LayoutDashboard },
+  { label: "Attendance", href: "/dashboard/student/attendance", icon: CalendarCheck },
+  { label: "Results", href: "/dashboard/student/result", icon: Award },
+  { label: "Assignments", href: "/dashboard/student/assignment", icon: FileText },
+  { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
+  { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
 ];
 
 export default function DashboardLayout({
