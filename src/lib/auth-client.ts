@@ -10,10 +10,29 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 // with the `additionalFields` in server/src/lib/auth.ts.
 export const authClient = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"}/api/auth`,
+  fetchOptions: {
+    credentials: "include",
+    onRequest(context) {
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("better-auth.session_token");
+        if (token) {
+          context.headers.set("Authorization", `Bearer ${token}`);
+        }
+      }
+    },
+    onResponse(context) {
+      if (typeof window !== "undefined") {
+        const token = context.response.headers.get("set-auth-token");
+        if (token) {
+          localStorage.setItem("better-auth.session_token", token);
+        }
+      }
+    },
+  },
   plugins: [
     inferAdditionalFields({
       user: {
-        role: { type: "string" },
+        role: {type: "string", input: false},
       },
     }),
   ],
