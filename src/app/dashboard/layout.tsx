@@ -55,9 +55,8 @@ const teacherRoutes: RouteItem[] = [
   { label: "Students", href: "/dashboard/teacher/students", icon: GraduationCap },
 ];
 
-// studentRoutes array — change just this one line:
 const studentRoutes: RouteItem[] = [
-  { label: "Overview", href: "/dashboard/student", icon: LayoutDashboard }, // was "/dashboard/teacher"
+  { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
   { label: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
   { label: "Results", href: "/dashboard/results", icon: Award },
   { label: "Assignments", href: "/dashboard/assignments", icon: FileText },
