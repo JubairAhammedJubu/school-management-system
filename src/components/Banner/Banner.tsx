@@ -13,7 +13,10 @@ import {
   Zap,
 } from "lucide-react";
 
+import { useSession } from "@/lib/auth-client";
+
 const Banner = () => {
+  const { data: session } = useSession();
   return (
     <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 font-sans">
 
@@ -35,7 +38,7 @@ const Banner = () => {
         className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-500/20 dark:bg-indigo-600/25 blur-3xl pointer-events-none"
       />
 
-      <div className="relative mx-auto w-full container overflow-hidden px-5 pt-28 sm:pt-32 pb-20 lg:pb-24">
+      <div className="relative mx-auto w-full container overflow-hidden px-4 sm:px-6 md:pr-10 xl:pl-8 pt-28 sm:pt-32 pb-20 lg:pb-24">
         <div className="grid w-full items-center gap-12 lg:gap-14 lg:grid-cols-2">
 
           {/* Left Content */}
@@ -69,21 +72,61 @@ const Banner = () => {
             </p>
 
             {/* Action Buttons */}
-            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-7 py-3.5 font-bold text-white shadow-xl shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 cursor-pointer active:scale-95 text-sm sm:text-base"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Get Started →</span>
-              </Link>
+            <div className="mt-8 flex flex-row items-center gap-2.5 sm:gap-4">
+              {/* Primary Button Container */}
+              {!session?.user && (
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="relative flex-1 sm:flex-none group"
+                >
+                  {/* Ambient Glow Aura */}
+                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 opacity-50 blur-md group-hover:opacity-90 transition duration-500 animate-pulse pointer-events-none" />
 
-              <Link
-                href="#features"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 px-7 py-3.5 font-semibold text-slate-700 dark:text-slate-200 hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-slate-800/80 transition-all duration-200 cursor-pointer active:scale-95 text-sm sm:text-base backdrop-blur-md"
+                  <Link
+                    href="/login"
+                    className="relative group/btn overflow-hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_100%] px-3.5 sm:px-7 py-3 sm:py-3.5 font-bold text-white shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 cursor-pointer text-xs sm:text-base whitespace-nowrap text-center w-full"
+                  >
+                    {/* Light Sheen Sweep */}
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+
+                    <motion.span
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="inline-block group-hover/btn:rotate-12 group-hover/btn:scale-110 transition-transform duration-300"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 text-blue-200" />
+                    </motion.span>
+                    <span className="tracking-wide">Get Started</span>
+                    <span className="inline-block transition-transform duration-300 group-hover/btn:translate-x-1">
+                      →
+                    </span>
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Secondary Button Container */}
+              <motion.div
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="relative flex-1 sm:flex-none group"
               >
-                Explore Features
-              </Link>
+                {/* Subtle Hover Aura */}
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-blue-500/30 opacity-0 group-hover:opacity-100 blur-md transition duration-500 pointer-events-none" />
+
+                <Link
+                  href="#features"
+                  className="relative group/btn overflow-hidden inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-slate-300/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-3.5 sm:px-7 py-3 sm:py-3.5 font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-white hover:border-blue-500/60 hover:bg-blue-50/70 dark:hover:bg-slate-800/90 shadow-sm hover:shadow-lg hover:shadow-blue-500/15 transition-all duration-300 cursor-pointer text-xs sm:text-base backdrop-blur-md whitespace-nowrap text-center w-full"
+                >
+                  {/* Subtle Shimmer Sheen Sweep */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 opacity-80 group-hover/btn:opacity-100 group-hover/btn:scale-105 group-hover/btn:rotate-12 transition-all duration-300 shrink-0" />
+                  <span>Explore Features</span>
+                </Link>
+              </motion.div>
             </div>
 
             {/* Badges Info */}
