@@ -43,7 +43,7 @@ export default function Footer() {
     { name: "Home", href: "/" },
     { name: "Students", href: "/dashboard/student" },
     { name: "Teachers", href: "/dashboard/teacher" },
-    { name: "Notices", href: "/dashboard/notices" },
+    { name: "Notices", href: "/notices" },
     { name: "Contact Us", href: "/contact" },
   ];
 

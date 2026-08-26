@@ -260,7 +260,7 @@ const navItems: NavItem[] = [
   { label: "About US", href: "/about" },
   { label: "Students", href: "/dashboard/student" },
   { label: "Teachers", href: "/dashboard/teacher" },
-  { label: "Notices", href: "/dashboard/notices" },
+  { label: "Notices", href: "/notices" },
   { label: "Contact Us", href: "/contact" },
 ];
 
