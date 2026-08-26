@@ -8,20 +8,18 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  CheckCircle2,
   GraduationCap,
   ShieldCheck,
   KeyRound,
   UserPlus,
-  ArrowLeft,
   Sparkles,
-  BookOpen,
-  ChevronDown,
-  Check,
   User,
   Mail,
   Lock,
   Shield,
+  BookOpen,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
@@ -49,10 +47,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Role dropdown state
   const [role, setRole] = useState<Role>("student");
   const [roleSelectOpen, setRoleSelectOpen] = useState(false);
   const roleSelectRef = useRef<HTMLDivElement>(null);
 
+  // Close role menu on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -63,9 +64,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleAuthMode = () => {
@@ -107,16 +106,21 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           password,
           name,
           role,
-        });
+        } as Parameters<typeof signUp.email>[0]);
+
         if (signUpError) {
-          throw new Error(signUpError.message ?? "Could not create your account.");
+          throw new Error(
+            signUpError.message ?? "Could not create your account."
+          );
         }
         toast.success("Account created successfully! Welcome to EduNexus 🎉");
       }
       window.location.href = "/";
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Something went wrong. Please try again.";
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
       setError(message);
       toast.error(message);
     } finally {
@@ -203,7 +207,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                     I am a
                   </label>
                   <div ref={roleSelectRef} className="relative w-full">
-                    {/* Custom Select Trigger Input */}
                     <button
                       type="button"
                       onClick={() => setRoleSelectOpen((prev) => !prev)}
@@ -240,7 +243,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       />
                     </button>
 
-                    {/* Animated Dropdown Menu Popover */}
                     <AnimatePresence>
                       {roleSelectOpen && (
                         <motion.div
@@ -250,7 +252,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                           transition={{ duration: 0.15, ease: "easeOut" }}
                           className="absolute top-full left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xl p-1 overflow-hidden backdrop-blur-xl"
                         >
-                          {/* Student Select Option */}
                           <button
                             type="button"
                             onClick={() => {
@@ -285,7 +286,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             )}
                           </button>
 
-                          {/* Teacher Select Option */}
                           <button
                             type="button"
                             onClick={() => {
@@ -311,7 +311,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                               <div className="flex flex-col text-left">
                                 <span className="font-bold text-xs">Teacher</span>
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Teacher portal & grading
+                                  Teacher portal &amp; grading
                                 </span>
                               </div>
                             </div>
@@ -320,7 +320,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             )}
                           </button>
 
-                          {/* Admin Select Option */}
                           <button
                             type="button"
                             onClick={() => {
@@ -375,7 +374,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@edunexus.school"
+                  placeholder="you@edunexus.std.com"
                   className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
                 />
               </div>
@@ -465,7 +464,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             {isLogin && (
               <motion.button
                 type="button"
-                disabled={email === "demostudent@gmail.com" && password === "demostudent1234"}
+                disabled={
+                  email === "demostudent@gmail.com" &&
+                  password === "demostudent1234"
+                }
                 onClick={() => {
                   setEmail("demostudent@gmail.com");
                   setPassword("demostudent1234");
@@ -476,7 +478,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               >
                 <Sparkles size={13} className="text-amber-500 shrink-0" />
                 <span>
-                  {email === "demostudent@gmail.com" && password === "demostudent1234"
+                  {email === "demostudent@gmail.com" &&
+                  password === "demostudent1234"
                     ? "Demo Credentials Fulfilled"
                     : "Fill Demo Student Credentials"}
                 </span>
@@ -652,39 +655,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       two minutes.
                     </span>
                   </h2>
-
-                  <div className="flex items-center gap-2 text-[10px] text-white/60 font-medium mb-5">
-                    <CheckCircle2 size={12} className="text-white/50" />
-                    No credit card, no paperwork — just your details
-                  </div>
                 </>
               )}
-
-              <motion.button
-                type="button"
-                onClick={toggleAuthMode}
-                whileHover={{ gap: "10px" }}
-                whileTap={{ scale: 0.97 }}
-                className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${
-                  isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
-                }`}
-              >
-                {isLogin ? (
-                  <>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white">
-                      <ArrowLeft size={12} />
-                    </span>
-                    <p>Create account</p>
-                  </>
-                ) : (
-                  <>
-                    <p>Sign in instead</p>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-white">
-                      <ArrowRight size={12} />
-                    </span>
-                  </>
-                )}
-              </motion.button>
             </motion.div>
           </AnimatePresence>
         </div>
