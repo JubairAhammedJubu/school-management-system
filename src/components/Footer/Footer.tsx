@@ -41,16 +41,16 @@ export default function Footer() {
 
   const productLinks = [
     { name: "Home", href: "/" },
-    { name: "Students", href: "/students" },
-    { name: "Teachers", href: "/teachers" },
-    { name: "Notices", href: "/notices" },
+    { name: "Students", href: "/dashboard/student" },
+    { name: "Teachers", href: "/dashboard/teacher" },
+    { name: "Notices", href: "/dashboard/notices" },
     { name: "Contact Us", href: "/contact" },
   ];
 
   const platformLinks = [
     { name: "Admin Portal", href: "/login" },
-    { name: "Teacher Portal", href: "/teachers" },
-    { name: "Student Portal", href: "/students" },
+    { name: "Teacher Portal", href: "/dashboard/teacher" },
+    { name: "Student Portal", href: "/dashboard/student" },
     { name: "Register School", href: "/login" },
   ];
 
@@ -269,14 +269,14 @@ export default function Footer() {
               </Link>
               <span className="text-slate-300 dark:text-slate-800">•</span>
               <Link
-                href="/teachers"
+                href="/dashboard/teacher"
                 className="hover:text-blue-600 dark:hover:text-white transition-colors"
               >
                 Teacher
               </Link>
               <span className="text-slate-300 dark:text-slate-800">•</span>
               <Link
-                href="/students"
+                href="/dashboard/student"
                 className="hover:text-blue-600 dark:hover:text-white transition-colors"
               >
                 Student
