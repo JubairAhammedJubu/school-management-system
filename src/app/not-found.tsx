@@ -238,7 +238,7 @@ export default function NotFound() {
           variants={itemVariants}
           className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed"
         >
-          The page or lesson you are looking for has snuck out for recess or moved to another classroom. Don't worry, let's guide you back to the main campus!
+          The page or lesson you are looking for has snuck out for recess or moved to another classroom. Don&apos;t worry, let&apos;s guide you back to the main campus!
         </motion.p>
 
         {/* Primary & Secondary Action Hub */}

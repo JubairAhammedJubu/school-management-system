@@ -481,7 +481,7 @@ Example:
 ```env
 DATABASE_URL="your_postgresql_database_url"
 
-NEXT_PUBLIC_API_URL="your_api_url"
+NEXT_PUBLIC_SERVER_URL="your_api_url"
 
 # Add other required environment variables here
 ```

@@ -2,6 +2,6 @@
 
 import TeacherDashboardView from "@/components/DashboardViews/TeacherDashboardView";
 
-export default function DashboardOverviewPage() {
+export default function TeacherDashboardPage() {
   return <TeacherDashboardView />;
 }
