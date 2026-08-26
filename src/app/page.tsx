@@ -1,21 +1,24 @@
-import Banner from "@/components/Banner/Banner";
-import MarqueeSection from "@/components/Marquee/MarqueeSection";
-import HowItWorks from "@/components/HowItWorks/HowItWorks";
-import RoleBasedAccess from "@/components/RoleBasedAccess/RoleBasedAccess";
-import ProductVision from "@/components/ProductVisionQuote/ProductVisionQuote";
-import FAQSection from "@/components/FAQ/FAQ";
+import CustomerFeedback from '@/components/homepage/customerfeedback/feedback';
+import FinalCTA from '@/components/homepage/fnalcta/finalcta';
+import Hero from '@/components/homepage/hero/Hero';
+import ManagementShowcase from '@/components/homepage/managementshowcase/manage';
+import ManagementSolutions from '@/components/homepage/managementsolution/managementsolution';
+import StudentSuccess from '@/components/homepage/studentsuccess/studentsuccess';
+import ThreeSteps from '@/components/homepage/threesteps/threesteps';
+import React from 'react';
 
-const Page = () => {
-  return (
-    <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
-      <Banner />
-      <MarqueeSection />
-      <HowItWorks />
-      <RoleBasedAccess />
-      <ProductVision />
-      <FAQSection />
-    </main>
-  );
+const page = () => {
+    return (
+        <div>
+                <Hero></Hero>
+                <ManagementSolutions></ManagementSolutions>
+                <StudentSuccess></StudentSuccess>
+                <ManagementShowcase></ManagementShowcase>
+                <ThreeSteps></ThreeSteps>
+                <CustomerFeedback></CustomerFeedback>
+                <FinalCTA></FinalCTA>
+        </div>
+    );
 };
 
-export default Page;
+export default page;
