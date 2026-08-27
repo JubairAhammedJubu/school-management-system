@@ -258,8 +258,8 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "About US", href: "/about" },
-  { label: "Students", href: "/students" },
-  { label: "Teachers", href: "/teachers" },
+  { label: "Students", href: "/dashboard/student" },
+  { label: "Teachers", href: "/dashboard/teacher" },
   { label: "Notices", href: "/notices" },
   { label: "Contact Us", href: "/contact" },
 ];
@@ -277,6 +277,13 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
+  const userRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const dashboardHref =
+    userRole === "student"
+      ? "/dashboard/student"
+      : userRole === "admin"
+        ? "/dashboard/admin"
+        : "/dashboard/teacher";
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
@@ -381,9 +388,9 @@ const Navbar: React.FC = () => {
                 <Image
                   src="/second_logo_transparent.png"
                   alt="EduNexus Logo"
-                  fill
-                  sizes="(max-width: 640px) 36px, 40px"
-                  className="object-contain"
+                  width={40}
+                  height={40}
+                  className="h-full w-full object-contain"
                   priority
                 />
               </div>
@@ -391,7 +398,7 @@ const Navbar: React.FC = () => {
               <div>
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                   Edu
-                  <span className="text-blue-600 dark:text-blue-400">Nexus</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">Nexus</span>
                 </h1>
               </div>
             </Link>
@@ -405,13 +412,13 @@ const Navbar: React.FC = () => {
                     key={item.label}
                     href={item.href}
                     className={`relative px-3.5 py-1.5 lg:px-4 lg:py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${active
-                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 shadow-xs font-semibold"
-                      : "text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/60 dark:hover:bg-slate-900/40"
+                      ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-xs font-semibold"
+                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/60 dark:hover:bg-slate-900/40"
                       }`}
                   >
                     {item.label}
                     {active && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
                     )}
                   </Link>
                 );
@@ -434,18 +441,18 @@ const Navbar: React.FC = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setShowUserDropdown((prev) => !prev)}
-                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                     aria-label="User menu"
                     aria-expanded={showUserDropdown}
                   >
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                       {session.user.name?.charAt(0).toUpperCase() ?? "U"}
                     </div>
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
                       {session.user.name?.split(" ")[0] ?? "User"}
                     </span>
                     <ChevronDownIcon
-                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${showUserDropdown ? "rotate-180 text-blue-600" : ""
+                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${showUserDropdown ? "rotate-180 text-indigo-600" : ""
                         }`}
                     />
                   </button>
@@ -463,7 +470,7 @@ const Navbar: React.FC = () => {
                         {/* User Header */}
                         <div className="px-3 py-2.5 mb-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
+                            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
                               {session.user.name?.charAt(0).toUpperCase() ?? "U"}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -475,18 +482,18 @@ const Navbar: React.FC = () => {
                               </p>
                             </div>
                           </div>
-                          {(session.user as any).role && (
-                            <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-md border border-blue-200/50 dark:border-blue-900/50">
-                              {(session.user as any).role}
+                          {(session.user as { role?: string }).role && (
+                            <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 rounded-md border border-indigo-200/50 dark:border-indigo-900/50">
+                              {(session.user as { role?: string }).role}
                             </span>
                           )}
                         </div>
 
                         <div className="space-y-0.5">
                           <Link
-                            href="/dashboard"
+                            href={dashboardHref}
                             onClick={() => setShowUserDropdown(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
                           >
                             <DashboardIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                             <span>Dashboard</span>
@@ -495,7 +502,7 @@ const Navbar: React.FC = () => {
                           <Link
                             href="/profile"
                             onClick={() => setShowUserDropdown(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            className="flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
                           >
                             <UserProfileIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                             <span>Profile</span>
@@ -521,9 +528,9 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 cursor-pointer group"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer group"
                 >
-                  <SparklesIcon className="h-4 w-4 text-blue-200 group-hover:rotate-12 transition-transform duration-300" />
+                  <SparklesIcon className="h-4 w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started</span>
                 </Link>
               )}
@@ -540,7 +547,7 @@ const Navbar: React.FC = () => {
                 aria-expanded={isOpen}
               >
                 {isOpen ? (
-                  <CloseIcon className="h-5.5 w-5.5 text-blue-600" />
+                  <CloseIcon className="h-5.5 w-5.5 text-indigo-600 dark:text-indigo-400" />
                 ) : (
                   <MenuIcon className="h-5.5 w-5.5" />
                 )}
@@ -567,19 +574,19 @@ const Navbar: React.FC = () => {
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium rounded-xl transition-all cursor-pointer ${active
-                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 font-semibold"
-                        : "text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
+                        ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 font-semibold"
+                        : "text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
                         }`}
                     >
                       <span className="flex items-center gap-2">
                         {active && (
-                          <span className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                          <span className="h-2 w-2 rounded-full bg-indigo-600 dark:bg-indigo-400" />
                         )}
                         {item.label}
                       </span>
                       <ChevronRightIcon
                         className={`h-4 w-4 transition-transform ${active
-                          ? "text-blue-600 dark:text-blue-400"
+                          ? "text-indigo-600 dark:text-indigo-400"
                           : "text-slate-400 opacity-60"
                           }`}
                       />
@@ -602,7 +609,7 @@ const Navbar: React.FC = () => {
                 ) : session ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
-                      <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                         {session.user.name?.charAt(0).toUpperCase() ?? "U"}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -613,20 +620,20 @@ const Navbar: React.FC = () => {
                           {session.user.email}
                         </p>
                       </div>
-                      {(session.user as any).role && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-md shrink-0">
-                          {(session.user as any).role}
+                      {(session.user as { role?: string }).role && (
+                        <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 rounded-md shrink-0">
+                          {(session.user as { role?: string }).role}
                         </span>
                       )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <Link
-                        href="/dashboard"
+                        href={dashboardHref}
                         onClick={() => setIsOpen(false)}
                         className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                       >
-                        <DashboardIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <DashboardIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         <span>Dashboard</span>
                       </Link>
 
@@ -635,7 +642,7 @@ const Navbar: React.FC = () => {
                         onClick={() => setIsOpen(false)}
                         className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                       >
-                        <UserProfileIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <UserProfileIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         <span>Profile</span>
                       </Link>
                     </div>
@@ -655,9 +662,9 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 px-3.5 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-500/20 active:scale-95 transition-all cursor-pointer group"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-3.5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer group"
                   >
-                    <SparklesIcon className="h-4 w-4 text-blue-200 group-hover:rotate-12 transition-transform duration-300" />
+                    <SparklesIcon className="h-4 w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
                     <span>Get Started</span>
                   </Link>
                 )}
