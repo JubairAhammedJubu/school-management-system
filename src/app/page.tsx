@@ -8,19 +8,17 @@ import StudentSuccess from '@/components/homepage/studentsuccess/studentsuccess'
 import ThreeSteps from '@/components/homepage/threesteps/threesteps';
 import React from 'react';
 
-const page = () => {
+export default function HomePage() {
     return (
-        <div>
-                <Hero />
-                <ManagementSolutions />
-                <StudentSuccess />
-                <ManagementShowcase />
-                <ThreeSteps />
-                <CustomerFeedback />
-                <FAQSection />
-                <FinalCTA />
-        </div>
+        <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+            <Hero />
+            <ManagementSolutions />
+            <StudentSuccess />
+            <ManagementShowcase />
+            <ThreeSteps />
+            <CustomerFeedback />
+            <FAQSection />
+            <FinalCTA />
+        </main>
     );
-};
-
-export default page;
+}
