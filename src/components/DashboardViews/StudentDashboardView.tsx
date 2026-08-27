@@ -133,7 +133,7 @@ export default function StudentDashboardView() {
               Upcoming Assignments
             </h2>
             <Link
-              href="/dashboard/students/assignment"
+              href="/dashboard/student/assignment"
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 cursor-pointer"
             >
               View all <ArrowRight className="h-3 w-3" />
@@ -174,7 +174,7 @@ export default function StudentDashboardView() {
               Recent Notices
             </h2>
             <Link
-              href="/dashboard/student/notices.tsx"
+              href="/dashboard/notices"
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 cursor-pointer"
             >
               View all <ArrowRight className="h-3 w-3" />
