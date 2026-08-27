@@ -31,7 +31,7 @@ const testimonials = [
 
 export default function CustomerFeedback() {
   return (
-    <section className="w-full bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 border-t border-slate-200/60 dark:border-slate-800 transition-colors duration-300 px-6 py-24 sm:px-8 lg:px-12">
+    <section className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-t border-slate-200/60 dark:border-slate-800 transition-colors duration-300 px-6 py-24 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-[1180px]">
         {/* Heading */}
         <motion.div

@@ -8,7 +8,7 @@ import { useSession } from "@/lib/auth-client";
 export default function FinalCTA() {
   const { data: session } = useSession();
   return (
-    <section className="w-full bg-slate-50/60 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 border-t border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-5 py-14 sm:px-8 sm:py-16 lg:px-12">
+    <section className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-t border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-5 py-14 sm:px-8 sm:py-16 lg:px-12">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
