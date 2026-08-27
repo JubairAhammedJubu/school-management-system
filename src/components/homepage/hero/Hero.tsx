@@ -9,7 +9,7 @@ export default function Hero() {
   const { data: session } = useSession();
 
   return (
-    <section className="relative min-h-[600px] sm:min-h-[700px] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
+    <section className="relative min-h-[600px] sm:min-h-[700px] overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
       {/* BACKGROUND DECORATION */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-20 -top-24 h-[340px] w-[120px] rotate-[40deg] rounded-[70px] bg-indigo-100/70 dark:bg-slate-900/60" />
