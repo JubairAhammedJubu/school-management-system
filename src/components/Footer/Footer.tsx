@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -35,33 +34,6 @@ export default function Footer() {
   if (pathname?.startsWith("/dashboard")) {
     return null;
   }
-
-  const productLinks = [
-    { name: "Home", href: "/" },
-    { name: "Students", href: "/students" },
-    { name: "Teachers", href: "/teachers" },
-    { name: "Notices", href: "/notices" },
-    { name: "Contact Us", href: "/contact" },
-  ];
-
-  const platformLinks = [
-    { name: "Admin Portal", href: "/login" },
-    { name: "Teacher Portal", href: "/teachers" },
-    { name: "Student Portal", href: "/students" },
-    { name: "Register School", href: "/login" },
-  ];
-
-  const socialLinks = [
-    { name: "GitHub", href: "https://github.com/JubairAhammedJubu/school-management-system", icon: GithubIcon },
-    { name: "LinkedIn", href: "https://linkedin.com", icon: LinkedinIcon },
-    { name: "Facebook", href: "https://facebook.com", icon: FacebookIcon },
-  ];
-
-  const techStack = [
-    { name: "Next.js 15", desc: "App Router & SSR", icon: Code2 },
-    { name: "PostgreSQL", desc: "Relational DB", icon: Database },
-    { name: "Prisma ORM", desc: "Type-safe Client", icon: Layers },
-  ];
 
   return (
     <footer className="relative w-full overflow-hidden bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
@@ -241,34 +213,36 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-4 sm:pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-[10px] sm:text-xs text-slate-500 text-center sm:text-left">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 animate-pulse shrink-0" />
-              <p>ByteCode_Breakers — School Management System · EG13-08</p>
-            </div>
+          {/* ================================================= */}
+          {/* BOTTOM BAR */}
+          {/* ================================================= */}
+          <div className="mt-4 sm:mt-8 border-t border-slate-200 dark:border-slate-800 pt-2.5 sm:pt-4">
+            <div className="flex flex-col gap-3 text-[10px] text-slate-400 dark:text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                © {new Date().getFullYear()} EduNexus. All rights reserved.
+              </p>
 
-            <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-4 text-slate-600 dark:text-slate-400 font-medium">
-              <Link
-                href="/login"
-                className="hover:text-blue-600 dark:hover:text-white transition-colors"
-              >
-                Admin
-              </Link>
-              <span className="text-slate-300 dark:text-slate-800">•</span>
-              <Link
-                href="/teachers"
-                className="hover:text-blue-600 dark:hover:text-white transition-colors"
-              >
-                Teacher
-              </Link>
-              <span className="text-slate-300 dark:text-slate-800">•</span>
-              <Link
-                href="/students"
-                className="hover:text-blue-600 dark:hover:text-white transition-colors"
-              >
-                Student
-              </Link>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/privacy"
+                  className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                  Privacy
+                </Link>
+
+                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+
+                <Link
+                  href="/terms"
+                  className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                  Terms
+                </Link>
+
+                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+
+                <span>Built for smarter schools</span>
+              </div>
             </div>
           </div>
         </div>
