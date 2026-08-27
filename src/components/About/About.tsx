@@ -47,7 +47,7 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative w-full overflow-hidden bg-slate-50 px-4 py-20 text-slate-900 transition-colors duration-500 dark:bg-[#030712] dark:text-slate-100 sm:px-6 md:px-10 sm:py-28 lg:px-12"
+      className="relative w-full py-20 sm:py-25 px-4 sm:px-6 md:px-10 lg:px-12 bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans"
     >
       <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 blur-[130px] dark:from-blue-600/15 dark:via-indigo-600/15 dark:to-cyan-500/10" />
 
