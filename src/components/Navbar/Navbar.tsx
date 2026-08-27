@@ -278,7 +278,12 @@ const Navbar: React.FC = () => {
   const { data: session, isPending } = useSession();
 
   const userRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
-  const dashboardHref = "/dashboard/teacher";
+  const dashboardHref =
+    userRole === "student"
+      ? "/dashboard/student"
+      : userRole === "admin"
+        ? "/dashboard/admin"
+        : "/dashboard/teacher";
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
