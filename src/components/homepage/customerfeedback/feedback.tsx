@@ -31,7 +31,7 @@ const testimonials = [
 
 export default function CustomerFeedback() {
   return (
-    <section className="w-full bg-white px-6 py-24 sm:px-8 lg:px-12">
+    <section className="w-full bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-slate-100 border-t border-slate-200/60 dark:border-slate-800 transition-colors duration-300 px-6 py-24 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-[1180px]">
         {/* Heading */}
         <motion.div
@@ -41,11 +41,11 @@ export default function CustomerFeedback() {
           transition={{ duration: 0.6 }}
           className="mx-auto max-w-[760px] text-center"
         >
-          <h2 className="text-[36px] font-extrabold leading-[1.1] tracking-[-0.045em] text-[#4b4b4f] sm:text-[42px] lg:text-[46px]">
+          <h2 className="text-[36px] font-extrabold leading-[1.1] tracking-[-0.045em] text-slate-900 dark:text-white sm:text-[42px] lg:text-[46px]">
             Customer Feedback
           </h2>
 
-          <p className="mx-auto mt-5 max-w-[700px] text-[13px] leading-[1.65] text-[#77777e] sm:text-[14px]">
+          <p className="mx-auto mt-5 max-w-[700px] text-[13px] leading-[1.65] text-slate-600 dark:text-slate-300 sm:text-[14px]">
             Hear firsthand accounts of how our school management solution has
             revolutionized
             <br className="hidden sm:block" />
@@ -65,11 +65,11 @@ export default function CustomerFeedback() {
                 duration: 0.55,
                 delay: index * 0.12,
               }}
-              className="flex min-h-[205px] flex-col justify-between rounded-[12px] bg-white p-7 shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(0,0,0,0.11)]"
+              className="flex min-h-[205px] flex-col justify-between rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-7 shadow-md dark:shadow-slate-950/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-900/60"
             >
               {/* Quote */}
-              <p className="text-[13px] leading-[1.65] text-[#57575f] sm:text-[14px]">
-                {testimonial.quote}
+              <p className="text-[13px] leading-[1.65] text-slate-600 dark:text-slate-300 sm:text-[14px]">
+                &ldquo;{testimonial.quote}&rdquo;
               </p>
 
               {/* Customer */}
@@ -77,15 +77,15 @@ export default function CustomerFeedback() {
                 <img
                   src={testimonial.image}
                   alt={testimonial.name}
-                  className="h-[48px] w-[48px] shrink-0 rounded-full object-cover"
+                  className="h-[48px] w-[48px] shrink-0 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                 />
 
                 <div>
-                  <h3 className="text-[13px] font-semibold leading-tight text-[#35353b]">
+                  <h3 className="text-[14px] font-bold leading-tight text-slate-900 dark:text-white">
                     {testimonial.name}
                   </h3>
 
-                  <p className="mt-1 text-[11px] leading-tight text-[#77777f]">
+                  <p className="mt-1 text-[11px] font-medium leading-tight text-slate-500 dark:text-slate-400">
                     {testimonial.role}
                   </p>
                 </div>
