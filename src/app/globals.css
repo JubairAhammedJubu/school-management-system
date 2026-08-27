@@ -20,13 +20,6 @@
   --font-heading: var(--font-sora), var(--font-inter), sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --background: #090d16;
-    --foreground: #f3f4f6;
-  }
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -71,7 +64,13 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .Toastify__toast--success {
-  border-left: 4px solid #10b981 !important;
+  border-left: 4px solid #6366f1 !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon,
+.Toastify__toast--success .Toastify__toast-icon svg {
+  color: #6366f1 !important;
+  fill: #6366f1 !important;
 }
 
 .Toastify__toast--error {
@@ -98,7 +97,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 .Toastify__progress-bar--success {
-  background: linear-gradient(to right, #10b981, #34d399) !important;
+  background: linear-gradient(to right, #4f46e5, #6366f1) !important;
 }
 
 .Toastify__progress-bar--error {

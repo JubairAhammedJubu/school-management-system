@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -16,10 +16,6 @@ import {
   User,
   Mail,
   Lock,
-  Shield,
-  BookOpen,
-  ChevronDown,
-  Check,
 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
 
@@ -48,25 +44,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Role dropdown state
-  const [role, setRole] = useState<Role>("student");
-  const [roleSelectOpen, setRoleSelectOpen] = useState(false);
-  const roleSelectRef = useRef<HTMLDivElement>(null);
-
-  // Close role menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        roleSelectRef.current &&
-        !roleSelectRef.current.contains(event.target as Node)
-      ) {
-        setRoleSelectOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const toggleAuthMode = () => {
     setIsLogin((prev) => !prev);
     setShowPassword(false);
@@ -76,8 +53,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setRole("student");
-    setRoleSelectOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +80,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           email,
           password,
           name,
-          role,
+          role: "student",
         } as Parameters<typeof signUp.email>[0]);
 
         if (signUpError) {
@@ -138,9 +113,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
       >
         {/* --- FORM CONTAINER --- */}
         <div
-          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${
-            isLogin ? "md:translate-x-0" : "md:translate-x-full"
-          }`}
+          className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
+            }`}
         >
           <div className="mb-3">
             <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
@@ -188,174 +162,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       placeholder="e.g. Alex Morgan"
                       className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
                     />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <AnimatePresence initial={false} mode="popLayout">
-              {!isLogin && (
-                <motion.div
-                  key="role"
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="space-y-0.5 relative z-20"
-                >
-                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                    I am a
-                  </label>
-                  <div ref={roleSelectRef} className="relative w-full">
-                    <button
-                      type="button"
-                      onClick={() => setRoleSelectOpen((prev) => !prev)}
-                      className={`w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/90 border ${
-                        roleSelectOpen
-                          ? "border-blue-500 ring-2 ring-blue-500/20"
-                          : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                      } text-slate-900 dark:text-white rounded-lg flex items-center justify-between transition-all duration-200 cursor-pointer outline-none shadow-sm`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {role === "student" && (
-                          <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400">
-                            <GraduationCap className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                        {role === "teacher" && (
-                          <div className="flex h-5 w-5 items-center justify-center rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400">
-                            <BookOpen className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                        {role === "admin" && (
-                          <div className="flex h-5 w-5 items-center justify-center rounded bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400">
-                            <Shield className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
-                          {role}
-                        </span>
-                      </div>
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
-                          roleSelectOpen ? "rotate-180 text-blue-500" : ""
-                        }`}
-                      />
-                    </button>
-
-                    <AnimatePresence>
-                      {roleSelectOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 4, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                          transition={{ duration: 0.15, ease: "easeOut" }}
-                          className="absolute top-full left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700/80 rounded-xl shadow-xl p-1 overflow-hidden backdrop-blur-xl"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRole("student");
-                              setRoleSelectOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer ${
-                              role === "student"
-                                ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-semibold"
-                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                  role === "student"
-                                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/30"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                                }`}
-                              >
-                                <GraduationCap className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-xs">Student</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Student learning portal
-                                </span>
-                              </div>
-                            </div>
-                            {role === "student" && (
-                              <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRole("teacher");
-                              setRoleSelectOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${
-                              role === "teacher"
-                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold"
-                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                  role === "teacher"
-                                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                                }`}
-                              >
-                                <BookOpen className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-xs">Teacher</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Teacher portal &amp; grading
-                                </span>
-                              </div>
-                            </div>
-                            {role === "teacher" && (
-                              <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRole("admin");
-                              setRoleSelectOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer mt-0.5 ${
-                              role === "admin"
-                                ? "bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold"
-                                : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                                  role === "admin"
-                                    ? "bg-purple-600 text-white shadow-sm shadow-purple-500/30"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
-                                }`}
-                              >
-                                <Shield className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-xs">Admin</span>
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">
-                                  Full system control
-                                </span>
-                              </div>
-                            </div>
-                            {role === "admin" && (
-                              <Check className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-                            )}
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 </motion.div>
               )}
@@ -479,7 +285,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 <Sparkles size={13} className="text-amber-500 shrink-0" />
                 <span>
                   {email === "demostudent@gmail.com" &&
-                  password === "demostudent1234"
+                    password === "demostudent1234"
                     ? "Demo Credentials Fulfilled"
                     : "Fill Demo Student Credentials"}
                 </span>
@@ -518,9 +324,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
         {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND --- */}
         <div
-          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${
-            isLogin ? "translate-x-full" : "translate-x-0"
-          }`}
+          className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${isLogin ? "translate-x-full" : "translate-x-0"
+            }`}
         >
           <AnimatePresence initial={false}>
             <motion.div
@@ -540,20 +345,24 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-slate-950/40 z-0" />
           <div className="absolute top-[-10%] right-[-10%] w-56 h-56 bg-blue-400/20 rounded-full blur-3xl z-0" />
-          <div className="absolute bottom-[-15%] left-[-10%] w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl z-0" />
+          <div className="absolute bottom-[-15%] left-[-10%] w-48 h-48 bg-indigo-400/20 rounded-full blur-3xl z-0" />
 
           {/* Top-left brand chip */}
           <div className="absolute top-6 left-6 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
             <GraduationCap size={16} className="text-white" />
           </div>
 
-          {/* Top-right encrypted/secure indicator */}
-          <div className="absolute top-6 right-6 z-10 flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-1">
-            <ShieldCheck size={11} className="text-emerald-300" />
-            <span className="text-[8px] font-bold uppercase tracking-wider text-white/80">
-              JWT Encrypted
-            </span>
-          </div>
+          {/* Top-right Form Toggle Button on Image */}
+          <motion.button
+            type="button"
+            onClick={toggleAuthMode}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="absolute top-6 right-6 z-30 flex items-center gap-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/35 px-3.5 py-1.5 text-xs font-bold text-white shadow-xl transition-all duration-300 cursor-pointer group"
+          >
+            <span>{isLogin ? "Create Account" : "Sign In"}</span>
+            <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+          </motion.button>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -570,7 +379,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                     <div className="flex -space-x-2.5">
                       {[
                         "bg-blue-400",
-                        "bg-emerald-400",
+                        "bg-indigo-400",
                         "bg-amber-400",
                         "bg-pink-400",
                       ].map((c, i) => (
@@ -597,12 +406,12 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                     Pick up right
                     <br />
                     where you{" "}
-                    <span className="italic font-serif font-normal text-emerald-300">
+                    <span className="italic font-serif font-normal text-indigo-300">
                       left off.
                     </span>
                   </h2>
 
-                  <div className="flex items-center gap-2 text-[10px] text-white/60 font-medium mb-5">
+                  <div className="flex items-center gap-2 text-[10px] text-white/60 font-medium mb-2">
                     <KeyRound size={12} className="text-white/50" />
                     Your dashboard, grades &amp; messages are waiting
                   </div>
@@ -623,22 +432,20 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                           initial={{ opacity: 0, scale: 0.7 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: i * 0.08 }}
-                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${
-                            step.active
-                              ? "bg-emerald-400/20 border-emerald-300/40"
+                          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
+                              ? "bg-indigo-400/20 border-indigo-300/40"
                               : "bg-white/[0.06] border-white/15"
-                          }`}
+                            }`}
                         >
                           <step.icon
                             size={11}
                             className={
-                              step.active ? "text-emerald-300" : "text-white/50"
+                              step.active ? "text-indigo-300" : "text-white/50"
                             }
                           />
                           <span
-                            className={`text-[8px] font-bold uppercase tracking-wide ${
-                              step.active ? "text-emerald-200" : "text-white/50"
-                            }`}
+                            className={`text-[8px] font-bold uppercase tracking-wide ${step.active ? "text-indigo-200" : "text-white/50"
+                              }`}
                           >
                             {step.label}
                           </span>
@@ -651,12 +458,31 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   <h2 className="text-[26px] font-black leading-[1.1] tracking-tight text-left mb-3">
                     Takes under
                     <br />
-                    <span className="italic font-serif font-normal text-emerald-300">
+                    <span className="italic font-serif font-normal text-indigo-300">
                       two minutes.
                     </span>
                   </h2>
+
+                  <div className="flex items-center gap-2 text-[10px] text-white/60 font-medium mb-2">
+                    <KeyRound size={12} className="text-white/50" />
+                    Quick signup for instant access
+                  </div>
                 </>
               )}
+
+              {/* Bottom Action Button on Image */}
+              <motion.button
+                type="button"
+                onClick={toggleAuthMode}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-3 w-full py-2 px-4 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-xs font-bold text-white shadow-lg transition-all flex items-center justify-between cursor-pointer group"
+              >
+                <span>{isLogin ? "Need a new account?" : "Already registered?"}</span>
+                <span className="flex items-center gap-1 text-indigo-300 underline font-extrabold group-hover:translate-x-0.5 transition-transform">
+                  {isLogin ? "Register Now" : "Sign In"} <ArrowRight size={13} />
+                </span>
+              </motion.button>
             </motion.div>
           </AnimatePresence>
         </div>
