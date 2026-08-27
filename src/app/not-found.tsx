@@ -255,7 +255,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/students"
+            href="/dashboard/student"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 px-4.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
           >
             <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
