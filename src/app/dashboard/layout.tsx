@@ -71,7 +71,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -108,6 +108,24 @@ export default function DashboardLayout({
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
   const userRole: UserRole =
     rawRole === "admin" ? "admin" : rawRole === "teacher" ? "teacher" : "student";
+
+  // Redirect unauthorized attempts (unauthenticated OR role mismatch) to /unauthorized
+  useEffect(() => {
+    if (!isPending) {
+      const isStudentRoute = pathname.startsWith("/dashboard/student");
+      const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
+
+      if (isStudentRoute || isTeacherRoute) {
+        if (!session?.user) {
+          router.replace("/unauthorized");
+        } else if (isStudentRoute && rawRole !== "student") {
+          router.replace("/unauthorized");
+        } else if (isTeacherRoute && rawRole !== "teacher") {
+          router.replace("/unauthorized");
+        }
+      }
+    }
+  }, [pathname, rawRole, session, isPending, router]);
 
   const currentRoutes =
     userRole === "admin"
@@ -341,6 +359,28 @@ export default function DashboardLayout({
       </motion.div>
     </motion.div>
   );
+
+  const isStudentRoute = pathname.startsWith("/dashboard/student");
+  const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
+  const isUnauthorized =
+    (isStudentRoute || isTeacherRoute) &&
+    (!session?.user ||
+      (isStudentRoute && rawRole !== "student") ||
+      (isTeacherRoute && rawRole !== "teacher"));
+
+  // While checking session or if unauthorized, do NOT render dashboard layout shell
+  if (isPending || isUnauthorized) {
+    return (
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6 transition-colors duration-300">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {isUnauthorized ? "Redirecting..." : "Loading dashboard..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
