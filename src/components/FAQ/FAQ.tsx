@@ -27,7 +27,7 @@ const faqData: FAQItem[] = [
     question: "What is EduNexus and how does it transform school management?",
     answer:
       "EduNexus is an all-in-one, intelligent school management system that replaces legacy paperwork, paper registers, and scattered spreadsheets. It connects administrators, teachers, students, and parents into a unified role-based digital ecosystem.",
-    icon: <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+    icon: <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
   },
   {
     id: "faq-2",
@@ -55,7 +55,7 @@ const faqData: FAQItem[] = [
     question: "Can teachers mark attendance and publish results from mobile phones?",
     answer:
       "Yes! EduNexus is 100% responsive and accessible on any device—mobile phones, tablets, or laptops. Teachers can mark digital attendance with a single tap and publish grade cards anywhere.",
-    icon: <BookOpen className="w-4 h-4 text-blue-500" />,
+    icon: <BookOpen className="w-4 h-4 text-indigo-500" />,
   },
 ];
 
@@ -70,7 +70,7 @@ const FAQSection: React.FC = () => {
     <section className="relative w-full py-20 sm:py-28 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
 
       {/* Ambient Background Glows */}
-      <div className="absolute top-1/3 right-10 w-96 h-96 rounded-full bg-blue-500/10 dark:bg-blue-600/15 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
 
       <div className="relative max-w-3xl mx-auto px-4 sm:px-8 md:px-0">
@@ -82,9 +82,9 @@ const FAQSection: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 dark:border-blue-800/80 bg-blue-50/80 dark:bg-blue-950/60 px-4 py-1.5 text-xs sm:text-sm font-semibold text-blue-700 dark:text-blue-300 backdrop-blur-md"
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/80 dark:bg-indigo-950/60 px-4 py-1.5 text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300 backdrop-blur-md"
           >
-            <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <HelpCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>FREQUENTLY ASKED QUESTIONS</span>
           </motion.div>
 
@@ -96,7 +96,7 @@ const FAQSection: React.FC = () => {
             className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-950 dark:text-white leading-tight"
           >
             Everything you need to know about{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-400 dark:to-indigo-300">
               EduNexus
             </span>
           </motion.h2>
@@ -124,7 +124,7 @@ const FAQSection: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.08 }}
                 className={`rounded-2xl border transition-all duration-300 backdrop-blur-xl overflow-hidden ${isOpen
-                  ? "border-blue-500/70 dark:border-blue-500/70 bg-white dark:bg-slate-900 shadow-xl ring-2 ring-blue-500/20"
+                  ? "border-indigo-500/70 dark:border-indigo-500/70 bg-white dark:bg-slate-900 shadow-xl ring-2 ring-indigo-500/20"
                   : "border-slate-200/90 dark:border-slate-800/90 bg-white/80 dark:bg-slate-900/80 shadow-sm hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
               >
@@ -182,10 +182,10 @@ const FAQSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-14 rounded-3xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-r from-blue-50/80 via-white/80 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900/90 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl backdrop-blur-xl"
+          className="mt-14 rounded-3xl border border-slate-200/90 dark:border-slate-800/90 bg-gradient-to-r from-indigo-50/80 via-white/80 to-purple-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900/90 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl backdrop-blur-xl"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/30">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/30">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
@@ -200,10 +200,10 @@ const FAQSection: React.FC = () => {
 
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 px-6 py-3 font-semibold text-white shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0 active:scale-95 text-sm"
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-indigo-500/40 active:scale-95 cursor-pointer shrink-0"
           >
             <span>Contact Support</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
         </motion.div>
 
