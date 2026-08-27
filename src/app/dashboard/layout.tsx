@@ -38,12 +38,12 @@ interface RouteItem {
 
 const adminRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Teachers", href: "/dashboard/teachers", icon: Users },
-  { label: "Students", href: "/dashboard/students", icon: GraduationCap },
-  { label: "Classes", href: "/dashboard/classes", icon: BookOpen },
-  { label: "Results", href: "/dashboard/results", icon: Award },
-  { label: "Fees", href: "/dashboard/fees", icon: CreditCard },
-  { label: "Notices", href: "/dashboard/notices", icon: Bell },
+  { label: "Teachers", href: "/dashboard/admin/teachers", icon: Users },
+  { label: "Students", href: "/dashboard/admin/students", icon: GraduationCap },
+  { label: "Classes", href: "/dashboard/admin/classes", icon: BookOpen },
+  { label: "Results", href: "/dashboard/admin/results", icon: Award },
+  { label: "Fees", href: "/dashboard/admin/fees", icon: CreditCard },
+  { label: "Notices", href: "/dashboard/admin/notices", icon: Bell },
 ];
 
 const teacherRoutes: RouteItem[] = [
