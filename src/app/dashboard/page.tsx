@@ -3,8 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
-import StudentDashboardView from "@/components/DashboardViews/StudentDashboardView";
-import TeacherDashboardView from "@/components/DashboardViews/TeacherDashboardView";
 
 export default function DashboardOverviewPage() {
   const router = useRouter();
@@ -14,21 +12,19 @@ export default function DashboardOverviewPage() {
 
   useEffect(() => {
     if (!isPending) {
-      if (rawRole === "student") {
+      if (!session?.user) {
+        router.replace("/unauthorized");
+      } else if (rawRole === "student") {
         router.replace("/dashboard/student");
-      } else if (rawRole === "admin") {
-        router.replace("/dashboard/admin");
       } else if (rawRole === "teacher") {
         router.replace("/dashboard/teacher");
+      } else if (rawRole === "admin") {
+        router.replace("/dashboard/admin");
       } else {
-        router.replace("/dashboard/student");
+        router.replace("/unauthorized");
       }
     }
-  }, [rawRole, isPending, router]);
+  }, [session, rawRole, isPending, router]);
 
-  if (rawRole === "teacher") {
-    return <TeacherDashboardView />;
-  }
-
-  return <StudentDashboardView />;
+  return null;
 }

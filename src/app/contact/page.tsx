@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const ContactPage = () => {
     return (
-        <main className="min-h-screen bg-white pt-5 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <main className="min-h-screen bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100">
             <TalkToUs />
         </main>
     );
