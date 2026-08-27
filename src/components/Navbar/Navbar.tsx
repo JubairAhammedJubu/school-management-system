@@ -228,11 +228,11 @@ const ThemeToggleButton: React.FC<ThemeToggleProps> = ({
     <button
       onClick={onToggle}
       type="button"
-      className={`relative inline-flex items-center justify-center p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-100/60 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-95 group cursor-pointer ${className}`}
+      className={`relative inline-flex items-center justify-center p-1.5 rounded-lg sm:rounded-xl border border-white/50 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 active:scale-95 group cursor-pointer ${className}`}
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
     >
-      <div className="relative w-5 h-5 flex items-center justify-center">
+      <div className="relative w-4 h-4 flex items-center justify-center">
         <SunIcon
           className={`absolute transition-all duration-500 transform ${theme === "dark"
             ? "opacity-0 rotate-90 scale-50"
@@ -257,7 +257,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "About US", href: "/about" },
+  { label: "About Us", href: "/about" },
   { label: "Students", href: "/dashboard/student" },
   { label: "Teachers", href: "/dashboard/teacher" },
   { label: "Notices", href: "/notices" },
@@ -369,34 +369,42 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-3 sm:top-4 left-0 right-0 z-50 px-4 sm:px-5 md:px-4 lg:px-6 transition-all duration-700 ease-out transform ${mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-out transform ${mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+          } ${scrolled
+            ? "top-1 px-3.5 sm:px-4 md:px-4 lg:px-6"
+            : "top-0 px-0"
           }`}
       >
         <div
-          className={`relative container mx-auto container w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ${scrolled
-            ? "shadow-lg shadow-blue-900/5 dark:shadow-black/20 border-slate-300/80 dark:border-slate-700/80"
-            : "shadow-md shadow-slate-900/5"
+          className={`relative transition-all duration-500 ${scrolled
+            ? "container mx-auto w-full rounded-lg border backdrop-blur-md backdrop-saturate-180 bg-white/75 dark:bg-slate-950/80 shadow-xl shadow-indigo-500/10 dark:shadow-black/50 border-white/70 dark:border-slate-800/80"
+            : "w-full rounded-none border-b border-slate-200/70 dark:border-slate-800/70 bg-white/95 dark:bg-slate-950/95 shadow-none backdrop-blur-md"
             }`}
         >
-          <div className="flex items-center justify-between px-4 py-2 sm:px-5 sm:py-2.5 lg:py-3">
+          <div
+            className={`transition-all duration-300 ${scrolled
+              ? "flex items-center justify-between px-3 py-1 sm:px-3.5 sm:py-1.5 md:py-1.5 lg:py-1.5"
+              : "container mx-auto flex items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 sm:py-3"
+              }`}
+          >
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 cursor-pointer"
+              className="flex items-center gap-2 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 cursor-pointer"
             >
-              <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 group-hover:scale-105 transition-transform duration-200">
+              <div className="relative h-7 w-7 sm:h-7.5 sm:w-7.5 shrink-0 group-hover:scale-105 transition-transform duration-200">
                 <Image
                   src="/second_logo_transparent.png"
                   alt="EduNexus Logo"
-                  width={40}
-                  height={40}
+                  width={30}
+                  height={30}
                   className="h-full w-full object-contain"
                   priority
                 />
               </div>
 
               <div>
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+                <h1 className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                   Edu
                   <span className="text-indigo-600 dark:text-indigo-400">Nexus</span>
                 </h1>
@@ -404,16 +412,16 @@ const Navbar: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation (Visible on Large devices >= 1024px) */}
-            <nav className="hidden lg:flex items-center gap-1 lg:gap-1.5 bg-slate-100/60 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+            <nav className="hidden lg:flex items-center gap-1 lg:gap-1 bg-slate-200/40 dark:bg-slate-900/50 backdrop-blur-md p-1 rounded-xl border border-white/40 dark:border-slate-800/60">
               {navItems.map((item) => {
                 const active = checkIsActive(item.href);
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`relative px-3.5 py-1.5 lg:px-4 lg:py-2 text-sm font-medium rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${active
-                      ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 shadow-xs font-semibold"
-                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/60 dark:hover:bg-slate-900/40"
+                    className={`relative px-3 py-1 lg:px-3.5 lg:py-1 text-xs sm:text-xs lg:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${active
+                      ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800/90 shadow-xs font-semibold border border-transparent dark:border-slate-700/50"
+                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/60 dark:hover:bg-slate-800/40"
                       }`}
                   >
                     {item.label}
@@ -426,7 +434,7 @@ const Navbar: React.FC = () => {
             </nav>
 
             {/* Desktop Action Buttons (Visible on Large devices >= 1024px) */}
-            <div className="hidden lg:flex items-center gap-2.5">
+            <div className="hidden lg:flex items-center gap-2">
               <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
               {!mounted || isPending ? (
@@ -441,14 +449,14 @@ const Navbar: React.FC = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setShowUserDropdown((prev) => !prev)}
-                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1 rounded-xl bg-white/50 dark:bg-slate-900/50 hover:bg-white/80 dark:hover:bg-slate-800/80 backdrop-blur-md border border-white/50 dark:border-slate-800/60 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                     aria-label="User menu"
                     aria-expanded={showUserDropdown}
                   >
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                    <div className="h-6.5 w-6.5 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                       {session.user.name?.charAt(0).toUpperCase() ?? "U"}
                     </div>
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
                       {session.user.name?.split(" ")[0] ?? "User"}
                     </span>
                     <ChevronDownIcon
@@ -465,7 +473,7 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden"
+                        className="absolute right-0 mt-2 w-60 rounded-2xl bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl p-2 shadow-2xl shadow-slate-900/10 dark:shadow-black/70 border border-white/50 dark:border-slate-800/80 z-50 overflow-hidden"
                       >
                         {/* User Header */}
                         <div className="px-3 py-2.5 mb-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
@@ -528,28 +536,28 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer group"
+                  className="flex items-center gap-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-3.5 py-1.5 lg:px-4.5 lg:py-1.5 text-xs lg:text-sm font-bold text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer group"
                 >
-                  <SparklesIcon className="h-4 w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
+                  <SparklesIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
                   <span>Get Started</span>
                 </Link>
               )}
             </div>
 
             {/* Mobile Header Controls (Theme Toggle + Menu Toggle) */}
-            <div className="flex lg:hidden items-center gap-2">
+            <div className="flex lg:hidden items-center gap-1.5">
               <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
 
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition-colors cursor-pointer"
+                className="flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 p-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition-colors cursor-pointer"
                 aria-label="Toggle navigation menu"
                 aria-expanded={isOpen}
               >
                 {isOpen ? (
-                  <CloseIcon className="h-5.5 w-5.5 text-indigo-600 dark:text-indigo-400" />
+                  <CloseIcon className="h-4.5 w-4.5 text-indigo-600 dark:text-indigo-400" />
                 ) : (
-                  <MenuIcon className="h-5.5 w-5.5" />
+                  <MenuIcon className="h-4.5 w-4.5" />
                 )}
               </button>
             </div>
