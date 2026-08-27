@@ -1,5 +1,6 @@
 import CustomerFeedback from '@/components/homepage/customerfeedback/feedback';
 import FinalCTA from '@/components/homepage/fnalcta/finalcta';
+import FAQSection from '@/components/FAQ/FAQ';
 import Hero from '@/components/homepage/hero/Hero';
 import ManagementShowcase from '@/components/homepage/managementshowcase/manage';
 import ManagementSolutions from '@/components/homepage/managementsolution/managementsolution';
@@ -10,13 +11,14 @@ import React from 'react';
 const page = () => {
     return (
         <div>
-                <Hero></Hero>
-                <ManagementSolutions></ManagementSolutions>
-                <StudentSuccess></StudentSuccess>
-                <ManagementShowcase></ManagementShowcase>
-                <ThreeSteps></ThreeSteps>
-                <CustomerFeedback></CustomerFeedback>
-                <FinalCTA></FinalCTA>
+                <Hero />
+                <ManagementSolutions />
+                <StudentSuccess />
+                <ManagementShowcase />
+                <ThreeSteps />
+                <CustomerFeedback />
+                <FAQSection />
+                <FinalCTA />
         </div>
     );
 };
