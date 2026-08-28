@@ -48,11 +48,12 @@ const adminRoutes: RouteItem[] = [
 
 const teacherRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
-  { label: "My Classes", href: "/dashboard/teacher/my-classes", icon: BookOpen },
-  { label: "Assignments", href: "/dashboard/teacher/assignments", icon: FileText },
-  { label: "Results", href: "/dashboard/teacher/results", icon: Award },
   { label: "Attendance", href: "/dashboard/teacher/attendance", icon: CalendarCheck },
+  { label: "Examination & Results", href: "/dashboard/teacher/results", icon: Award },
+  { label: "Assignments Management", href: "/dashboard/teacher/assignments", icon: FileText },
+  { label: "Class & Subject Requests", href: "/dashboard/teacher/my-classes", icon: BookOpen },
   { label: "Students", href: "/dashboard/teacher/students", icon: GraduationCap },
+  { label: "Notices", href: "/dashboard/teacher/notices", icon: Bell },
 ];
 
 const studentRoutes: RouteItem[] = [
