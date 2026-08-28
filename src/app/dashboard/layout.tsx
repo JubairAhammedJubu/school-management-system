@@ -625,7 +625,7 @@ export default function DashboardLayout({
         </motion.header>
 
         {/* Main Viewport */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto custom-scrollbar">
           {children}
         </main>
       </div>
