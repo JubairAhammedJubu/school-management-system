@@ -124,7 +124,6 @@ export default function NoticeBoard({
         publishedBy: currentUserName,
         authorEmail: currentUserEmail,
         title: formTitle.trim(),
-        description: formDetail.trim(),
         detail: formDetail.trim(),
         category: formCategory,
         isPinned: formIsPinned,
@@ -164,7 +163,7 @@ export default function NoticeBoard({
     setEditingNotice(notice);
     setEditFormTitle(notice.title);
     setEditFormCategory(notice.category);
-    setEditFormDetail(notice.detail || notice.description || "");
+    setEditFormDetail(notice.detail || "");
     setEditFormIsPinned(Boolean(notice.isPinned));
     setIsEditCategorySelectOpen(false);
     setIsEditModalOpen(true);
@@ -187,7 +186,6 @@ export default function NoticeBoard({
           : null;
       const payload = {
         title: editFormTitle.trim(),
-        description: editFormDetail.trim(),
         detail: editFormDetail.trim(),
         category: editFormCategory,
         isPinned: editFormIsPinned,

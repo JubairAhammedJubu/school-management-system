@@ -7,7 +7,6 @@ export interface NoticePayload {
   publishedBy?: string;
   authorEmail?: string;
   title: string;
-  description?: string;
   detail: string;
   category: string;
   isPinned?: boolean;
@@ -20,7 +19,6 @@ export interface NoticeItem {
   category: "Academic" | "Events" | "General";
   date: string;
   detail: string;
-  description?: string;
   teacherName?: string;
   publishedBy?: string;
   authorEmail?: string;
@@ -71,8 +69,7 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
           title: item.title,
           category: (item.category as NoticeItem["category"]) || "General",
           date: itemDate,
-          detail: item.detail || item.description || "",
-          description: item.description || item.detail || "",
+          detail: item.detail || "",
           teacherName: item.teacherName || item.publishedBy || item.author?.name || "Teacher",
           publishedBy: item.teacherName || item.publishedBy || item.author?.name || "Teacher",
           authorEmail: item.authorEmail || item.author?.email || undefined,
@@ -131,8 +128,7 @@ export async function createNoticeAction(
           day: "numeric",
           year: "numeric",
         }),
-        detail: createdItem.detail || createdItem.description || "",
-        description: createdItem.description || createdItem.detail || "",
+        detail: createdItem.detail || "",
         teacherName: createdItem.teacherName || createdItem.publishedBy || payload.teacherName || "Teacher",
         publishedBy: createdItem.teacherName || createdItem.publishedBy || payload.teacherName || "Teacher",
         authorEmail: createdItem.authorEmail || payload.authorEmail || undefined,
@@ -201,8 +197,7 @@ export async function updateNoticeAction(
           day: "numeric",
           year: "numeric",
         }),
-        detail: updatedItem.detail || updatedItem.description || "",
-        description: updatedItem.description || updatedItem.detail || "",
+        detail: updatedItem.detail || "",
         teacherName: updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
         publishedBy: updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
         authorEmail: updatedItem.authorEmail || undefined,
