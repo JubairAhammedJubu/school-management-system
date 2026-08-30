@@ -24,40 +24,7 @@ const classes = [
     schedule: "Mon · Wed · Fri",
     time: "09:00 AM – 10:00 AM",
     room: "Room 204",
-  },
-  {
-    subject: "Mathematics",
-    code: "MATH-08B",
-    grade: "Grade 8",
-    section: "Section B",
-    students: 28,
-    attendance: 91,
-    schedule: "Tue · Thu",
-    time: "10:15 AM – 11:15 AM",
-    room: "Room 204",
-  },
-  {
-    subject: "Advanced Mathematics",
-    code: "MATH-09A",
-    grade: "Grade 9",
-    section: "Section A",
-    students: 31,
-    attendance: 94,
-    schedule: "Mon · Wed · Fri",
-    time: "11:30 AM – 12:30 PM",
-    room: "Room 301",
-  },
-  {
-    subject: "Mathematics",
-    code: "MATH-10A",
-    grade: "Grade 10",
-    section: "Section A",
-    students: 24,
-    attendance: 97,
-    schedule: "Tue · Thu",
-    time: "01:30 PM – 02:30 PM",
-    room: "Room 301",
-  },
+  }
 ];
 
 export default function TeacherMyClassesPage() {
@@ -318,13 +285,12 @@ function ClassCard({
                 delay: 0.35 + index * 0.08,
                 ease: "easeOut",
               }}
-              className={`h-full rounded-full ${
-                item.attendance >= 95
-                  ? "bg-emerald-500"
-                  : item.attendance >= 90
-                    ? "bg-blue-500"
-                    : "bg-amber-500"
-              }`}
+              className={`h-full rounded-full ${item.attendance >= 95
+                ? "bg-emerald-500"
+                : item.attendance >= 90
+                  ? "bg-blue-500"
+                  : "bg-amber-500"
+                }`}
             />
           </div>
         </div>
