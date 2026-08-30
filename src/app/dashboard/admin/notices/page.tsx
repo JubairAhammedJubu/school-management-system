@@ -10,9 +10,7 @@ import {
   Search, 
   Pin, 
   Calendar, 
-  ArrowUpRight, 
   Megaphone,
-  CheckCircle2,
   Trash2,
   Edit3
 } from "lucide-react";
@@ -45,7 +43,6 @@ export default function AdminNoticesPage() {
     return null;
   }
 
-  // Sample notices data (API থেকে ডাটা এনে এখানে ম্যাপ করতে পারেন)
   const noticesList = [
     {
       id: "NOT-01",
@@ -72,6 +69,12 @@ export default function AdminNoticesPage() {
       target: "Grade 8 - 10",
     },
   ];
+
+  const filteredNotices = noticesList.filter(
+    (notice) =>
+      notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notice.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -153,7 +156,7 @@ export default function AdminNoticesPage() {
 
       {/* Notices List Section */}
       <div className="space-y-4">
-        {noticesList.map((notice, idx) => (
+        {filteredNotices.map((notice, idx) => (
           <motion.div
             key={idx}
             whileHover={{ y: -2 }}
