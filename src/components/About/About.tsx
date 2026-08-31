@@ -47,11 +47,11 @@ export default function About() {
   return (
     <section
       id="about"
-      className="relative w-full py-20 sm:py-25 px-4 sm:px-6 md:px-10 lg:px-12 bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans"
+      className="relative w-full pt-16 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans"
     >
       <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 blur-[130px] dark:from-blue-600/15 dark:via-indigo-600/15 dark:to-cyan-500/10" />
 
-      <div className="relative z-10 mx-auto container">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-3xl text-center"
           initial={{ opacity: 0, y: 24 }}
@@ -76,7 +76,7 @@ export default function About() {
 
         <div className="mt-14 grid items-stretch gap-8 lg:grid-cols-12 lg:gap-12">
           <motion.div
-            className="relative h-full overflow-hidden rounded-3xl border border-slate-200/90 bg-white/90 p-7 shadow-2xl shadow-blue-900/5 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/60 dark:shadow-blue-950/25 sm:p-10 lg:col-span-5"
+            className="relative h-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white dark:bg-slate-900/90 p-7 shadow-2xl shadow-blue-900/5 backdrop-blur-xl dark:border-slate-800 dark:shadow-black/40 sm:p-10 lg:col-span-5"
             initial={{ opacity: 0, x: -28 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}

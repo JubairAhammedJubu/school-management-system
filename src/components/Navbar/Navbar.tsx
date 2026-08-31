@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { useSession, signOut } from "@/lib/auth-client";
+import { ArrowRight } from "lucide-react";
 
 // Lightweight, self-contained SVG Icon Components
 const GraduationCapIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
@@ -377,14 +378,14 @@ const Navbar: React.FC = () => {
       >
         <div
           className={`relative transition-all duration-500 ${scrolled
-            ? "container mx-auto w-full rounded-lg border backdrop-blur-md backdrop-saturate-180 bg-white/75 dark:bg-slate-950/80 shadow-xl shadow-indigo-500/10 dark:shadow-black/50 border-white/70 dark:border-slate-800/80"
-            : "w-full rounded-none border-b border-slate-200/70 dark:border-slate-800/70 bg-white/95 dark:bg-slate-950/95 shadow-none backdrop-blur-md"
+            ? "mx-auto w-full max-w-7xl rounded-2xl border backdrop-blur-sm bg-white/80 dark:bg-black/80 shadow-xl shadow-indigo-500/10 dark:shadow-black/60 border-white/50 dark:border-slate-800/70"
+            : "w-full rounded-none border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-black/80 shadow-none backdrop-blur-sm"
             }`}
         >
           <div
             className={`transition-all duration-300 ${scrolled
               ? "flex items-center justify-between px-3 py-1 sm:px-3.5 sm:py-1.5 md:py-1.5 lg:py-1.5"
-              : "container mx-auto flex items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 sm:py-3"
+              : "mx-auto w-full max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3"
               }`}
           >
             {/* Logo */}
@@ -473,7 +474,7 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 mt-2 w-60 rounded-2xl bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl p-2 shadow-2xl shadow-slate-900/10 dark:shadow-black/70 border border-white/50 dark:border-slate-800/80 z-50 overflow-hidden"
+                        className="absolute right-0 mt-2 w-60 rounded-2xl bg-white/85 dark:bg-black/85 backdrop-blur-2xl backdrop-saturate-180 p-2 shadow-2xl shadow-slate-900/10 dark:shadow-black/70 border border-white/50 dark:border-slate-800/80 z-50 overflow-hidden"
                       >
                         {/* User Header */}
                         <div className="px-3 py-2.5 mb-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
@@ -536,10 +537,13 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/login"
-                  className="flex items-center gap-2 rounded-lg sm:rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-3.5 py-1.5 lg:px-4.5 lg:py-1.5 text-xs lg:text-sm font-bold text-white shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 cursor-pointer group"
+                  className="group inline-flex h-9 sm:h-9.5 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-lg hover:shadow-indigo-500/40 active:scale-95 cursor-pointer"
                 >
-                  <SparklesIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
-                  <span>Get Started</span>
+                  <span>Get started</span>
+                  <ArrowRight
+                    size={14}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  />
                 </Link>
               )}
             </div>
@@ -670,10 +674,13 @@ const Navbar: React.FC = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-3.5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer group"
+                    className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 text-xs font-semibold text-white shadow-md shadow-indigo-500/25 transition-all duration-300 hover:from-indigo-500 hover:to-indigo-600 active:scale-95 cursor-pointer"
                   >
-                    <SparklesIcon className="h-4 w-4 text-indigo-200 group-hover:rotate-12 transition-transform duration-300" />
-                    <span>Get Started</span>
+                    <span>Get started</span>
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
                   </Link>
                 )}
               </div>

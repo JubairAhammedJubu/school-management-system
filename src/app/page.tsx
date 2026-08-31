@@ -10,7 +10,7 @@ import React from 'react';
 
 export default function HomePage() {
     return (
-        <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <main className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <Hero />
             <ManagementSolutions />
             <StudentSuccess />
