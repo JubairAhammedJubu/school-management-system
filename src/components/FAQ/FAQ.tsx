@@ -67,13 +67,13 @@ const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="relative w-full py-20 sm:py-28 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
+    <section className="relative w-full py-20 sm:py-28 bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-hidden font-sans">
 
       {/* Ambient Background Glows */}
       <div className="absolute top-1/3 right-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl pointer-events-none" />
 
-      <div className="relative max-w-3xl mx-auto px-4 sm:px-8 md:px-0">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -104,7 +105,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-slate-950 pt-24 sm:pt-28 pb-6 p-4 font-sans transition-colors duration-500">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-black pt-24 sm:pt-28 pb-6 p-4 font-sans transition-colors duration-500">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
@@ -118,8 +119,15 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         >
           <div className="mb-3">
             <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25">
-                <GraduationCap className="h-3.5 w-3.5" />
+              <div className="relative h-7 w-7 shrink-0">
+                <Image
+                  src="/second_logo_transparent.png"
+                  alt="EduNexus Logo"
+                  width={28}
+                  height={28}
+                  className="h-full w-full object-contain"
+                  priority
+                />
               </div>
               <span className="font-bold text-base text-slate-900 dark:text-white">
                 Edu
