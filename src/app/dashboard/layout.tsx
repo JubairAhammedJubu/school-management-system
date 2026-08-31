@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { toast } from "react-toastify";
@@ -252,20 +253,27 @@ export default function DashboardLayout({
       variants={sidebarContainerVariants}
       initial="hidden"
       animate="show"
-      className="flex flex-col h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl transition-colors duration-300 overflow-hidden selection:bg-indigo-500 selection:text-white"
+      className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800/80 shadow-xl dark:shadow-2xl transition-colors duration-300 overflow-hidden selection:bg-indigo-500 selection:text-white"
     >
       {/* Brand Header */}
       <motion.div
         variants={sidebarItemVariants}
-        className="p-2.5 px-3 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/40"
+        className="p-2.5 px-3 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/80 dark:bg-black/60"
       >
         <Link href="/" className="flex items-center gap-2.5 group">
           <motion.div
-            whileHover={{ scale: 1.08, rotate: 5 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
-            className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr ${roleConfig.accentGradient} text-white shadow-sm shrink-0`}
+            className="relative h-7.5 w-7.5 shrink-0"
           >
-            <GraduationCap className="h-4 w-4" />
+            <Image
+              src="/second_logo_transparent.png"
+              alt="EduNexus Logo"
+              width={30}
+              height={30}
+              className="h-full w-full object-contain"
+              priority
+            />
           </motion.div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
@@ -284,7 +292,7 @@ export default function DashboardLayout({
       {/* Role Pill Banner */}
       <motion.div
         variants={sidebarItemVariants}
-        className="px-3 py-1.5 bg-slate-100/60 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/60 flex items-center justify-between"
+        className="px-3 py-1.5 bg-slate-100/60 dark:bg-black/60 border-b border-slate-200/80 dark:border-slate-800/60 flex items-center justify-between"
       >
         <div className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
@@ -382,7 +390,7 @@ export default function DashboardLayout({
       {/* User Profile Footer Card */}
       <motion.div
         variants={sidebarItemVariants}
-        className="p-2 px-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/80 space-y-1.5"
+        className="p-2 px-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-black/80 space-y-1.5"
       >
         <Link
           href="/profile"
@@ -450,7 +458,7 @@ export default function DashboardLayout({
   // While checking session or if unauthorized
   if (isPending || isUnauthorized) {
     return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-black flex items-center justify-center p-6">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 dark:border-indigo-500 border-t-transparent" />
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -462,7 +470,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
       {/* Desktop Permanent Sidebar */}
       <aside className="hidden lg:block w-64 h-screen sticky top-0 shrink-0 z-30">
         {renderSidebarContent()}
@@ -486,8 +494,15 @@ export default function DashboardLayout({
           </button>
 
           <Link href="/" className="flex items-center gap-2">
-            <div className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr ${roleConfig.accentGradient} text-white shadow-sm`}>
-              <GraduationCap className="h-4 w-4" />
+            <div className="relative h-7 w-7 shrink-0">
+              <Image
+                src="/second_logo_transparent.png"
+                alt="EduNexus Logo"
+                width={28}
+                height={28}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
             <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
               Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>

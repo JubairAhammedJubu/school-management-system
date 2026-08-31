@@ -6,7 +6,7 @@ import { Star, Quote, CheckCircle2, Sparkles, ShieldCheck, Zap, Users } from "lu
 const testimonials = [
   {
     quote:
-      "EduGenius has truly transformed how we manage our school's operations. The platform is intuitive, easy to use, and has streamlined our daily workflow.",
+      "EduNexus has  truly transformed how we manage our school's operations. The platform is intuitive, easy to use, and has streamlined our daily workflow.",
     name: "Theresa Webb",
     role: "CEO at wolf-pixel",
     image:
@@ -16,7 +16,7 @@ const testimonials = [
   },
   {
     quote:
-      "As an educator, I've used many management systems, but EduGenius stands out for its comprehensive features and excellent customer support.",
+      "As an educator, I've used many management systems, but EduNexus stands  out for its comprehensive features and excellent customer support.",
     name: "Devon Lane",
     role: "CEO at Groupon",
     image:
@@ -26,7 +26,7 @@ const testimonials = [
   },
   {
     quote:
-      "Our school has seen a significant improvement in communication and collaboration since implementing EduGenius. Parents and teachers love it.",
+      "Our school has seen a significant improvement in communication and collaboration since implementing EduNexus . Parents and teachers love it.",
     name: "Esther Howard",
     role: "CEO at Puzzle Huddle",
     image:
@@ -56,13 +56,13 @@ const highlights = [
 
 export default function CustomerFeedback() {
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 border-t border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-6 py-24 sm:px-8 lg:px-12">
-      
+    <section className="relative w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-black dark:via-zinc-950 dark:to-black text-slate-900 dark:text-slate-100 border-t border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-24">
+
       {/* Background ambient glowing shapes */}
       <div className="pointer-events-none absolute left-1/2 -top-40 h-[450px] w-[700px] -translate-x-1/2 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-[150px]" />
 
-      <div className="relative mx-auto max-w-[1280px]">
-        
+      <div className="relative mx-auto max-w-7xl">
+
         {/* Heading Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -83,7 +83,7 @@ export default function CustomerFeedback() {
           </h2>
 
           <p className="mx-auto max-w-[700px] text-[14px] leading-[1.7] text-slate-600 dark:text-slate-400 sm:text-[16px]">
-            Discover how our advanced school management ecosystem is driving productivity, 
+            Discover how our advanced school management ecosystem is driving productivity,
             <br className="hidden sm:block" />
             collaboration, and success across institutions globally.
           </p>

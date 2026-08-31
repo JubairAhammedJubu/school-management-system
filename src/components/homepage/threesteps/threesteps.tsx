@@ -13,7 +13,7 @@ const steps = [
     number: "01",
     title: "Explore Features",
     description:
-      "Uncover the Breadth and Depth of EduGenius' Powerful Tools and Capabilities",
+      "Uncover the Breadth and Depth of EduNexus ' Powerful Tools and Capabilities",
     active: true,
   },
   {
@@ -34,8 +34,8 @@ const steps = [
 
 export default function ThreeSteps() {
   return (
-    <section id="how-it-works" className="w-full scroll-mt-20 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-5 py-20 sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-[1080px]">
+    <section id="how-it-works" className="w-full scroll-mt-20 bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-20">
+      <div className="mx-auto max-w-7xl">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -168,19 +168,17 @@ export default function ThreeSteps() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className={`p-5 rounded-2xl border transition-all duration-300 ${
-                  step.active
+                className={`p-5 rounded-2xl border transition-all duration-300 ${step.active
                     ? "bg-slate-50 dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/60 shadow-md shadow-indigo-500/5"
                     : "bg-white dark:bg-slate-950 border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-50/50 dark:hover:bg-slate-900/50"
-                }`}
+                  }`}
               >
                 <div className="flex items-start gap-4">
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold ${
-                      step.active
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-extrabold ${step.active
                         ? "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}
+                      }`}
                   >
                     {step.number}
                   </span>
