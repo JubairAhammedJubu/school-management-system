@@ -1,15 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSession } from "@/lib/auth-client";
 
 export default function Hero() {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <section className="relative min-h-[600px] sm:min-h-[700px] overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
+    <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black text-slate-900 dark:text-white transition-colors duration-300">
       {/* BACKGROUND DECORATION */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-20 -top-24 h-[340px] w-[120px] rotate-[40deg] rounded-[70px] bg-indigo-100/70 dark:bg-slate-900/60" />
@@ -23,17 +29,18 @@ export default function Hero() {
       </div>
 
       {/* CONTENT */}
-      <div className="relative z-10 mx-auto flex min-h-[600px] sm:min-h-[700px] max-w-[1200px] flex-col items-center px-4 pt-24 sm:px-8 sm:pt-28 lg:pt-32 pb-8 sm:pb-12">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-12 sm:pb-16">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-[820px] text-center"
+          className="max-w-[1060px] text-center"
         >
-          <h1 className="font-heading text-[32px] font-extrabold leading-[1.08] tracking-[-0.04em] text-slate-950 dark:text-white xs:text-[38px] sm:text-[52px] md:text-[60px] lg:text-[66px]">
-            Powerful Tools for Effective{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-300">
+          <h1 className="font-heading text-[32px] font-extrabold leading-[1.08] tracking-[-0.04em] text-slate-950 dark:text-white xs:text-[38px] sm:text-[52px] md:text-[58px] lg:text-[65px] xl:text-[68px]">
+            <span className="inline-block">Powerful Tools for Effective</span>{" "}
+            <br className="hidden md:block" />
+            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-300">
               School Management.
             </span>
           </h1>
@@ -50,17 +57,40 @@ export default function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-          className="mt-6 flex flex-row items-center justify-center gap-3 sm:mt-7"
+          className="mt-6 flex flex-row flex-wrap items-center justify-center gap-2.5 sm:gap-3 sm:mt-7"
         >
-          {!session?.user && (
+          {!mounted || isPending ? (
+            /* Skeleton Loader matching Navbar style */
+            <div className="flex h-10 sm:h-11 items-center gap-2.5 px-6 sm:px-8 rounded-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 animate-pulse">
+              <div className="h-3.5 w-20 rounded bg-slate-300/80 dark:bg-slate-700/80" />
+              <div className="h-3.5 w-3.5 rounded bg-slate-300/80 dark:bg-slate-700/80 shrink-0" />
+            </div>
+          ) : session ? (
             <Link
-              href="/login"
-              className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 sm:px-8 text-[12px] sm:text-[13px] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40"
+              href={
+                (session.user as { role?: string }).role?.toLowerCase() === "admin"
+                  ? "/dashboard/admin"
+                  : (session.user as { role?: string }).role?.toLowerCase() === "teacher"
+                    ? "/dashboard/teacher"
+                    : "/dashboard/student"
+              }
+              className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40 whitespace-nowrap shrink-0 cursor-pointer"
             >
-              Get started
+              <span className="whitespace-nowrap">Go to Dashboard</span>
               <ArrowRight
                 size={14}
-                className="transition-transform duration-300 group-hover:translate-x-1"
+                className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
+              />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40 whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <span className="whitespace-nowrap">Get started</span>
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
               />
             </Link>
           )}
@@ -76,10 +106,10 @@ export default function Hero() {
                 window.location.href = "/#how-it-works";
               }
             }}
-            className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-5 sm:px-6 text-[12px] sm:text-[13px] font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer"
+            className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer whitespace-nowrap shrink-0"
           >
-            See How it works
-            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-400 dark:border-white/80">
+            <span className="whitespace-nowrap">See How it works</span>
+            <span className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-400 dark:border-white/80 shrink-0">
               <Play size={7} fill="currentColor" className="ml-[1px]" />
             </span>
           </a>

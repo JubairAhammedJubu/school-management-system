@@ -101,7 +101,7 @@ export default function NotFound() {
   ];
 
   return (
-    <main className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 px-4 pt-20 pb-12 sm:px-6 sm:pt-24 sm:pb-16 lg:px-8 lg:pt-28 lg:pb-20 transition-colors duration-500 selection:bg-blue-500 selection:text-white">
+    <main className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-black px-4 pt-20 pb-12 sm:px-6 sm:pt-24 sm:pb-16 lg:px-8 lg:pt-28 lg:pb-20 transition-colors duration-500 selection:bg-blue-500 selection:text-white">
       {/* Background Animated Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Soft Ambient Orbs */}

@@ -87,7 +87,7 @@ export default function ProfilePage() {
   // Render Skeleton Loader while loading session
   if (isPending) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-20 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-black px-4 py-20 flex items-center justify-center">
         <div className="w-full max-w-4xl space-y-6">
           <div className="h-48 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
           <div className="h-20 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
@@ -100,7 +100,7 @@ export default function ProfilePage() {
   // If not logged in, show access prompt
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-24 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-black px-4 py-24 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export default function ProfilePage() {
   const isEmailVerified = (session?.user as { emailVerified?: boolean } | undefined)?.emailVerified ?? true;
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans pb-20 pt-20 sm:pt-24">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans pb-20 pt-20 sm:pt-24">
       {/* Background Mesh Glows */}
       <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
       <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
