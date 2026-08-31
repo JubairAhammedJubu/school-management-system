@@ -6,9 +6,9 @@ export default function ManagementShowcase() {
   return (
     <section
       id="management-showcase"
-      className="relative overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-5 py-20 sm:px-8 lg:px-12 lg:py-24"
+      className="relative overflow-hidden bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-20 lg:py-24"
     >
-      <div className="mx-auto max-w-[1080px]">
+      <div className="mx-auto max-w-7xl">
         {/* =====================================================
             SECTION HEADING
         ====================================================== */}

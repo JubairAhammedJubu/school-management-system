@@ -8,13 +8,13 @@ import { useSession } from "@/lib/auth-client";
 export default function FinalCTA() {
   const { data: session } = useSession();
   return (
-    <section className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-t border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-5 py-14 sm:px-8 sm:py-16 lg:px-12">
+    <section className="w-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-t border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="mx-auto flex max-w-[1055px] flex-col items-center text-center"
+        className="mx-auto flex max-w-7xl flex-col items-center text-center"
       >
         {/* Heading */}
         <h2 className="text-[32px] font-extrabold leading-[1.1] tracking-[-0.045em] text-slate-900 dark:text-white sm:text-[38px]">

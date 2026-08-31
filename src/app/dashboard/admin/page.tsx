@@ -274,7 +274,7 @@ export default function AdminDashboardPage() {
             </button>
 
             <button
-              onClick={() => router.push("/admin/notices")}
+              onClick={() => router.push("/dashboard/admin/notices")}
               className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
             >
               <div className="flex items-center gap-3">

@@ -38,12 +38,14 @@ interface NoticeBoardProps {
   title?: string;
   subtitle?: string;
   showCreateButton?: boolean;
+  isHomePageNotices?: boolean;
 }
 
 export default function NoticeBoard({
   title = "Notice Board",
-  subtitle = "Stay up-to-date with official academic notices, exam schedules, and events.",
+  subtitle = "Stay up-to-date with official notices.",
   showCreateButton = false,
+  isHomePageNotices = false,
 }: NoticeBoardProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -52,6 +54,14 @@ export default function NoticeBoard({
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { data: session } = useSession();
+  const isLoggedIn = Boolean(session?.user);
+  const isLoggedOutOnHomePage = isHomePageNotices && !isLoggedIn;
+
+  useEffect(() => {
+    if (isLoggedOutOnHomePage && selectedCategory === "Academic") {
+      setSelectedCategory("All");
+    }
+  }, [isLoggedOutOnHomePage, selectedCategory]);
 
   // Create Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,7 +86,9 @@ export default function NoticeBoard({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const categories = ["All", "Academic", "Events", "General"];
+  const categories = isLoggedOutOnHomePage
+    ? ["All", "Events", "General"]
+    : ["All", "Academic", "Events", "General"];
 
   const fetchNotices = async () => {
     setIsLoading(true);
@@ -247,6 +259,9 @@ export default function NoticeBoard({
   };
 
   const filteredNotices = notices.filter((notice) => {
+    if (isLoggedOutOnHomePage && notice.category === "Academic") {
+      return false;
+    }
     const matchesCategory =
       selectedCategory === "All" || notice.category === selectedCategory;
     const authorName = notice.teacherName || notice.publishedBy;
@@ -262,7 +277,11 @@ export default function NoticeBoard({
   const isAdmin = userRole === "admin";
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+    <div
+      className={`w-full space-y-4 sm:space-y-6 ${
+        isHomePageNotices ? "max-w-7xl mx-auto px-3 sm:px-6 lg:px-8" : ""
+      }`}
+    >
       {/* Header Banner */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
@@ -307,11 +326,10 @@ export default function NoticeBoard({
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                  selectedCategory === cat
+                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${selectedCategory === cat
                     ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -353,8 +371,8 @@ export default function NoticeBoard({
               filteredNotices.map((notice, index) => {
                 const isOwner = Boolean(
                   currentUser &&
-                    ((currentUser.email && notice.authorEmail === currentUser.email) ||
-                      (currentUser.name && notice.teacherName === currentUser.name))
+                  ((currentUser.email && notice.authorEmail === currentUser.email) ||
+                    (currentUser.name && notice.teacherName === currentUser.name))
                 );
                 const canManage = isAdmin || isOwner;
 
@@ -365,11 +383,10 @@ export default function NoticeBoard({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.25, delay: index * 0.04 }}
-                    className={`group relative rounded-2xl sm:rounded-3xl border bg-white dark:bg-slate-900 p-3.5 sm:p-5 md:p-6 shadow-md transition-all hover:shadow-lg ${
-                      notice.isPinned
+                    className={`group relative rounded-2xl sm:rounded-3xl border bg-white dark:bg-slate-900 p-3.5 sm:p-5 md:p-6 shadow-md transition-all hover:shadow-lg ${notice.isPinned
                         ? "border-indigo-300 dark:border-indigo-800/80 bg-gradient-to-r from-indigo-50/30 to-white dark:from-indigo-950/20 dark:to-slate-900"
                         : "border-slate-200/80 dark:border-slate-800/80"
-                    }`}
+                      }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex items-start gap-2.5 sm:gap-3.5 min-w-0 flex-1">
@@ -512,9 +529,8 @@ export default function NoticeBoard({
                         <span className="font-semibold">{formCategory}</span>
                       </div>
                       <ChevronDown
-                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                          isCategorySelectOpen ? "rotate-180 text-indigo-600" : ""
-                        }`}
+                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isCategorySelectOpen ? "rotate-180 text-indigo-600" : ""
+                          }`}
                       />
                     </button>
 
@@ -547,11 +563,10 @@ export default function NoticeBoard({
                                     setFormCategory(cat.id as Notice["category"]);
                                     setIsCategorySelectOpen(false);
                                   }}
-                                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                                    isSelected
+                                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isSelected
                                       ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold"
                                       : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="flex items-center gap-2.5">
                                     <Icon className={`h-4 w-4 ${cat.color}`} />
@@ -695,9 +710,8 @@ export default function NoticeBoard({
                         <span className="font-semibold">{editFormCategory}</span>
                       </div>
                       <ChevronDown
-                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                          isEditCategorySelectOpen ? "rotate-180 text-indigo-600" : ""
-                        }`}
+                        className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isEditCategorySelectOpen ? "rotate-180 text-indigo-600" : ""
+                          }`}
                       />
                     </button>
 
@@ -730,11 +744,10 @@ export default function NoticeBoard({
                                     setEditFormCategory(cat.id as Notice["category"]);
                                     setIsEditCategorySelectOpen(false);
                                   }}
-                                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                                    isSelected
+                                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isSelected
                                       ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold"
                                       : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="flex items-center gap-2.5">
                                     <Icon className={`h-4 w-4 ${cat.color}`} />
