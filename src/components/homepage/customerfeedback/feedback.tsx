@@ -6,7 +6,7 @@ import { Star, Quote, CheckCircle2, Sparkles, ShieldCheck, Zap, Users } from "lu
 const testimonials = [
   {
     quote:
-      "EduGenius has truly transformed how we manage our school's operations. The platform is intuitive, easy to use, and has streamlined our daily workflow.",
+      "EduNexus has truly transformed how we manage our school's operations. The platform is intuitive, easy to use, and has streamlined our daily workflow.",
     name: "Theresa Webb",
     role: "CEO at wolf-pixel",
     image:
@@ -16,7 +16,7 @@ const testimonials = [
   },
   {
     quote:
-      "As an educator, I've used many management systems, but EduGenius stands out for its comprehensive features and excellent customer support.",
+      "As an educator, I've used many management systems, but EduNexus stands out for its comprehensive features and excellent customer support.",
     name: "Devon Lane",
     role: "CEO at Groupon",
     image:
@@ -26,7 +26,7 @@ const testimonials = [
   },
   {
     quote:
-      "Our school has seen a significant improvement in communication and collaboration since implementing EduGenius. Parents and teachers love it.",
+      "Our school has seen a significant improvement in communication and collaboration since implementing EduNexus. Parents and teachers love it.",
     name: "Esther Howard",
     role: "CEO at Puzzle Huddle",
     image:
