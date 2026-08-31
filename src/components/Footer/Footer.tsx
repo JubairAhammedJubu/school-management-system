@@ -38,7 +38,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative w-full overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-t border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
+    <footer className="relative w-full overflow-hidden bg-slate-50 dark:bg-black text-slate-600 dark:text-slate-400 border-t border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
       {/* Background ambient glowing shapes for depth */}
       <div className="pointer-events-none absolute left-1/4 -top-24 h-[300px] w-[500px] -translate-x-1/2 rounded-full bg-indigo-500/10 dark:bg-indigo-600/10 blur-[120px]" />
       <div className="pointer-events-none absolute right-1/4 -bottom-24 h-[300px] w-[500px] translate-x-1/2 rounded-full bg-blue-500/10 dark:bg-blue-600/10 blur-[120px]" />
