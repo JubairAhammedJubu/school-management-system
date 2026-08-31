@@ -50,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
+        className="min-h-full flex flex-col bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300"
       >
         <Navbar />
         {children}

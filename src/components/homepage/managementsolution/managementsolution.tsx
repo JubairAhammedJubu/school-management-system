@@ -17,7 +17,7 @@ export default function ManagementSolutions() {
   return (
     <section
       id="management-solutions"
-      className="relative overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-28"
+      className="relative overflow-hidden bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-14 sm:py-20 lg:py-28"
     >
       {/* =====================================================
           BACKGROUND
@@ -25,7 +25,7 @@ export default function ManagementSolutions() {
 
       <div className="pointer-events-none absolute left-[-120px] top-[20%] h-[420px] w-[420px] rounded-full bg-indigo-500/10 blur-[120px]" />
 
-      <div className="mx-auto grid max-w-[1180px] items-center gap-10 sm:gap-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 sm:gap-12 md:grid-cols-2 md:gap-12 lg:gap-16">
         {/* =====================================================
             LEFT — REFERENCE-STYLE VISUAL
         ====================================================== */}
@@ -35,7 +35,7 @@ export default function ManagementSolutions() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative mx-auto h-[380px] sm:h-[470px] w-full max-w-[540px]"
+          className="relative mx-auto h-[380px] sm:h-[470px] w-full max-w-[580px]"
         >
           {/* Large lavender artwork background */}
 
@@ -291,7 +291,7 @@ export default function ManagementSolutions() {
             delay: 0.1,
             ease: "easeOut",
           }}
-          className="max-w-[520px]"
+          className="w-full max-w-[580px]"
         >
           <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-indigo-600 dark:text-indigo-400">
             School Management
@@ -313,17 +313,33 @@ export default function ManagementSolutions() {
 
           {/* Buttons */}
 
-          <div className="mt-6 flex flex-row items-center gap-3 sm:mt-7">
-            {!session?.user && (
+          <div className="mt-6 flex flex-row flex-wrap items-center gap-3 sm:mt-7">
+            {!session?.user ? (
               <Link
                 href="/login"
-                className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 sm:px-8 text-[12px] sm:text-[13px] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40"
+                className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40 whitespace-nowrap shrink-0 cursor-pointer"
               >
-                Get started
-
+                <span>Get started</span>
                 <ArrowRight
                   size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
+                />
+              </Link>
+            ) : (
+              <Link
+                href={
+                  (session.user as { role?: string }).role?.toLowerCase() === "admin"
+                    ? "/dashboard/admin"
+                    : (session.user as { role?: string }).role?.toLowerCase() === "teacher"
+                      ? "/dashboard/teacher"
+                      : "/dashboard/student"
+                }
+                className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40 whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
                 />
               </Link>
             )}
@@ -339,10 +355,10 @@ export default function ManagementSolutions() {
                   window.location.href = "/#how-it-works";
                 }
               }}
-              className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-5 sm:px-6 text-[12px] sm:text-[13px] font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer"
+              className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer whitespace-nowrap shrink-0"
             >
-              See How it works
-              <span className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-400 dark:border-white/80">
+              <span>See How it works</span>
+              <span className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-400 dark:border-white/80 shrink-0">
                 <Play size={7} fill="currentColor" className="ml-[1px]" />
               </span>
             </a>

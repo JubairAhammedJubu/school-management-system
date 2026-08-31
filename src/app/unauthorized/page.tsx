@@ -20,7 +20,7 @@ export default function UnauthorizedPage() {
         : "/dashboard/teacher";
 
   return (
-    <main className="flex-1 w-full min-h-[calc(100vh-60px)] flex flex-col items-center justify-center px-4 py-16 sm:py-20 relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <main className="flex-1 w-full min-h-[calc(100vh-60px)] flex flex-col items-center justify-center px-4 py-16 sm:py-20 relative overflow-hidden bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
       {/* Background Glow Orbs */}
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-rose-500/15 dark:bg-rose-600/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-500/15 dark:bg-indigo-600/20 blur-3xl" />

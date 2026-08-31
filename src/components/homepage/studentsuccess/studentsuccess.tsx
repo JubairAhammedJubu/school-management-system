@@ -8,9 +8,9 @@ export default function StudentSuccess() {
   return (
     <section
       id="student-success"
-      className="relative overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-y border-slate-200/60 dark:border-slate-800 transition-colors duration-300 px-5 py-16 sm:px-8 lg:px-12 lg:py-20"
+      className="relative overflow-hidden bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-y border-slate-200/60 dark:border-slate-800 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-16 lg:py-20"
     >
-      <div className="mx-auto grid max-w-[1080px] items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-10 lg:gap-16">
         {/* =====================================================
             LEFT CONTENT
         ====================================================== */}
