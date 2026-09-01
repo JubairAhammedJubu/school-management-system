@@ -175,59 +175,33 @@ export default function TeacherAssignmentsPage() {
   /**
    * Delete assignment after SweetAlert confirmation.
    */
-  const handleDelete = async (assignmentId: string) => {
-    const assignment = assignments.find(
-      (item) => item.id === assignmentId
+ const handleDelete = async (assignmentId: string) => {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/teacher/assignments/${assignmentId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
     );
 
-    if (!assignment) return;
+    const data = await response.json();
 
-    const result = await Swal.fire({
-      title: "Delete assignment?",
-      text: `Are you sure you want to delete "${assignment.title}"? This action cannot be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
-      focusCancel: true,
-    });
-
-    if (!result.isConfirmed) {
-      return;
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Failed to delete assignment");
     }
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/teacher/assignments/${assignmentId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+    setAssignments((current) =>
+      current.filter((item) => item.id !== assignmentId)
+    );
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete assignment.");
-      }
-
-      setAssignments((current) =>
-        current.filter((item) => item.id !== assignmentId)
-      );
-
-      toast.success("Assignment deleted successfully.");
-    } catch (err) {
-      console.error("Assignment delete error:", err);
-
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to delete assignment.";
-
-      toast.error(message);
-    }
-  };
+    toast.success("Assignment deleted successfully!");
+  } catch (error: any) {
+    console.error("Delete assignment error:", error);
+    toast.error(error.message || "Failed to delete assignment");
+    throw error;
+  }
+};
 
   /**
    * Loading state while Better Auth checks the session.
@@ -433,7 +407,7 @@ export default function TeacherAssignmentsPage() {
                 key={assignment.id}
                 assignment={assignment}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDeleted={handleDelete}
               />
             ))}
           </div>
