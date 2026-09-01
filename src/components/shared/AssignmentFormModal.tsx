@@ -11,6 +11,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 type Assignment = {
   id: string;
@@ -26,21 +27,6 @@ type Assignment = {
   teacherName?: string | null;
 };
 
-type AssignmentFormModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-
-  assignment?: Assignment | null;
-
-  teacherEmail?: string;
-  teacherName?: string;
-
-  onSaved?: (assignment: Assignment) => void;
-
-  // Kept for compatibility with your existing page/component code.
-  onSubmit?: (data: AssignmentFormData) => Promise<void>;
-};
-
 export type AssignmentFormData = {
   title: string;
   description: string;
@@ -52,6 +38,24 @@ export type AssignmentFormData = {
   teacherEmail: string;
   teacherName: string;
   status: string;
+};
+
+type AssignmentFormModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+
+  // Present when editing an existing assignment
+  assignment?: Assignment | null;
+
+  // Current logged-in teacher
+  teacherEmail?: string;
+  teacherName?: string;
+
+  // Called after successful API save
+  onSaved?: (assignment: Assignment) => void;
+
+  // Optional compatibility with your previous implementation
+  onSubmit?: (data: AssignmentFormData) => Promise<void>;
 };
 
 const EMPTY_FORM: AssignmentFormData = {
@@ -82,15 +86,23 @@ export default function AssignmentFormModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
+  /*
+   * Populate the form when:
+   * - modal opens for creating
+   * - modal opens for editing
+   * - selected assignment changes
+   */
   useEffect(() => {
     if (!isOpen) return;
 
     if (assignment) {
       const date = new Date(assignment.dueDate);
 
-      const formattedDate = Number.isNaN(date.getTime())
-        ? ""
-        : date.toISOString().slice(0, 16);
+      let formattedDueDate = "";
+
+      if (!Number.isNaN(date.getTime())) {
+        formattedDueDate = date.toISOString().slice(0, 16);
+      }
 
       setForm({
         title: assignment.title || "",
@@ -98,7 +110,7 @@ export default function AssignmentFormModal({
         subject: assignment.subject || "",
         grade: assignment.grade || "",
         section: assignment.section || "",
-        dueDate: formattedDate,
+        dueDate: formattedDueDate,
         totalMarks: assignment.totalMarks || 100,
         teacherEmail: assignment.teacherEmail || teacherEmail,
         teacherName: assignment.teacherName || teacherName,
@@ -115,6 +127,21 @@ export default function AssignmentFormModal({
     setError("");
   }, [isOpen, assignment, teacherEmail, teacherName]);
 
+  /*
+   * Prevent background page scrolling while modal is open.
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
   const updateField = (
     field: keyof AssignmentFormData,
     value: string | number
@@ -125,36 +152,61 @@ export default function AssignmentFormModal({
     }));
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
+    /*
+     * Client-side validation
+     */
     if (!form.title.trim()) {
       setError("Assignment title is required.");
+      toast.error("Assignment title is required.");
       return;
     }
 
     if (!form.subject.trim()) {
       setError("Subject is required.");
+      toast.error("Subject is required.");
       return;
     }
 
     if (!form.grade.trim()) {
       setError("Grade is required.");
+      toast.error("Grade is required.");
       return;
     }
 
     if (!form.section.trim()) {
       setError("Section is required.");
+      toast.error("Section is required.");
       return;
     }
 
     if (!form.dueDate) {
       setError("Due date is required.");
+      toast.error("Due date is required.");
       return;
     }
 
     if (!form.teacherEmail.trim()) {
       setError("Teacher email is required.");
+      toast.error("Teacher email is required.");
+      return;
+    }
+
+    const parsedDueDate = new Date(form.dueDate);
+
+    if (Number.isNaN(parsedDueDate.getTime())) {
+      setError("Please provide a valid due date.");
+      toast.error("Please provide a valid due date.");
+      return;
+    }
+
+    if (Number(form.totalMarks) <= 0) {
+      setError("Total marks must be greater than 0.");
+      toast.error("Total marks must be greater than 0.");
       return;
     }
 
@@ -163,21 +215,44 @@ export default function AssignmentFormModal({
       setError("");
 
       /*
-       * If the parent supplied onSubmit, use it.
-       * This keeps the component compatible with your existing page.
+       * Compatibility mode:
+       * If parent supplied onSubmit, let the parent handle saving.
        */
       if (onSubmit) {
-        await onSubmit(form);
+        await onSubmit({
+          ...form,
+          title: form.title.trim(),
+          description: form.description.trim(),
+          subject: form.subject.trim(),
+          grade: form.grade.trim(),
+          section: form.section.trim(),
+          teacherEmail: form.teacherEmail.trim(),
+          teacherName: form.teacherName.trim(),
+          totalMarks: Number(form.totalMarks) || 100,
+        });
+
+        toast.success(
+          isEditing
+            ? "Assignment updated successfully!"
+            : "Assignment created successfully!"
+        );
 
         onClose();
         return;
       }
 
-      const url = assignment
-        ? `http://localhost:5000/api/teacher/assignments/${assignment.id}`
+      /*
+       * Create:
+       * POST /api/teacher/assignments
+       *
+       * Edit:
+       * PATCH /api/teacher/assignments/:id
+       */
+      const url = isEditing
+        ? `http://localhost:5000/api/teacher/assignments/${assignment?.id}`
         : "http://localhost:5000/api/teacher/assignments";
 
-      const method = assignment ? "PATCH" : "POST";
+      const method = isEditing ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
@@ -187,43 +262,74 @@ export default function AssignmentFormModal({
         credentials: "include",
         body: JSON.stringify({
           title: form.title.trim(),
-          description: form.description.trim(),
+          description: form.description.trim() || null,
           subject: form.subject.trim(),
           grade: form.grade.trim(),
           section: form.section.trim(),
-          dueDate: new Date(form.dueDate).toISOString(),
+          dueDate: parsedDueDate.toISOString(),
           totalMarks: Number(form.totalMarks) || 100,
           teacherEmail: form.teacherEmail.trim(),
-          teacherName: form.teacherName.trim(),
+          teacherName: form.teacherName.trim() || null,
           status: form.status,
         }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("Invalid response received from the server.");
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(
           data.error ||
-            `Failed to ${assignment ? "update" : "create"} assignment`
+            (isEditing
+              ? "Failed to update assignment."
+              : "Failed to create assignment.")
         );
       }
 
+      /*
+       * Send updated/new assignment back to parent.
+       */
       if (data.assignment) {
         onSaved?.(data.assignment);
       }
+
+      /*
+       * Success toast
+       */
+      toast.success(
+        isEditing
+          ? "Assignment updated successfully!"
+          : "Assignment created successfully!"
+      );
 
       onClose();
     } catch (err) {
       console.error("Assignment save error:", err);
 
-      setError(
+      const message =
         err instanceof Error
           ? err.message
-          : "Something went wrong while saving the assignment."
-      );
+          : isEditing
+            ? "Failed to update assignment."
+            : "Failed to create assignment.";
+
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleClose = () => {
+    if (isSaving) return;
+
+    setError("");
+    onClose();
   };
 
   return (
@@ -235,23 +341,39 @@ export default function AssignmentFormModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-950/50 backdrop-blur-sm"
-            onClick={isSaving ? undefined : onClose}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-slate-950/55 backdrop-blur-sm"
+            onMouseDown={handleClose}
           />
 
-          {/* Modal wrapper */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+          {/* Modal */}
+          <div className="fixed inset-0 z-[101] flex items-center justify-center overflow-y-auto p-4 sm:p-6">
             <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative my-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
-              onClick={(event) => event.stopPropagation()}
+              initial={{
+                opacity: 0,
+                y: 20,
+                scale: 0.98,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                y: 20,
+                scale: 0.98,
+              }}
+              transition={{
+                duration: 0.22,
+                ease: "easeOut",
+              }}
+              className="relative my-auto flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:max-h-[calc(100vh-3rem)]"
+              onMouseDown={(event) => event.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-5 sm:px-7 dark:border-slate-800">
-                <div className="flex min-w-0 items-start gap-3">
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:px-7">
+                <div className="flex min-w-0 items-start gap-3.5">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     <FileText className="h-5 w-5" />
                   </div>
@@ -265,7 +387,7 @@ export default function AssignmentFormModal({
 
                     <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
                       {isEditing
-                        ? "Update the assignment details below."
+                        ? "Update the assignment details and save your changes."
                         : "Create a new assignment for your students."}
                     </p>
                   </div>
@@ -273,20 +395,23 @@ export default function AssignmentFormModal({
 
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   disabled={isSaving}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   aria-label="Close modal"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit}>
-                <div className="max-h-[70vh] overflow-y-auto px-5 py-5 sm:px-7">
+              {/* Form content */}
+              <form
+                onSubmit={handleSubmit}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
                   {error && (
-                    <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                    <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
                       {error}
                     </div>
                   )}
@@ -312,7 +437,8 @@ export default function AssignmentFormModal({
                             updateField("title", event.target.value)
                           }
                           placeholder="e.g. Chapter 5 Mathematics"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                          disabled={isSaving}
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                         />
                       </div>
                     </div>
@@ -333,11 +459,15 @@ export default function AssignmentFormModal({
                         id="assignment-description"
                         value={form.description}
                         onChange={(event) =>
-                          updateField("description", event.target.value)
+                          updateField(
+                            "description",
+                            event.target.value
+                          )
                         }
                         placeholder="Add instructions or details for students..."
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                        disabled={isSaving}
+                        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                       />
                     </div>
 
@@ -348,6 +478,7 @@ export default function AssignmentFormModal({
                         icon={BookOpen}
                         value={form.subject}
                         placeholder="Mathematics"
+                        disabled={isSaving}
                         onChange={(value) =>
                           updateField("subject", value)
                         }
@@ -358,7 +489,10 @@ export default function AssignmentFormModal({
                         icon={Users}
                         value={form.grade}
                         placeholder="Grade 10"
-                        onChange={(value) => updateField("grade", value)}
+                        disabled={isSaving}
+                        onChange={(value) =>
+                          updateField("grade", value)
+                        }
                       />
 
                       <FormInput
@@ -366,11 +500,14 @@ export default function AssignmentFormModal({
                         icon={Users}
                         value={form.section}
                         placeholder="A"
-                        onChange={(value) => updateField("section", value)}
+                        disabled={isSaving}
+                        onChange={(value) =>
+                          updateField("section", value)
+                        }
                       />
                     </div>
 
-                    {/* Due date / marks */}
+                    {/* Due date / Total marks */}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label
@@ -388,9 +525,13 @@ export default function AssignmentFormModal({
                             type="datetime-local"
                             value={form.dueDate}
                             onChange={(event) =>
-                              updateField("dueDate", event.target.value)
+                              updateField(
+                                "dueDate",
+                                event.target.value
+                              )
                             }
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                            disabled={isSaving}
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                           />
                         </div>
                       </div>
@@ -414,7 +555,8 @@ export default function AssignmentFormModal({
                               Number(event.target.value)
                             )
                           }
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                          disabled={isSaving}
+                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                         />
                       </div>
                     </div>
@@ -434,7 +576,8 @@ export default function AssignmentFormModal({
                         onChange={(event) =>
                           updateField("status", event.target.value)
                         }
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+                        disabled={isSaving}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
                       >
                         <option value="ACTIVE">Active</option>
                         <option value="DRAFT">Draft</option>
@@ -445,10 +588,10 @@ export default function AssignmentFormModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-7">
+                <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-7">
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={handleClose}
                     disabled={isSaving}
                     className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
@@ -489,12 +632,14 @@ function FormInput({
   icon: Icon,
   value,
   placeholder,
+  disabled,
   onChange,
 }: {
   label: string;
   icon: React.ElementType;
   value: string;
   placeholder: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
@@ -510,8 +655,9 @@ function FormInput({
           type="text"
           value={value}
           placeholder={placeholder}
+          disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
         />
       </div>
     </div>
