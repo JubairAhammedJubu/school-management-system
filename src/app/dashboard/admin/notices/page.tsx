@@ -80,7 +80,7 @@ export default function AdminNoticesPage() {
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Total Published</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Total Published</p>
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">24</h3>
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <Layers className="w-3.5 h-3.5" /> Active this term
@@ -99,7 +99,7 @@ export default function AdminNoticesPage() {
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Pinned Notices</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Pinned Notices</p>
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">04</h3>
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
               <Pin className="w-3.5 h-3.5" /> Highlighted on top
@@ -118,7 +118,7 @@ export default function AdminNoticesPage() {
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Target Audiences</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Target Audiences</p>
             <h3 className="text-3xl font-black text-slate-900 dark:text-white">All Users</h3>
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
               <Bell className="w-3.5 h-3.5" /> Staff, Students &amp; Parents
