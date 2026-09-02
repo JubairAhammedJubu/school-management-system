@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {useRouter} from "next/navigation";
 import {motion, AnimatePresence} from "framer-motion";
 import {toast} from "react-toastify";
@@ -59,6 +59,13 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // ── Account lockout (3 bhul password → 5 hour lock) ──
+  // lockoutUntil holo epoch-ms timestamp jokhon lock uthe jabe. Eta
+  // per-email localStorage e save thake, tai page reload/refresh korleo
+  // lock thake jotokkhon na shomoy shesh hoy.
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -91,6 +98,56 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
     ? "teacher"
     : "student";
 
+  const lockoutStorageKey = (forEmail: string) =>
+    `edunexus:lockoutUntil:${forEmail.toLowerCase().trim()}`;
+
+  // Email field change hole oi email-er jonno kono active lock ache kina check kori.
+  useEffect(() => {
+    if (!isLogin || !email.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLockoutUntil(null);
+      return;
+    }
+    const stored = localStorage.getItem(lockoutStorageKey(email));
+    const storedUntil = stored ? Number(stored) : null;
+    if (storedUntil && storedUntil > Date.now()) {
+      setLockoutUntil(storedUntil);
+    } else {
+      if (stored) localStorage.removeItem(lockoutStorageKey(email));
+      setLockoutUntil(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, isLogin]);
+
+  // Lock thakle proti second "now" update kori countdown dekhanor jonno,
+  // shomoy shesh hole nijei clear kore dei.
+  useEffect(() => {
+    if (!lockoutUntil) return;
+    const interval = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= lockoutUntil) {
+        localStorage.removeItem(lockoutStorageKey(email));
+        setLockoutUntil(null);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lockoutUntil]);
+
+  const isLockedOut = isLogin && !!lockoutUntil && lockoutUntil > now;
+  const lockoutRemainingLabel = (() => {
+    if (!isLockedOut || !lockoutUntil) return "";
+    const msLeft = lockoutUntil - now;
+    const totalSeconds = Math.max(0, Math.ceil(msLeft / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
+  })();
+
   const resetInfoFields = () => {
     setPhone("");
     setLocation("");
@@ -121,7 +178,7 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || isLockedOut) return;
 
     if (!isLogin) {
       // Step 1 of registration: just validate the basics and move on to the
@@ -146,6 +203,16 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
     try {
       const {error: signInError} = await signIn.email({email, password});
       if (signInError) {
+        // Backend "ACCOUNT_LOCKED" code shoho lockedUntil (ISO timestamp)
+        // pathay — eta diye button-take 5 ghontar jonno disable rakhi.
+        const lockedUntilISO = (signInError as {lockedUntil?: string})
+          .lockedUntil;
+        if (signInError.code === "ACCOUNT_LOCKED" && lockedUntilISO) {
+          const until = new Date(lockedUntilISO).getTime();
+          localStorage.setItem(lockoutStorageKey(email), String(until));
+          setLockoutUntil(until);
+          setNow(Date.now());
+        }
         throw new Error(signInError.message ?? "Invalid email or password.");
       }
       toast.success("Welcome back! Redirecting to your workspace...");
@@ -430,9 +497,11 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               )}
             </AnimatePresence>
 
-            {error && (
-              <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
-                {error}
+            {isLockedOut && (
+              <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1 flex items-center gap-1">
+                <ShieldCheck size={12} className="shrink-0" />
+                Onek bar bhul password deyar jonno account lock kora hoyeche.
+                Abar try korte parben {lockoutRemainingLabel} pore.
               </p>
             )}
 
@@ -440,8 +509,9 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               <motion.button
                 type="button"
                 disabled={
-                  email === "demostudent@gmail.com" &&
-                  password === "demostudent1234"
+                  isLockedOut ||
+                  (email === "demostudent@gmail.com" &&
+                    password === "demostudent1234")
                 }
                 onClick={() => {
                   setEmail("demostudent@gmail.com");
@@ -463,13 +533,15 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
             <motion.button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLockedOut}
               whileHover={{y: -1}}
               whileTap={{scale: 0.98}}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+              ) : isLockedOut ? (
+                <>Locked — {lockoutRemainingLabel} left</>
               ) : (
                 <>
                   {isLogin ? "Sign In" : "Continue"}
