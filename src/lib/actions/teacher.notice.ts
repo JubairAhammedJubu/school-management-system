@@ -1,6 +1,6 @@
 "use server";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 export interface NoticePayload {
   teacherName?: string;
@@ -58,10 +58,10 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
       const mapped: NoticeItem[] = data.notices.map((item: any) => {
         const itemDate = item.createdAt
           ? new Date(item.createdAt).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })
           : "Recently";
 
         return {
