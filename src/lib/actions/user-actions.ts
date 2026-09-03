@@ -11,6 +11,14 @@ export interface UpdateProfileInput {
   location?: string;
   department?: string;
   bio?: string;
+  fatherName?: string;
+  motherName?: string;
+  dateOfBirth?: string;
+  address?: string;
+  bloodGroup?: string;
+  schoolName?: string;
+  studentClass?: string;
+  qualification?: string;
 }
 
 export interface ActionResponse<T = any> {
