@@ -18,6 +18,8 @@ export interface UpdateProfileInput {
   bloodGroup?: string;
   schoolName?: string;
   studentClass?: string;
+  section?: string;
+  roll?: string;
   qualification?: string;
 }
 
