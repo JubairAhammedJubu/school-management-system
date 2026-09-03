@@ -20,7 +20,7 @@ type Assignment = {
   subject: string;
   grade: string;
   section: string;
-  dueDate: string;
+  dueDate: string | Date;
   totalMarks: number;
   status: string;
   teacherEmail: string;
@@ -54,6 +54,9 @@ type AssignmentFormModalProps = {
   // Called after successful API save
   onSaved?: (assignment: Assignment) => void;
 
+  // Called after successful save (compat with page.tsx)
+  onSuccess?: (savedAssignment?: any, mode?: any) => void;
+
   // Optional compatibility with your previous implementation
   onSubmit?: (data: AssignmentFormData) => Promise<void>;
 };
@@ -78,6 +81,7 @@ export default function AssignmentFormModal({
   teacherEmail = "",
   teacherName = "",
   onSaved,
+  onSuccess,
   onSubmit,
 }: AssignmentFormModalProps) {
   const isEditing = Boolean(assignment);
@@ -248,9 +252,10 @@ export default function AssignmentFormModal({
        * Edit:
        * PATCH /api/teacher/assignments/:id
        */
+      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
       const url = isEditing
-        ? `http://localhost:5000/api/teacher/assignments/${assignment?.id}`
-        : "http://localhost:5000/api/teacher/assignments";
+        ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
+        : `${SERVER_URL}/api/teacher/assignments`;
 
       const method = isEditing ? "PATCH" : "POST";
 
@@ -285,9 +290,9 @@ export default function AssignmentFormModal({
       if (!response.ok || !data.success) {
         throw new Error(
           data.error ||
-            (isEditing
-              ? "Failed to update assignment."
-              : "Failed to create assignment.")
+          (isEditing
+            ? "Failed to update assignment."
+            : "Failed to create assignment.")
         );
       }
 
@@ -296,6 +301,7 @@ export default function AssignmentFormModal({
        */
       if (data.assignment) {
         onSaved?.(data.assignment);
+        onSuccess?.(data.assignment, isEditing ? "update" : "create");
       }
 
       /*

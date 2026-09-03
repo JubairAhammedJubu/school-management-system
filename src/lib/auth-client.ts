@@ -9,7 +9,7 @@ import { inferAdditionalFields } from "better-auth/client/plugins";
 // automatically — it's declared here explicitly instead. Keep this in sync
 // with the `additionalFields` in server/src/lib/auth.ts.
 export const authClient = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:5000"}/api/auth`,
+  baseURL: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth`,
   fetchOptions: {
     credentials: "include",
     onRequest(context) {

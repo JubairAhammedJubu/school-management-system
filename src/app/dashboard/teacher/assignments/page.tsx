@@ -15,28 +15,12 @@ import { useSession } from "@/lib/auth-client";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-import AssignmentCard from "@/components/shared/AssignmentCard";
+import AssignmentCard, { Assignment } from "@/components/shared/AssignmentCard";
 import AssignmentFormModal from "@/components/shared/AssignmentFormModal";
 
-const API_URL = "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 type AssignmentStatus = "ACTIVE" | "DRAFT" | "CLOSED" | string;
-
-export interface Assignment {
-  id: string;
-  title: string;
-  description?: string | null;
-  subject: string;
-  grade: string;
-  section: string;
-  dueDate: string;
-  totalMarks: number;
-  status: AssignmentStatus;
-  teacherEmail: string;
-  teacherName?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export default function TeacherAssignmentsPage() {
   const { data: session, isPending } = useSession();
@@ -131,7 +115,7 @@ export default function TeacherAssignmentsPage() {
    */
   const handleAssignmentSuccess = (
     savedAssignment?: Assignment,
-    mode?: "create" | "edit"
+    mode?: "create" | "edit" | "update" | string
   ) => {
     if (savedAssignment) {
       setAssignments((current) => {
