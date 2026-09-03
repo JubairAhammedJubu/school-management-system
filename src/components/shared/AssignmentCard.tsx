@@ -32,13 +32,15 @@ export type Assignment = {
 type AssignmentCardProps = {
   assignment: Assignment;
   onEdit: (assignment: Assignment) => void;
-  onDeleted: (assignmentId: string) => void;
+  onDeleted?: (assignmentId: string) => void;
+  onDelete?: (assignmentId: string) => void;
 };
 
 export default function AssignmentCard({
   assignment,
   onEdit,
   onDeleted,
+  onDelete,
 }: AssignmentCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -71,7 +73,8 @@ export default function AssignmentCard({
         throw new Error(data.error || "Failed to delete assignment.");
       }
 
-      onDeleted(assignment.id);
+      onDeleted?.(assignment.id);
+      onDelete?.(assignment.id);
     } catch (error) {
       console.error("Delete assignment error:", error);
 
