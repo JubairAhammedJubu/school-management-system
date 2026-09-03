@@ -455,18 +455,9 @@ export default function DashboardLayout({
       (isStudentRoute && rawRole !== "student") ||
       (isTeacherRoute && rawRole !== "teacher"));
 
-  // While checking session or if unauthorized
+  // While checking session or if unauthorized, render layout skeleton loader
   if (isPending || isUnauthorized) {
-    return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-black flex items-center justify-center p-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 dark:border-indigo-500 border-t-transparent" />
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {isUnauthorized ? "Redirecting..." : "Loading dashboard..."}
-          </p>
-        </div>
-      </div>
-    );
+    return <DashboardLayoutSkeleton />;
   }
 
   return (
@@ -706,3 +697,46 @@ export default function DashboardLayout({
     </div>
   );
 }
+
+function DashboardLayoutSkeleton() {
+  return (
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans animate-pulse">
+      {/* Sidebar Skeleton */}
+      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-black border-r border-slate-200 dark:border-slate-800 p-4 space-y-6 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+        </div>
+        <div className="h-6 w-full rounded-lg bg-indigo-50 dark:bg-indigo-950/40" />
+        <div className="space-y-3 pt-4">
+          <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60" />
+          ))}
+        </div>
+      </aside>
+
+      {/* Main Area Skeleton */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="hidden lg:flex h-16 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between">
+          <div className="h-4 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-24 rounded-lg bg-slate-200 dark:bg-slate-800" />
+            <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-950/50" />
+          </div>
+        </header>
+
+        <main className="flex-1 p-6 lg:p-8 space-y-6">
+          <div className="h-32 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-28 rounded-2xl bg-slate-200/70 dark:bg-slate-800/60" />
+            ))}
+          </div>
+          <div className="h-80 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
+        </main>
+      </div>
+    </div>
+  );
+}
+
