@@ -252,9 +252,10 @@ export default function AssignmentFormModal({
        * Edit:
        * PATCH /api/teacher/assignments/:id
        */
+      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
       const url = isEditing
-        ? `http://localhost:5000/api/teacher/assignments/${assignment?.id}`
-        : "http://localhost:5000/api/teacher/assignments";
+        ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
+        : `${SERVER_URL}/api/teacher/assignments`;
 
       const method = isEditing ? "PATCH" : "POST";
 
@@ -289,9 +290,9 @@ export default function AssignmentFormModal({
       if (!response.ok || !data.success) {
         throw new Error(
           data.error ||
-            (isEditing
-              ? "Failed to update assignment."
-              : "Failed to create assignment.")
+          (isEditing
+            ? "Failed to update assignment."
+            : "Failed to create assignment.")
         );
       }
 

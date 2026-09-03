@@ -59,8 +59,10 @@ export default function AssignmentCard({
       setIsDeleting(true);
       setDeleteError("");
 
+      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
       const response = await fetch(
-        `http://localhost:5000/api/teacher/assignments/${assignment.id}`,
+        `${SERVER_URL}/api/teacher/assignments/${assignment.id}`,
         {
           method: "DELETE",
           credentials: "include",
