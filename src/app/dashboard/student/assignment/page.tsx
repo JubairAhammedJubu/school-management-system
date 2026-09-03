@@ -1,29 +1,62 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Sparkles, Clock3, CheckCircle2, UploadCloud } from "lucide-react";
+import {
+  FileText,
+  Sparkles,
+  Clock3,
+  CheckCircle2,
+  UploadCloud,
+} from "lucide-react";
 
 interface AssignmentRecord {
   title: string;
   subject: string;
   dueDate: string;
-  status: "pending" | "submitted" | "graded";
+  status: "pending" | "ACTIVE" | "graded";
   grade?: string;
 }
 
-const assignments: AssignmentRecord[] = [
-  { title: "Algebra Problem Set 4", subject: "Mathematics", dueDate: "Aug 27, 2026", status: "pending" },
-  { title: "Lab Report: Photosynthesis", subject: "Biology", dueDate: "Aug 29, 2026", status: "pending" },
-  { title: "Essay: Industrial Revolution", subject: "History", dueDate: "Aug 31, 2026", status: "pending" },
-  { title: "Grammar Worksheet 3", subject: "English", dueDate: "Aug 20, 2026", status: "submitted" },
-  { title: "Newton's Laws Quiz Prep", subject: "Physics", dueDate: "Aug 15, 2026", status: "graded", grade: "18/20" },
-  { title: "Recursion Practice Set", subject: "Computer Science", dueDate: "Aug 12, 2026", status: "graded", grade: "20/20" },
-];
+// const assignments: AssignmentRecord[] = [
+//   { title: "Algebra Problem Set 4", subject: "Mathematics", dueDate: "Aug 27, 2026", status: "pending" },
+//   { title: "Lab Report: Photosynthesis", subject: "Biology", dueDate: "Aug 29, 2026", status: "pending" },
+//   { title: "Essay: Industrial Revolution", subject: "History", dueDate: "Aug 31, 2026", status: "pending" },
+//   { title: "Grammar Worksheet 3", subject: "English", dueDate: "Aug 20, 2026", status: "submitted" },
+//   { title: "Newton's Laws Quiz Prep", subject: "Physics", dueDate: "Aug 15, 2026", status: "graded", grade: "18/20" },
+//   { title: "Recursion Practice Set", subject: "Computer Science", dueDate: "Aug 12, 2026", status: "graded", grade: "20/20" },
+// ];
+
+const getAssignments = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch assignments");
+    }
+
+    console.log("Assignments:", data.assignments);
+    return data.assignments;
+  } catch (error) {
+    console.error("Error fetching assignments:", error);
+  }
+};
 
 const statusStyles: Record<
   AssignmentRecord["status"],
-  { label: string; className: string; icon: React.ComponentType<{ className?: string }> }
+  {
+    label: string;
+    className: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
   pending: {
     label: "Pending",
@@ -31,8 +64,8 @@ const statusStyles: Record<
       "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60",
     icon: Clock3,
   },
-  submitted: {
-    label: "Submitted",
+  ACTIVE: {
+    label: "ACTIVE",
     className:
       "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/60",
     icon: UploadCloud,
@@ -46,8 +79,23 @@ const statusStyles: Record<
 };
 
 export default function StudentAssignmentsPage() {
+  const [assignments, setAssignments] = useState<AssignmentRecord[]>([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      const data = await getAssignments();
+      if (data) {
+        setAssignments(data);
+      }
+    };
+
+    fetchAssignments();
+  }, []);
+
   const pendingCount = assignments.filter((a) => a.status === "pending").length;
-  const submittedCount = assignments.filter((a) => a.status === "submitted").length;
+  const submittedCount = assignments.filter(
+    (a) => a.status === "ACTIVE",
+  ).length;
   const gradedCount = assignments.filter((a) => a.status === "graded").length;
 
   return (
@@ -82,9 +130,21 @@ export default function StudentAssignmentsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Pending", value: pendingCount, className: "text-amber-600 dark:text-amber-400" },
-          { label: "Submitted", value: submittedCount, className: "text-blue-600 dark:text-blue-400" },
-          { label: "Graded", value: gradedCount, className: "text-emerald-600 dark:text-emerald-400" },
+          {
+            label: "Pending",
+            value: pendingCount,
+            className: "text-amber-600 dark:text-amber-400",
+          },
+          {
+            label: "Submitted",
+            value: submittedCount,
+            className: "text-blue-600 dark:text-blue-400",
+          },
+          {
+            label: "Graded",
+            value: gradedCount,
+            className: "text-emerald-600 dark:text-emerald-400",
+          },
         ].map((item, idx) => (
           <motion.div
             key={item.label}
@@ -93,7 +153,9 @@ export default function StudentAssignmentsPage() {
             transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
             className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 text-center shadow-xs transition-colors duration-300"
           >
-            <p className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${item.className}`}>
+            <p
+              className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${item.className}`}
+            >
               {item.value}
             </p>
             <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-1">
@@ -111,7 +173,9 @@ export default function StudentAssignmentsPage() {
         className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
       >
         <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">All Assignments</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            All Assignments
+          </h2>
         </div>
 
         <div className="overflow-x-auto">
