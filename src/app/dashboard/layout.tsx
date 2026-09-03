@@ -49,7 +49,8 @@ const adminRoutes: RouteItem[] = [
 const teacherRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
   { label: "Attendance", href: "/dashboard/teacher/attendance", icon: CalendarCheck },
-  { label: "Examination & Results", href: "/dashboard/teacher/results", icon: Award },
+  { label: "Examinations", href: "/dashboard/teacher/examinations", icon: ShieldCheck },
+  { label: "Results", href: "/dashboard/teacher/results", icon: Award },
   { label: "Assignments Management", href: "/dashboard/teacher/assignments", icon: FileText },
   { label: "Class & Subject Requests", href: "/dashboard/teacher/my-classes", icon: BookOpen },
   { label: "Students", href: "/dashboard/teacher/students", icon: GraduationCap },
@@ -196,12 +197,12 @@ export default function DashboardLayout({
           items: [teacherRoutes[0]],
         },
         {
-          title: "Classroom Tools",
-          items: [teacherRoutes[1], teacherRoutes[2], teacherRoutes[3]],
+          title: "Classroom & Academics",
+          items: [teacherRoutes[1], teacherRoutes[2], teacherRoutes[3], teacherRoutes[4]],
         },
         {
-          title: "Requests & Communication",
-          items: [teacherRoutes[4], teacherRoutes[5], teacherRoutes[6]],
+          title: "Students & Communication",
+          items: [teacherRoutes[5], teacherRoutes[6], teacherRoutes[7]],
         },
       ];
     } else {
@@ -255,34 +256,34 @@ export default function DashboardLayout({
       animate="show"
       className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800/80 shadow-xl dark:shadow-2xl transition-colors duration-300 overflow-hidden selection:bg-indigo-500 selection:text-white"
     >
-      {/* Brand Header */}
+      {/* Brand Header - Height aligned to h-16 (64px) to perfectly match top main header border */}
       <motion.div
         variants={sidebarItemVariants}
-        className="p-2.5 px-3 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/80 dark:bg-black/60"
+        className="h-16 px-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-black/60 shrink-0"
       >
         <Link href="/" className="flex items-center gap-2.5 group">
           <motion.div
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
-            className="relative h-7.5 w-7.5 shrink-0"
+            className="relative h-8.5 w-8.5 shrink-0"
           >
             <Image
               src="/second_logo_transparent.png"
               alt="EduNexus Logo"
-              width={30}
-              height={30}
+              width={34}
+              height={34}
               className="h-full w-full object-contain"
               priority
             />
           </motion.div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
-              <span className="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
               </span>
-              <ShieldCheck className="h-3 w-3 text-emerald-500 shrink-0" />
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
             </div>
-            <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 tracking-wide uppercase leading-tight">
+            <span className="text-[9.5px] font-semibold text-slate-500 dark:text-slate-400 tracking-wide uppercase leading-tight">
               School System
             </span>
           </div>
@@ -702,17 +703,19 @@ function DashboardLayoutSkeleton() {
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans animate-pulse">
       {/* Sidebar Skeleton */}
-      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-black border-r border-slate-200 dark:border-slate-800 p-4 space-y-6 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-xl bg-slate-200 dark:bg-slate-800" />
+      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-black border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col">
+        <div className="h-16 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 shrink-0">
+          <div className="h-8.5 w-8.5 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
           <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
         </div>
-        <div className="h-6 w-full rounded-lg bg-indigo-50 dark:bg-indigo-950/40" />
-        <div className="space-y-3 pt-4">
-          <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60" />
-          ))}
+        <div className="p-4 space-y-6 flex-1">
+          <div className="h-6 w-full rounded-lg bg-indigo-50 dark:bg-indigo-950/40" />
+          <div className="space-y-3 pt-2">
+            <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60" />
+            ))}
+          </div>
         </div>
       </aside>
 
