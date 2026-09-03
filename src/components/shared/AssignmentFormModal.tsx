@@ -20,7 +20,7 @@ type Assignment = {
   subject: string;
   grade: string;
   section: string;
-  dueDate: string;
+  dueDate: string | Date;
   totalMarks: number;
   status: string;
   teacherEmail: string;
@@ -54,6 +54,9 @@ type AssignmentFormModalProps = {
   // Called after successful API save
   onSaved?: (assignment: Assignment) => void;
 
+  // Called after successful save (compat with page.tsx)
+  onSuccess?: (savedAssignment?: any, mode?: any) => void;
+
   // Optional compatibility with your previous implementation
   onSubmit?: (data: AssignmentFormData) => Promise<void>;
 };
@@ -78,6 +81,7 @@ export default function AssignmentFormModal({
   teacherEmail = "",
   teacherName = "",
   onSaved,
+  onSuccess,
   onSubmit,
 }: AssignmentFormModalProps) {
   const isEditing = Boolean(assignment);
@@ -296,6 +300,7 @@ export default function AssignmentFormModal({
        */
       if (data.assignment) {
         onSaved?.(data.assignment);
+        onSuccess?.(data.assignment, isEditing ? "update" : "create");
       }
 
       /*

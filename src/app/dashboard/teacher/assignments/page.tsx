@@ -29,13 +29,13 @@ export interface Assignment {
   subject: string;
   grade: string;
   section: string;
-  dueDate: string;
+  dueDate: string | Date;
   totalMarks: number;
   status: AssignmentStatus;
   teacherEmail: string;
   teacherName?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export default function TeacherAssignmentsPage() {
