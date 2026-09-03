@@ -10,7 +10,11 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { ArrowRight } from "lucide-react";
 
 // Lightweight, self-contained SVG Icon Components
-const GraduationCapIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+const GraduationCapIcon = ({
+  className = "h-6 w-6",
+}: {
+  className?: string;
+}) => (
   <svg
     className={className}
     fill="none"
@@ -61,7 +65,11 @@ const CloseIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
   </svg>
 );
 
-const ChevronRightIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+const ChevronRightIcon = ({
+  className = "h-4 w-4",
+}: {
+  className?: string;
+}) => (
   <svg
     className={className}
     fill="none"
@@ -235,16 +243,18 @@ const ThemeToggleButton: React.FC<ThemeToggleProps> = ({
     >
       <div className="relative w-4 h-4 flex items-center justify-center">
         <SunIcon
-          className={`absolute transition-all duration-500 transform ${theme === "dark"
-            ? "opacity-0 rotate-90 scale-50"
-            : "opacity-100 rotate-0 scale-100 text-amber-500"
-            }`}
+          className={`absolute transition-all duration-500 transform ${
+            theme === "dark"
+              ? "opacity-0 rotate-90 scale-50"
+              : "opacity-100 rotate-0 scale-100 text-amber-500"
+          }`}
         />
         <MoonIcon
-          className={`absolute transition-all duration-500 transform ${theme === "dark"
-            ? "opacity-100 rotate-0 scale-100 text-blue-400"
-            : "opacity-0 -rotate-90 scale-50"
-            }`}
+          className={`absolute transition-all duration-500 transform ${
+            theme === "dark"
+              ? "opacity-100 rotate-0 scale-100 text-blue-400"
+              : "opacity-0 -rotate-90 scale-50"
+          }`}
         />
       </div>
     </button>
@@ -278,7 +288,18 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
-  const userRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const userRole = (
+    session?.user as { role?: string } | undefined
+  )?.role?.toLowerCase();
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.label === "Students") {
+      return !isPending && userRole === "student";
+    }
+    if (item.label === "Teachers") {
+      return !isPending && userRole === "teacher";
+    }
+    return true;
+  });
   const dashboardHref =
     userRole === "student"
       ? "/dashboard/student"
@@ -333,7 +354,10 @@ const Navbar: React.FC = () => {
   // Close mobile menu, user dropdown, and modal on ESC key press or outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setShowUserDropdown(false);
       }
     };
@@ -370,23 +394,23 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-out transform ${mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
-          } ${scrolled
-            ? "top-1 px-3.5 sm:px-4 md:px-4 lg:px-6"
-            : "top-0 px-0"
-          }`}
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-out transform ${
+          mounted ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+        } ${scrolled ? "top-1 px-3.5 sm:px-4 md:px-4 lg:px-6" : "top-0 px-0"}`}
       >
         <div
-          className={`relative transition-all duration-500 ${scrolled
-            ? "mx-auto w-full max-w-7xl rounded-2xl border backdrop-blur-sm bg-white/80 dark:bg-black/80 shadow-xl shadow-indigo-500/10 dark:shadow-black/60 border-white/50 dark:border-slate-800/70"
-            : "w-full rounded-none border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-black/80 shadow-none backdrop-blur-sm"
-            }`}
+          className={`relative transition-all duration-500 ${
+            scrolled
+              ? "mx-auto w-full max-w-7xl rounded-2xl border backdrop-blur-sm bg-white/80 dark:bg-black/80 shadow-xl shadow-indigo-500/10 dark:shadow-black/60 border-white/50 dark:border-slate-800/70"
+              : "w-full rounded-none border-b border-slate-200/50 dark:border-slate-800/50 bg-white/80 dark:bg-black/80 shadow-none backdrop-blur-sm"
+          }`}
         >
           <div
-            className={`transition-all duration-300 ${scrolled
-              ? "flex items-center justify-between px-3 py-1 sm:px-3.5 sm:py-1.5 md:py-1.5 lg:py-1.5"
-              : "mx-auto w-full max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3"
-              }`}
+            className={`transition-all duration-300 ${
+              scrolled
+                ? "flex items-center justify-between px-3 py-1 sm:px-3.5 sm:py-1.5 md:py-1.5 lg:py-1.5"
+                : "mx-auto w-full max-w-7xl flex items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3"
+            }`}
           >
             {/* Logo */}
             <Link
@@ -407,23 +431,26 @@ const Navbar: React.FC = () => {
               <div>
                 <h1 className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                   Edu
-                  <span className="text-indigo-600 dark:text-indigo-400">Nexus</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">
+                    Nexus
+                  </span>
                 </h1>
               </div>
             </Link>
 
             {/* Desktop Navigation (Visible on Large devices >= 1024px) */}
             <nav className="hidden lg:flex items-center gap-1 lg:gap-1 bg-slate-200/40 dark:bg-slate-900/50 backdrop-blur-md p-1 rounded-xl border border-white/40 dark:border-slate-800/60">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const active = checkIsActive(item.href);
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`relative px-3 py-1 lg:px-3.5 lg:py-1 text-xs sm:text-xs lg:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${active
-                      ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800/90 shadow-xs font-semibold border border-transparent dark:border-slate-700/50"
-                      : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/60 dark:hover:bg-slate-800/40"
-                      }`}
+                    className={`relative px-3 py-1 lg:px-3.5 lg:py-1 text-xs sm:text-xs lg:text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+                      active
+                        ? "text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800/90 shadow-xs font-semibold border border-transparent dark:border-slate-700/50"
+                        : "text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/60 dark:hover:bg-slate-800/40"
+                    }`}
                   >
                     {item.label}
                     {active && (
@@ -461,8 +488,9 @@ const Navbar: React.FC = () => {
                       {session.user.name?.split(" ")[0] ?? "User"}
                     </span>
                     <ChevronDownIcon
-                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${showUserDropdown ? "rotate-180 text-indigo-600" : ""
-                        }`}
+                      className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${
+                        showUserDropdown ? "rotate-180 text-indigo-600" : ""
+                      }`}
                     />
                   </button>
 
@@ -480,7 +508,8 @@ const Navbar: React.FC = () => {
                         <div className="px-3 py-2.5 mb-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                           <div className="flex items-center gap-2.5">
                             <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
-                              {session.user.name?.charAt(0).toUpperCase() ?? "U"}
+                              {session.user.name?.charAt(0).toUpperCase() ??
+                                "U"}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-snug">
@@ -569,26 +598,28 @@ const Navbar: React.FC = () => {
 
           {/* Compact Navigation Menu Dropdown with Smooth Expand/Collapse Animation */}
           <div
-            className={`grid lg:hidden transition-all duration-300 ease-in-out ${isOpen
-              ? "grid-rows-[1fr] opacity-100 border-t border-slate-200/80 dark:border-slate-800/80"
-              : "grid-rows-[0fr] opacity-0 border-t-0 border-transparent"
-              }`}
+            className={`grid lg:hidden transition-all duration-300 ease-in-out ${
+              isOpen
+                ? "grid-rows-[1fr] opacity-100 border-t border-slate-200/80 dark:border-slate-800/80"
+                : "grid-rows-[0fr] opacity-0 border-t-0 border-transparent"
+            }`}
           >
             <div
               className={`overflow-hidden px-4 transition-all duration-300 ease-in-out ${isOpen ? "py-3.5 space-y-3" : "py-0 space-y-0"}`}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                {navItems.map((item) => {
+                {visibleNavItems.map((item) => {
                   const active = checkIsActive(item.href);
                   return (
                     <Link
                       key={item.label}
                       href={item.href}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium rounded-xl transition-all cursor-pointer ${active
-                        ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 font-semibold"
-                        : "text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
-                        }`}
+                      className={`flex items-center justify-between px-3.5 py-2 text-sm font-medium rounded-xl transition-all cursor-pointer ${
+                        active
+                          ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 font-semibold"
+                          : "text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/80"
+                      }`}
                     >
                       <span className="flex items-center gap-2">
                         {active && (
@@ -597,10 +628,11 @@ const Navbar: React.FC = () => {
                         {item.label}
                       </span>
                       <ChevronRightIcon
-                        className={`h-4 w-4 transition-transform ${active
-                          ? "text-indigo-600 dark:text-indigo-400"
-                          : "text-slate-400 opacity-60"
-                          }`}
+                        className={`h-4 w-4 transition-transform ${
+                          active
+                            ? "text-indigo-600 dark:text-indigo-400"
+                            : "text-slate-400 opacity-60"
+                        }`}
                       />
                     </Link>
                   );
