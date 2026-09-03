@@ -92,14 +92,15 @@ export async function getTeacherStudentsAction(
       classes: ["All Classes"],
       error: data.error || "Failed to fetch student list",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("getTeacherStudentsAction error:", error);
+    const errMessage = error instanceof Error ? error.message : "Failed to fetch student list";
     return {
       success: false,
       students: [],
       pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
       classes: ["All Classes"],
-      error: error?.message || "Failed to fetch student list",
+      error: errMessage,
     };
   }
 }
