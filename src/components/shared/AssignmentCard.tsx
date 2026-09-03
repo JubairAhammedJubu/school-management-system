@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import {
   BookOpen,
   CalendarDays,
-  Clock3,
   Edit3,
   FileText,
-  Loader2,
   Trash2,
   Users,
+  Award,
 } from "lucide-react";
 
 export type Assignment = {
@@ -32,62 +31,19 @@ export type Assignment = {
 type AssignmentCardProps = {
   assignment: Assignment;
   onEdit: (assignment: Assignment) => void;
-  onDeleted?: (assignmentId: string) => void;
-  onDelete?: (assignmentId: string) => void;
+  onDelete: (assignment: Assignment) => void;
 };
 
 export default function AssignmentCard({
   assignment,
   onEdit,
-  onDeleted,
   onDelete,
 }: AssignmentCardProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
-
   const formattedDueDate = formatDate(assignment.dueDate);
   const isPastDue = new Date(assignment.dueDate).getTime() < Date.now();
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${assignment.title}"?`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setIsDeleting(true);
-      setDeleteError("");
-
-      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
-      const response = await fetch(
-        `${SERVER_URL}/api/teacher/assignments/${assignment.id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete assignment.");
-      }
-
-      onDeleted?.(assignment.id);
-      onDelete?.(assignment.id);
-    } catch (error) {
-      console.error("Delete assignment error:", error);
-
-      setDeleteError(
-        error instanceof Error
-          ? error.message
-          : "Failed to delete assignment."
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    onDelete(assignment);
   };
 
   return (
@@ -97,141 +53,97 @@ export default function AssignmentCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="group rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-indigo-700/60"
     >
-      {/* Main content */}
-      <div className="p-5 sm:p-6">
-        {/* Top row */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 items-start gap-4">
-            {/* Icon */}
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl group-hover:bg-indigo-500/20 transition-all duration-300" />
+
+      {/* Main Content Header */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-xs">
               <FileText className="h-5 w-5" />
             </div>
 
-            {/* Title */}
             <div className="min-w-0">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <StatusBadge status={assignment.status} />
-
-                {isPastDue && assignment.status === "ACTIVE" && (
-                  <span className="rounded-md bg-rose-50 px-2 py-1 text-xs font-bold text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
-                    Past due
-                  </span>
-                )}
-              </div>
-
-              <h2 className="truncate text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-xl">
+              <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 truncate block">
+                {assignment.subject}
+              </span>
+              <h3 className="line-clamp-1 text-sm font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 {assignment.title}
-              </h2>
-
-              {assignment.description && (
-                <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  {assignment.description}
-                </p>
-              )}
+              </h3>
             </div>
           </div>
 
-          {/* Desktop actions */}
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={() => onEdit(assignment)}
-              disabled={isDeleting}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-            >
-              <Edit3 className="h-4 w-4" />
-              Edit
-            </button>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <StatusBadge status={assignment.status} />
 
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3.5 text-sm font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/15"
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-
-              {isDeleting ? "Deleting..." : "Delete"}
-            </button>
+            {isPastDue && assignment.status === "ACTIVE" && (
+              <span className="rounded-lg bg-rose-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">
+                Past due
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Assignment details */}
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <AssignmentDetail
-            icon={BookOpen}
-            label="Subject"
-            value={assignment.subject}
-          />
+        {assignment.description && (
+          <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+            {assignment.description}
+          </p>
+        )}
+      </div>
 
+      {/* Grid Specs */}
+      <div className="mt-4 grid grid-cols-2 gap-2 text-xs min-w-0">
+        <div className="min-w-0">
           <AssignmentDetail
             icon={Users}
             label="Class"
-            value={`${assignment.grade} - ${assignment.section}`}
+            value={`${assignment.grade} · ${assignment.section}`}
           />
+        </div>
 
+        <div className="min-w-0">
+          <AssignmentDetail
+            icon={Award}
+            label="Total Marks"
+            value={`${assignment.totalMarks} pts`}
+          />
+        </div>
+
+        <div className="col-span-2 min-w-0">
           <AssignmentDetail
             icon={CalendarDays}
-            label="Due date"
+            label="Deadline Date"
             value={formattedDueDate}
             valueClassName={isPastDue ? "text-rose-600 dark:text-rose-400" : ""}
           />
-
-          <AssignmentDetail
-            icon={Clock3}
-            label="Total marks"
-            value={`${assignment.totalMarks} marks`}
-          />
         </div>
+      </div>
 
-        {/* Mobile actions */}
-        <div className="mt-5 flex gap-2 border-t border-slate-100 pt-5 dark:border-slate-800 sm:hidden">
-          <button
-            type="button"
-            onClick={() => onEdit(assignment)}
-            disabled={isDeleting}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <Edit3 className="h-4 w-4" />
-            Edit
-          </button>
+      {/* Action Buttons Footer */}
+      <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100/90 pt-3.5 dark:border-slate-800/90">
+        <button
+          type="button"
+          onClick={() => onEdit(assignment)}
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 text-xs font-bold text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white cursor-pointer"
+        >
+          <Edit3 className="h-3.5 w-3.5" />
+          Edit
+        </button>
 
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/15"
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-
-            {isDeleting ? "Deleting..." : "Delete"}
-          </button>
-        </div>
-
-        {/* Delete error */}
-        {deleteError && (
-          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
-            {deleteError}
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-rose-50 px-3.5 text-xs font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white cursor-pointer"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Delete
+        </button>
       </div>
     </motion.article>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/* Detail                                                                       */
-/* -------------------------------------------------------------------------- */
 
 function AssignmentDetail({
   icon: Icon,
@@ -245,17 +157,16 @@ function AssignmentDetail({
   valueClassName?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3.5 dark:border-slate-800 dark:bg-slate-950/40">
-      <div className="flex items-center gap-2">
-        <Icon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
-
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-50/60 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/40">
+      <div className="flex items-center gap-1.5 mb-0.5 min-w-0">
+        <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">
           {label}
         </span>
       </div>
-
       <p
-        className={`mt-1.5 truncate text-sm font-bold text-slate-800 dark:text-slate-200 ${valueClassName}`}
+        title={value}
+        className={`text-xs font-bold text-slate-900 dark:text-white truncate ${valueClassName}`}
       >
         {value}
       </p>
@@ -263,47 +174,32 @@ function AssignmentDetail({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Status                                                                       */
-/* -------------------------------------------------------------------------- */
-
 function StatusBadge({ status }: { status: string }) {
   const normalizedStatus = status.toUpperCase();
 
-  const styles = {
-    ACTIVE:
-      "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
-    DRAFT:
-      "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
-    CLOSED:
-      "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-  };
+  if (normalizedStatus === "ACTIVE") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-extrabold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Active
+      </span>
+    );
+  }
 
-  const label = {
-    ACTIVE: "Active",
-    DRAFT: "Draft",
-    CLOSED: "Closed",
-  };
-
-  const className =
-    styles[normalizedStatus as keyof typeof styles] ||
-    "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
-
-  const displayLabel =
-    label[normalizedStatus as keyof typeof label] || normalizedStatus;
+  if (normalizedStatus === "DRAFT") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-extrabold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+        Draft
+      </span>
+    );
+  }
 
   return (
-    <span
-      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-bold ${className}`}
-    >
-      {displayLabel}
+    <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+      Closed
     </span>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/* Date                                                                         */
-/* -------------------------------------------------------------------------- */
 
 function formatDate(date: string | Date) {
   const parsedDate = new Date(date);

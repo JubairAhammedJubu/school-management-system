@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -10,6 +10,9 @@ import {
   Users,
   Save,
   Loader2,
+  Layers,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -43,30 +46,116 @@ export type AssignmentFormData = {
 type AssignmentFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
-
-  // Present when editing an existing assignment
   assignment?: Assignment | null;
-
-  // Current logged-in teacher
   teacherEmail?: string;
   teacherName?: string;
-
-  // Called after successful API save
   onSaved?: (assignment: Assignment) => void;
-
-  // Called after successful save (compat with page.tsx)
   onSuccess?: (savedAssignment?: any, mode?: any) => void;
-
-  // Optional compatibility with your previous implementation
   onSubmit?: (data: AssignmentFormData) => Promise<void>;
+};
+
+const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+const SECTION_OPTIONS = ["Section A", "Section B"];
+
+const SUBJECTS_BY_CLASS: Record<string, string[]> = {
+  "Class 6": [
+    "Bangla",
+    "English",
+    "Mathematics",
+    "Science",
+    "Bangladesh & Global Studies",
+    "Information & Communication Technology (ICT)",
+    "Physical Education & Health",
+    "Work & Life Oriented Education",
+    "Agricultural Studies",
+    "Arts & Crafts",
+    "Islamic Studies",
+    "Hindu Religion Studies",
+  ],
+  "Class 7": [
+    "Bangla 1st Paper",
+    "Bangla 2nd Paper",
+    "English 1st Paper",
+    "English 2nd Paper",
+    "Mathematics",
+    "General Science",
+    "Bangladesh & Global Studies",
+    "Information & Communication Technology (ICT)",
+    "Islamic Studies",
+    "Hindu Religion Studies",
+  ],
+  "Class 8": [
+    "Bangla 1st Paper",
+    "Bangla 2nd Paper",
+    "English 1st Paper",
+    "English 2nd Paper",
+    "Mathematics",
+    "General Science",
+    "Bangladesh & Global Studies",
+    "Information & Communication Technology (ICT)",
+    "Islamic Studies",
+    "Hindu Religion Studies",
+  ],
+  "Class 9": [
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Higher Mathematics",
+    "Bangla 1st Paper",
+    "Bangla 2nd Paper",
+    "English 1st Paper",
+    "English 2nd Paper",
+    "Information & Communication Technology (ICT)",
+    "Accounting",
+    "Finance & Banking",
+    "Business Entrepreneurship",
+    "Geography & Environment",
+    "Civics & Citizenship",
+    "Economics",
+    "General Science",
+    "Bangladesh & Global Studies",
+    "Agricultural Studies",
+    "Home Science",
+    "Islamic Studies",
+  ],
+  "Class 10": [
+    "Mathematics",
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Higher Mathematics",
+    "Bangla 1st Paper",
+    "Bangla 2nd Paper",
+    "English 1st Paper",
+    "English 2nd Paper",
+    "Information & Communication Technology (ICT)",
+    "Accounting",
+    "Finance & Banking",
+    "Business Entrepreneurship",
+    "Geography & Environment",
+    "Civics & Citizenship",
+    "Economics",
+    "General Science",
+    "Bangladesh & Global Studies",
+    "Agricultural Studies",
+    "Home Science",
+    "Islamic Studies",
+  ],
+};
+
+const STATUS_DISPLAY_MAP: Record<string, string> = {
+  ACTIVE: "Active (Published for students)",
+  DRAFT: "Draft (Unpublished draft)",
+  CLOSED: "Closed (Submissions locked)",
 };
 
 const EMPTY_FORM: AssignmentFormData = {
   title: "",
   description: "",
-  subject: "",
-  grade: "",
-  section: "",
+  subject: "Mathematics",
+  grade: "Class 8",
+  section: "Section A",
   dueDate: "",
   totalMarks: 100,
   teacherEmail: "",
@@ -90,18 +179,24 @@ export default function AssignmentFormModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  /*
-   * Populate the form when:
-   * - modal opens for creating
-   * - modal opens for editing
-   * - selected assignment changes
-   */
+  const availableSubjects = useMemo(() => {
+    return SUBJECTS_BY_CLASS[form.grade] || SUBJECTS_BY_CLASS["Class 8"];
+  }, [form.grade]);
+
+  useEffect(() => {
+    if (availableSubjects.length > 0 && !availableSubjects.includes(form.subject)) {
+      setForm((previous) => ({
+        ...previous,
+        subject: availableSubjects[0],
+      }));
+    }
+  }, [form.grade, availableSubjects, form.subject]);
+
   useEffect(() => {
     if (!isOpen) return;
 
     if (assignment) {
       const date = new Date(assignment.dueDate);
-
       let formattedDueDate = "";
 
       if (!Number.isNaN(date.getTime())) {
@@ -111,9 +206,9 @@ export default function AssignmentFormModal({
       setForm({
         title: assignment.title || "",
         description: assignment.description || "",
-        subject: assignment.subject || "",
-        grade: assignment.grade || "",
-        section: assignment.section || "",
+        subject: assignment.subject || availableSubjects[0],
+        grade: assignment.grade || "Class 8",
+        section: assignment.section || "Section A",
         dueDate: formattedDueDate,
         totalMarks: assignment.totalMarks || 100,
         teacherEmail: assignment.teacherEmail || teacherEmail,
@@ -123,6 +218,7 @@ export default function AssignmentFormModal({
     } else {
       setForm({
         ...EMPTY_FORM,
+        subject: availableSubjects[0] || "Mathematics",
         teacherEmail,
         teacherName,
       });
@@ -131,54 +227,40 @@ export default function AssignmentFormModal({
     setError("");
   }, [isOpen, assignment, teacherEmail, teacherName]);
 
-  /*
-   * Prevent background page scrolling while modal is open.
-   */
   useEffect(() => {
     if (!isOpen) return;
-
     const previousOverflow = document.body.style.overflow;
-
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
-  const updateField = (
-    field: keyof AssignmentFormData,
-    value: string | number
-  ) => {
+  const updateField = (field: keyof AssignmentFormData, value: string | number) => {
     setForm((previous) => ({
       ...previous,
       [field]: value,
     }));
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    /*
-     * Client-side validation
-     */
     if (!form.title.trim()) {
       setError("Assignment title is required.");
       toast.error("Assignment title is required.");
       return;
     }
 
-    if (!form.subject.trim()) {
-      setError("Subject is required.");
-      toast.error("Subject is required.");
+    if (!form.description.trim()) {
+      setError("Description & instructions are required.");
+      toast.error("Description & instructions are required.");
       return;
     }
 
     if (!form.grade.trim()) {
-      setError("Grade is required.");
-      toast.error("Grade is required.");
+      setError("Class is required.");
+      toast.error("Class is required.");
       return;
     }
 
@@ -188,15 +270,15 @@ export default function AssignmentFormModal({
       return;
     }
 
-    if (!form.dueDate) {
-      setError("Due date is required.");
-      toast.error("Due date is required.");
+    if (!form.subject.trim()) {
+      setError("Subject is required.");
+      toast.error("Subject is required.");
       return;
     }
 
-    if (!form.teacherEmail.trim()) {
-      setError("Teacher email is required.");
-      toast.error("Teacher email is required.");
+    if (!form.dueDate) {
+      setError("Deadline Date & Time is required.");
+      toast.error("Deadline Date & Time is required.");
       return;
     }
 
@@ -218,10 +300,6 @@ export default function AssignmentFormModal({
       setIsSaving(true);
       setError("");
 
-      /*
-       * Compatibility mode:
-       * If parent supplied onSubmit, let the parent handle saving.
-       */
       if (onSubmit) {
         await onSubmit({
           ...form,
@@ -240,18 +318,10 @@ export default function AssignmentFormModal({
             ? "Assignment updated successfully!"
             : "Assignment created successfully!"
         );
-
         onClose();
         return;
       }
 
-      /*
-       * Create:
-       * POST /api/teacher/assignments
-       *
-       * Edit:
-       * PATCH /api/teacher/assignments/:id
-       */
       const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
       const url = isEditing
         ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
@@ -273,14 +343,13 @@ export default function AssignmentFormModal({
           section: form.section.trim(),
           dueDate: parsedDueDate.toISOString(),
           totalMarks: Number(form.totalMarks) || 100,
-          teacherEmail: form.teacherEmail.trim(),
-          teacherName: form.teacherName.trim() || null,
+          teacherEmail: (form.teacherEmail || teacherEmail).trim(),
+          teacherName: (form.teacherName || teacherName || "Teacher").trim(),
           status: form.status,
         }),
       });
 
       let data: any = null;
-
       try {
         data = await response.json();
       } catch {
@@ -290,33 +359,25 @@ export default function AssignmentFormModal({
       if (!response.ok || !data.success) {
         throw new Error(
           data.error ||
-          (isEditing
-            ? "Failed to update assignment."
-            : "Failed to create assignment.")
+            (isEditing
+              ? "Failed to update assignment."
+              : "Failed to create assignment.")
         );
       }
 
-      /*
-       * Send updated/new assignment back to parent.
-       */
       if (data.assignment) {
         onSaved?.(data.assignment);
         onSuccess?.(data.assignment, isEditing ? "update" : "create");
       }
 
-      /*
-       * Success toast
-       */
       toast.success(
         isEditing
           ? "Assignment updated successfully!"
           : "Assignment created successfully!"
       );
-
       onClose();
     } catch (err) {
       console.error("Assignment save error:", err);
-
       const message =
         err instanceof Error
           ? err.message
@@ -333,7 +394,6 @@ export default function AssignmentFormModal({
 
   const handleClose = () => {
     if (isSaving) return;
-
     setError("");
     onClose();
   };
@@ -341,331 +401,364 @@ export default function AssignmentFormModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-slate-950/55 backdrop-blur-sm"
-            onMouseDown={handleClose}
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-md"
+            onClick={handleClose}
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 z-[101] flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-                scale: 0.98,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: 1,
-              }}
-              exit={{
-                opacity: 0,
-                y: 20,
-                scale: 0.98,
-              }}
-              transition={{
-                duration: 0.22,
-                ease: "easeOut",
-              }}
-              className="relative my-auto flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:max-h-[calc(100vh-3rem)]"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-5 dark:border-slate-800 sm:px-7">
-                <div className="flex min-w-0 items-start gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    <FileText className="h-5 w-5" />
-                  </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 15 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-950 dark:text-white">
+                    {isEditing ? "Edit Assignment" : "Create New Assignment"}
+                  </h3>
+                  <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                    {isEditing
+                      ? "Update assignment details & class settings"
+                      : "Fill in assignment title, class, section, subject & due date"}
+                  </p>
+                </div>
+              </div>
 
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-xl">
-                      {isEditing
-                        ? "Edit Assignment"
-                        : "Create Assignment"}
-                    </h2>
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isSaving}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
 
-                    <p className="mt-1 text-sm leading-5 text-slate-500 dark:text-slate-400">
-                      {isEditing
-                        ? "Update the assignment details and save your changes."
-                        : "Create a new assignment for your students."}
-                    </p>
-                  </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {error && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
+                  {error}
+                </div>
+              )}
+
+              {/* Assignment Title */}
+              <div>
+                <label htmlFor="assignment-title" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Assignment Title *
+                </label>
+                <div className="relative">
+                  <FileText className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    id="assignment-title"
+                    type="text"
+                    required
+                    value={form.title}
+                    onChange={(e) => updateField("title", e.target.value)}
+                    placeholder="e.g. Chapter 5 Algebra & Functions"
+                    disabled={isSaving}
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3.5 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              {/* Sequence: 1. Class -> 2. Section -> 3. Subject */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {/* 1. Class Select */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Class *
+                  </label>
+                  <ModalSelectDropdown
+                    value={form.grade}
+                    options={CLASS_OPTIONS}
+                    onChange={(val) => updateField("grade", val)}
+                    icon={Users}
+                    disabled={isSaving}
+                  />
                 </div>
 
+                {/* 2. Section Select */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Section *
+                  </label>
+                  <ModalSelectDropdown
+                    value={form.section}
+                    options={SECTION_OPTIONS}
+                    onChange={(val) => updateField("section", val)}
+                    icon={Users}
+                    disabled={isSaving}
+                  />
+                </div>
+
+                {/* 3. Subject Select */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Subject *
+                  </label>
+                  <ModalSelectDropdown
+                    value={form.subject}
+                    options={availableSubjects}
+                    onChange={(val) => updateField("subject", val)}
+                    icon={BookOpen}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              {/* Single Field Due Date & Time & Total Marks Row */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {/* Custom Single Field Due Date & Time */}
+                <SingleFieldDateTimePicker
+                  value={form.dueDate}
+                  onChange={(val) => updateField("dueDate", val)}
+                  disabled={isSaving}
+                />
+
+                {/* Total Marks */}
+                <div>
+                  <label htmlFor="assignment-total-marks" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Total Marks *
+                  </label>
+                  <input
+                    id="assignment-total-marks"
+                    type="number"
+                    min={1}
+                    value={form.totalMarks}
+                    onChange={(e) => updateField("totalMarks", Number(e.target.value))}
+                    disabled={isSaving}
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  />
+                </div>
+              </div>
+
+              {/* Status Select */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Status
+                </label>
+                <ModalSelectDropdown
+                  value={form.status}
+                  options={["ACTIVE", "DRAFT", "CLOSED"]}
+                  displayMap={STATUS_DISPLAY_MAP}
+                  onChange={(val) => updateField("status", val)}
+                  icon={Layers}
+                  disabled={isSaving}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label htmlFor="assignment-description" className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Description & Instructions *
+                </label>
+                <textarea
+                  id="assignment-description"
+                  required
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => updateField("description", e.target.value)}
+                  placeholder="Add coursework instructions, guidelines, or submission requirements..."
+                  disabled={isSaving}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={handleClose}
                   disabled={isSaving}
-                  aria-label="Close modal"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  className="h-9 rounded-lg border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >
-                  <X className="h-5 w-5" />
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-5 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-3.5 w-3.5" />
+                      {isEditing ? "Save Changes" : "Create Assignment"}
+                    </>
+                  )}
                 </button>
               </div>
-
-              {/* Form content */}
-              <form
-                onSubmit={handleSubmit}
-                className="flex min-h-0 flex-1 flex-col"
-              >
-                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
-                  {error && (
-                    <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold leading-5 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="space-y-5">
-                    {/* Title */}
-                    <div>
-                      <label
-                        htmlFor="assignment-title"
-                        className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200"
-                      >
-                        Assignment Title
-                      </label>
-
-                      <div className="relative">
-                        <FileText className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
-                        <input
-                          id="assignment-title"
-                          type="text"
-                          value={form.title}
-                          onChange={(event) =>
-                            updateField("title", event.target.value)
-                          }
-                          placeholder="e.g. Chapter 5 Mathematics"
-                          disabled={isSaving}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label
-                        htmlFor="assignment-description"
-                        className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200"
-                      >
-                        Description
-                        <span className="ml-1 font-normal text-slate-400">
-                          (optional)
-                        </span>
-                      </label>
-
-                      <textarea
-                        id="assignment-description"
-                        value={form.description}
-                        onChange={(event) =>
-                          updateField(
-                            "description",
-                            event.target.value
-                          )
-                        }
-                        placeholder="Add instructions or details for students..."
-                        rows={4}
-                        disabled={isSaving}
-                        className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                      />
-                    </div>
-
-                    {/* Subject / Grade / Section */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                      <FormInput
-                        label="Subject"
-                        icon={BookOpen}
-                        value={form.subject}
-                        placeholder="Mathematics"
-                        disabled={isSaving}
-                        onChange={(value) =>
-                          updateField("subject", value)
-                        }
-                      />
-
-                      <FormInput
-                        label="Grade"
-                        icon={Users}
-                        value={form.grade}
-                        placeholder="Grade 10"
-                        disabled={isSaving}
-                        onChange={(value) =>
-                          updateField("grade", value)
-                        }
-                      />
-
-                      <FormInput
-                        label="Section"
-                        icon={Users}
-                        value={form.section}
-                        placeholder="A"
-                        disabled={isSaving}
-                        onChange={(value) =>
-                          updateField("section", value)
-                        }
-                      />
-                    </div>
-
-                    {/* Due date / Total marks */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label
-                          htmlFor="assignment-due-date"
-                          className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200"
-                        >
-                          Due Date
-                        </label>
-
-                        <div className="relative">
-                          <CalendarDays className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
-                          <input
-                            id="assignment-due-date"
-                            type="datetime-local"
-                            value={form.dueDate}
-                            onChange={(event) =>
-                              updateField(
-                                "dueDate",
-                                event.target.value
-                              )
-                            }
-                            disabled={isSaving}
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="assignment-total-marks"
-                          className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200"
-                        >
-                          Total Marks
-                        </label>
-
-                        <input
-                          id="assignment-total-marks"
-                          type="number"
-                          min={1}
-                          value={form.totalMarks}
-                          onChange={(event) =>
-                            updateField(
-                              "totalMarks",
-                              Number(event.target.value)
-                            )
-                          }
-                          disabled={isSaving}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div>
-                      <label
-                        htmlFor="assignment-status"
-                        className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200"
-                      >
-                        Status
-                      </label>
-
-                      <select
-                        id="assignment-status"
-                        value={form.status}
-                        onChange={(event) =>
-                          updateField("status", event.target.value)
-                        }
-                        disabled={isSaving}
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
-                      >
-                        <option value="ACTIVE">Active</option>
-                        <option value="DRAFT">Draft</option>
-                        <option value="CLOSED">Closed</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:justify-end sm:px-7">
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    disabled={isSaving}
-                    className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4" />
-                        {isEditing
-                          ? "Save Changes"
-                          : "Create Assignment"}
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        </>
+            </form>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
 }
 
-function FormInput({
-  label,
-  icon: Icon,
+/* ========================================================= */
+/* SINGLE FIELD DUE DATE & TIME PICKER COMPONENT */
+/* ========================================================= */
+
+function SingleFieldDateTimePicker({
   value,
-  placeholder,
-  disabled,
   onChange,
+  disabled = false,
 }: {
-  label: string;
-  icon: React.ElementType;
   value: string;
-  placeholder: string;
+  onChange: (val: string) => void;
   disabled?: boolean;
-  onChange: (value: string) => void;
 }) {
+  const formattedPreview = useMemo(() => {
+    if (!value) return null;
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return null;
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(d);
+  }, [value]);
+
   return (
     <div>
-      <label className="mb-2 block text-sm font-bold text-slate-800 dark:text-slate-200">
-        {label}
-      </label>
+      <div className="flex items-center justify-between mb-1">
+        <label htmlFor="assignment-due-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+          Deadline Date & Time *
+        </label>
+        {formattedPreview && (
+          <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20 truncate max-w-[200px]">
+            {formattedPreview}
+          </span>
+        )}
+      </div>
 
-      <div className="relative">
-        <Icon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <div className="relative group">
+        <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <div className="flex h-6.5 w-6.5 items-center justify-center rounded-md bg-indigo-600 text-white shadow-xs">
+            <CalendarDays className="h-3.5 w-3.5" />
+          </div>
+        </div>
 
         <input
-          type="text"
+          id="assignment-due-date"
+          type="datetime-local"
+          required
           value={value}
-          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-slate-500 dark:focus:ring-slate-800"
+          className="h-10 w-full rounded-xl border border-slate-200/90 bg-slate-50/80 pl-11 pr-3 text-xs font-bold text-slate-800 outline-none transition-all duration-200 hover:border-indigo-300 hover:bg-white focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/90 dark:bg-slate-800/80 dark:text-slate-100 cursor-pointer"
         />
       </div>
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* MODAL SELECT DROPDOWN COMPONENT */
+/* ========================================================= */
+
+function ModalSelectDropdown({
+  value,
+  options,
+  displayMap,
+  onChange,
+  icon: Icon,
+  disabled = false,
+}: {
+  value: string;
+  options: string[];
+  displayMap?: Record<string, string>;
+  onChange: (val: string) => void;
+  icon: React.ElementType;
+  disabled?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayText = displayMap?.[value] || value;
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+      >
+        <span className="truncate flex items-center gap-2">
+          <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span>{displayText}</span>
+        </span>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute left-0 top-full z-40 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-900"
+          >
+            {options.map((option) => {
+              const isSelected = option === value;
+              const label = displayMap?.[option] || option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange(option);
+                    setIsOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                    isSelected
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300 font-extrabold"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                  }`}
+                >
+                  <span className="truncate">{label}</span>
+                  {isSelected && <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
