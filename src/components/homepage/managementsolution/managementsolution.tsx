@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BookOpen,
@@ -13,6 +14,7 @@ import { motion } from "framer-motion";
 import { useSession } from "@/lib/auth-client";
 
 export default function ManagementSolutions() {
+  const router = useRouter();
   const { data: session } = useSession();
   return (
     <section
@@ -138,10 +140,7 @@ export default function ManagementSolutions() {
 
                 <div className="mt-2 sm:mt-3 grid grid-cols-2 gap-x-2 gap-y-2 sm:gap-x-3 sm:gap-y-3">
                   <div className="flex items-center gap-1.5">
-                    <BookOpen
-                      size={10}
-                      className="text-indigo-500 shrink-0"
-                    />
+                    <BookOpen size={10} className="text-indigo-500 shrink-0" />
 
                     <span className="text-[7.5px] sm:text-[8px] font-medium text-slate-600 dark:text-slate-400 truncate">
                       24 Classes
@@ -149,10 +148,7 @@ export default function ManagementSolutions() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Clock3
-                      size={10}
-                      className="text-purple-500 shrink-0"
-                    />
+                    <Clock3 size={10} className="text-purple-500 shrink-0" />
 
                     <span className="text-[7.5px] sm:text-[8px] font-medium text-slate-600 dark:text-slate-400 truncate">
                       8:00 AM
@@ -160,10 +156,7 @@ export default function ManagementSolutions() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <BookOpen
-                      size={10}
-                      className="text-cyan-500 shrink-0"
-                    />
+                    <BookOpen size={10} className="text-cyan-500 shrink-0" />
 
                     <span className="text-[7.5px] sm:text-[8px] font-medium text-slate-600 dark:text-slate-400 truncate">
                       12 Subjects
@@ -171,10 +164,7 @@ export default function ManagementSolutions() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Users
-                      size={10}
-                      className="text-blue-500 shrink-0"
-                    />
+                    <Users size={10} className="text-blue-500 shrink-0" />
 
                     <span className="text-[7.5px] sm:text-[8px] font-medium text-slate-600 dark:text-slate-400 truncate">
                       845 Students
@@ -215,10 +205,7 @@ export default function ManagementSolutions() {
             {/* Circular progress */}
 
             <div className="relative h-[64px] w-[64px] sm:h-[76px] sm:w-[76px] rounded-full bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-1.5 sm:p-2 shadow-[0_12px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.5)]">
-              <svg
-                viewBox="0 0 100 100"
-                className="h-full w-full -rotate-90"
-              >
+              <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                 <circle
                   cx="50"
                   cy="50"
@@ -328,9 +315,12 @@ export default function ManagementSolutions() {
             ) : (
               <Link
                 href={
-                  (session.user as { role?: string }).role?.toLowerCase() === "admin"
+                  (session.user as { role?: string }).role?.toLowerCase() ===
+                  "admin"
                     ? "/dashboard/admin"
-                    : (session.user as { role?: string }).role?.toLowerCase() === "teacher"
+                    : (
+                          session.user as { role?: string }
+                        ).role?.toLowerCase() === "teacher"
                       ? "/dashboard/teacher"
                       : "/dashboard/student"
                 }
@@ -352,7 +342,7 @@ export default function ManagementSolutions() {
                 if (el) {
                   el.scrollIntoView({ behavior: "smooth" });
                 } else {
-                  window.location.href = "/#how-it-works";
+                  router.push("/#how-it-works");
                 }
               }}
               className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer whitespace-nowrap shrink-0"
