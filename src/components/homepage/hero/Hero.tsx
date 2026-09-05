@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSession } from "@/lib/auth-client";
 
 export default function Hero() {
+  const router = useRouter();
   const { data: session, isPending } = useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Keep session-dependent buttons out of the hydration mismatch path.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -46,7 +50,8 @@ export default function Hero() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-[680px] px-2 text-[14px] leading-[1.7] text-slate-600 dark:text-slate-300 sm:text-[16px]">
-            Your ultimate SaaS solution for effortless school administration and academic
+            Your ultimate SaaS solution for effortless school administration and
+            academic
             <br className="hidden sm:block" />
             excellence. Simplify administrative tasks, enhance engagement.
           </p>
@@ -68,9 +73,11 @@ export default function Hero() {
           ) : session ? (
             <Link
               href={
-                (session.user as { role?: string }).role?.toLowerCase() === "admin"
+                (session.user as { role?: string }).role?.toLowerCase() ===
+                "admin"
                   ? "/dashboard/admin"
-                  : (session.user as { role?: string }).role?.toLowerCase() === "teacher"
+                  : (session.user as { role?: string }).role?.toLowerCase() ===
+                      "teacher"
                     ? "/dashboard/teacher"
                     : "/dashboard/student"
               }
@@ -103,7 +110,7 @@ export default function Hero() {
               if (el) {
                 el.scrollIntoView({ behavior: "smooth" });
               } else {
-                window.location.href = "/#how-it-works";
+                router.push("/#how-it-works");
               }
             }}
             className="inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/30 bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm px-4 sm:px-6 text-xs sm:text-sm font-semibold text-slate-700 dark:text-white transition-all duration-300 hover:border-indigo-600 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white cursor-pointer whitespace-nowrap shrink-0"
@@ -129,7 +136,11 @@ export default function Hero() {
             className="relative hidden h-[275px] w-[185px] overflow-hidden rounded-[27px] bg-white dark:bg-slate-900/90 p-5 text-slate-900 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 lg:block"
           >
             <div className="absolute left-0 top-0 h-[105px] w-full overflow-hidden">
-              <svg viewBox="0 0 260 110" className="absolute left-[-20px] top-0 h-full w-[290px]" fill="none">
+              <svg
+                viewBox="0 0 260 110"
+                className="absolute left-[-20px] top-0 h-full w-[290px]"
+                fill="none"
+              >
                 {Array.from({ length: 11 }).map((_, index) => (
                   <path
                     key={index}
@@ -143,7 +154,11 @@ export default function Hero() {
             </div>
 
             <div className="absolute left-5 top-[112px]">
-              <ArrowRight size={29} strokeWidth={1.5} className="text-indigo-600 dark:text-indigo-400" />
+              <ArrowRight
+                size={29}
+                strokeWidth={1.5}
+                className="text-indigo-600 dark:text-indigo-400"
+              />
             </div>
 
             <p className="absolute bottom-7 left-5 right-5 text-[14px] leading-[1.45] font-semibold text-slate-900 dark:text-white">
@@ -163,7 +178,9 @@ export default function Hero() {
             transition={{ duration: 0.25 }}
             className="hidden sm:flex h-[180px] w-[105px] sm:h-[200px] sm:w-[112px] flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center shrink-0"
           >
-            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">260%</span>
+            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
+              260%
+            </span>
             <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
               Your ultimate SaaS
               <br />
@@ -191,7 +208,9 @@ export default function Hero() {
             transition={{ duration: 0.25 }}
             className="flex h-[175px] w-[100px] sm:h-[200px] sm:w-[112px] flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center shrink-0"
           >
-            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">98%</span>
+            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
+              98%
+            </span>
             <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
               our comprehensive suite
               <br />
