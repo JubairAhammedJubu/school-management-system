@@ -23,21 +23,22 @@ import {
   ArrowLeft,
   ShieldCheck,
   Clock,
+  ChevronDown,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { updateUserProfileAction } from "@/lib/actions/user-actions";
-import { log } from "console";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-console.log("Session Data:", session); // Debugging line to check session data
   // Profile Form States
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("+1 (555) 234-5678");
   const [location, setLocation] = useState("New York, NY");
   const [department, setDepartment] = useState("Science & Technology");
+  const [studentClass, setStudentClass] = useState("");
+  const [studentSection, setStudentSection] = useState("");
   const [bio, setBio] = useState(
     "Dedicated educator passionate about interactive learning and STEM education.",
   );
@@ -57,6 +58,10 @@ console.log("Session Data:", session); // Debugging line to check session data
       if (u.phone) setPhone(u.phone);
       if (u.location) setLocation(u.location);
       if (u.department) setDepartment(u.department);
+      if (u.studentClass) setStudentClass(u.studentClass);
+      if (u.studentSection || u.section) {
+        setStudentSection(u.studentSection || u.section);
+      }
       if (u.bio) setBio(u.bio);
     }
   }, [session]);
@@ -174,6 +179,9 @@ console.log("Session Data:", session); // Debugging line to check session data
         phone: phone.trim(),
         location: location.trim(),
         department: department.trim(),
+        studentClass: studentClass.trim(),
+        studentSection: studentSection.trim(),
+        section: studentSection.trim(),
         bio: bio.trim(),
       });
       if (res.success) {
@@ -235,6 +243,7 @@ console.log("Session Data:", session); // Debugging line to check session data
   const userRole = (
     (session?.user as { role?: string } | undefined)?.role || "Student"
   ).toUpperCase();
+  const isStudent = userRole === "STUDENT";
   const userEmail = session?.user?.email || "user@edunexus.com";
   const userCreatedAt = session?.user?.createdAt
     ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
@@ -487,6 +496,57 @@ console.log("Session Data:", session); // Debugging line to check session data
                     <Building className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
                   </div>
                 </div>
+
+                {isStudent && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Student Class
+                      </label>
+                      <div className="relative">
+                        <select
+                          disabled={!isEditing}
+                          value={studentClass}
+                          onChange={(e) => setStudentClass(e.target.value)}
+                          className="profile-select w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 pr-10 text-sm font-medium text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <option value="">Select class</option>
+                          {Array.from(
+                            { length: 12 },
+                            (_, index) => `Class ${index + 1}`,
+                          ).map((className) => (
+                            <option key={className} value={className}>
+                              {className}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-500 dark:text-indigo-400" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Student Section
+                      </label>
+                      <div className="relative">
+                        <select
+                          disabled={!isEditing}
+                          value={studentSection}
+                          onChange={(e) => setStudentSection(e.target.value)}
+                          className="profile-select w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 pr-10 text-sm font-medium text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <option value="">Select section</option>
+                          {["A", "B", "C", "D"].map((section) => (
+                            <option key={section} value={`Section ${section}`}>
+                              Section {section}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-500 dark:text-indigo-400" />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">

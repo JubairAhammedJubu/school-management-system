@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Star } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
@@ -18,7 +18,7 @@ export default function FinalCTA() {
     setMounted(true);
   }, []);
 
-  const showGetStarted = !mounted || !session?.user;
+  const showGetStarted = mounted && !session?.user;
 
   return (
     <section className="w-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-t border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
