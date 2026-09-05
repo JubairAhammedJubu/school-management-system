@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import { twoFactorClient } from "better-auth/client/plugins";
 
 // Points at the Express API's Better Auth routes (server/src/routes/auth.routes.ts).
 // Set NEXT_PUBLIC_SERVER_URL in .env.local when the API isn't on localhost:5000.
@@ -35,7 +36,12 @@ export const authClient = createAuthClient({
         role: {type: "string", input: false},
       },
     }),
+    // Authenticator-app (TOTP) 2FA. No `onTwoFactorRedirect`/`twoFactorPage`
+    // here on purpose — AuthPage.tsx reads `data.twoFactorRedirect` from the
+    // sign-in response itself and renders the OTP/QR step inline instead of
+    // navigating away.
+    twoFactorClient(),
   ],
 });
 
-export const { signIn, signUp, signOut, useSession } = authClient;
+export const { signIn, signUp, signOut, useSession, twoFactor } = authClient;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -14,6 +15,10 @@ import { useSession } from "@/lib/auth-client";
 
 export default function ManagementSolutions() {
   const { data: session } = useSession();
+  // Same fix as FinalCTA: server never has a session, so gate on
+  // `mounted` to keep the first client paint identical to the server's.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   return (
     <section
       id="management-solutions"
@@ -314,7 +319,7 @@ export default function ManagementSolutions() {
           {/* Buttons */}
 
           <div className="mt-6 flex flex-row flex-wrap items-center gap-3 sm:mt-7">
-            {!session?.user ? (
+            {!mounted || !session?.user ? (
               <Link
                 href="/login"
                 className="group inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-indigo-500/40 whitespace-nowrap shrink-0 cursor-pointer"

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora, Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "@/components/Navbar/Navbar";
@@ -30,7 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sora.variable} ${inter.variable} h-full antialiased`}
     >
       <head>
-        <script
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
