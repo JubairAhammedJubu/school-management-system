@@ -25,6 +25,7 @@ import {
   ChevronRight,
   ShieldCheck,
   User,
+  UserCheck,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
@@ -44,6 +45,8 @@ const adminRoutes: RouteItem[] = [
   { label: "Results", href: "/dashboard/admin/results", icon: Award },
   { label: "Fees", href: "/dashboard/admin/fees", icon: CreditCard },
   { label: "Notices", href: "/dashboard/admin/notices", icon: Bell },
+  { label: "Approvals", href: "/dashboard/admin/approvals", icon: UserCheck },
+  { label: "Security", href: "/dashboard/admin/security", icon: ShieldCheck },
 ];
 
 const teacherRoutes: RouteItem[] = [
@@ -82,6 +85,7 @@ export default function DashboardLayout({
 
   // Sync theme state on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const isDarkMode = document.documentElement.classList.contains("dark");
     setTheme(isDarkMode ? "dark" : "light");
@@ -101,6 +105,7 @@ export default function DashboardLayout({
 
   // Close mobile drawer on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileMenuOpen(false);
   }, [pathname]);
 
@@ -186,7 +191,7 @@ export default function DashboardLayout({
         },
         {
           title: "Academics & Management",
-          items: [adminRoutes[4], adminRoutes[5], adminRoutes[6]],
+          items: [adminRoutes[4], adminRoutes[5], adminRoutes[6], adminRoutes[7], adminRoutes[8]],
         },
       ];
     } else if (role === "teacher") {

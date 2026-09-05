@@ -32,8 +32,14 @@ import {
   Award,
   Briefcase,
 } from "lucide-react";
-import {signIn, signUp} from "@/lib/auth-client";
+import {signIn, signUp, signOut, authClient} from "@/lib/auth-client";
 import {updateUserProfileAction} from "@/lib/actions/user-actions";
+import {
+  verifyPasswordResetCodeAction,
+  setNewPasswordAction,
+} from "@/lib/actions/password-reset-actions";
+import {checkApprovalStatusAction} from "@/lib/actions/approval-actions";
+import QRCode from "qrcode";
 
 interface AuthPageProps {
   initialMode?: "login" | "register";
@@ -60,16 +66,106 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
   const [error, setError] = useState("");
 
   // ── Account lockout (3 bhul password → 5 hour lock) ──
-  // lockoutUntil holo epoch-ms timestamp jokhon lock uthe jabe. Eta
-  // per-email localStorage e save thake, tai page reload/refresh korleo
-  // lock thake jotokkhon na shomoy shesh hoy.
-  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  // Lock timestamp per-email localStorage e save thake (page reload/refresh
+  // korleo lock thake), tai eta ekta state na rekhe proti render-e
+  // localStorage theke derive kora hoy — `now` proti second tick kore
+  // countdown fresh rakhe.
   const [now, setNow] = useState(() => Date.now());
+
+  // ── Two-factor authentication (authenticator app) ──
+  // "verify": returning user, 2FA already enabled — ask for the 6-digit
+  //           code from their authenticator app. Correct code → login,
+  //           wrong code → no login (no backup-code fallback).
+  // "setup":  first successful login ever — show a QR code so they can
+  //           add the account to an authenticator app, then confirm it
+  //           with one code before we finish logging them in.
+  const [twoFactorStage, setTwoFactorStage] = useState<
+    "none" | "verify" | "setup"
+  >("none");
+  const [otpCode, setOtpCode] = useState("");
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [twoFactorError, setTwoFactorError] = useState("");
+  const [totpQrDataUrl, setTotpQrDataUrl] = useState("");
+  const [totpSecret, setTotpSecret] = useState("");
+
+  // ── Forgot password (via authenticator app) ──
+  // No email/OTP is sent anywhere: user gives their account email + the
+  // 6-digit code from their authenticator app (the same TOTP secret used
+  // for 2FA login). Correct code → a password field appears to set a new
+  // password. "code": email + code form. "newPassword": set-password form.
+  const [forgotPasswordStage, setForgotPasswordStage] = useState<
+    "none" | "code" | "newPassword"
+  >("none");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotCode, setForgotCode] = useState("");
+  const [forgotError, setForgotError] = useState("");
+  const [isVerifyingForgotCode, setIsVerifyingForgotCode] = useState(false);
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [isSettingNewPassword, setIsSettingNewPassword] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // ── Admin-approval gate ──
+  // "pending": this email exists but the admin hasn't approved it yet —
+  // login button becomes a disabled "Pending approval" button. Re-checked
+  // automatically every few seconds so it flips back to a normal enabled
+  // login button the moment an admin approves, with no page refresh
+  // needed. "unknown"/"approved" both render the normal login button —
+  // we only ever block on a *confirmed* pending state, never while still
+  // checking, so a slow network never wrongly locks the button.
+  const [approvalStatus, setApprovalStatus] = useState<
+    "unknown" | "pending" | "approved"
+  >("unknown");
+
+  useEffect(() => {
+    if (!isLogin) return;
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setApprovalStatus("unknown");
+      return;
+    }
+
+    let cancelled = false;
+    const check = async () => {
+      const result = await checkApprovalStatusAction(trimmedEmail);
+      if (cancelled) return;
+      setApprovalStatus((prev) => {
+        if (!result.success) return prev;
+        return result.isApproved ? "approved" : "pending";
+      });
+    };
+
+    // Debounce the first check so it doesn't fire on every keystroke.
+    const debounceId = setTimeout(check, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(debounceId);
+    };
+  }, [email, isLogin]);
+
+  // While a pending account is showing, keep re-checking every few
+  // seconds so the button flips back to normal the moment an admin
+  // approves — no page refresh needed.
+  useEffect(() => {
+    if (approvalStatus !== "pending") return;
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) return;
+
+    const intervalId = setInterval(async () => {
+      const result = await checkApprovalStatusAction(trimmedEmail);
+      if (result.success && result.isApproved) {
+        setApprovalStatus("approved");
+      }
+    }, 6000);
+
+    return () => clearInterval(intervalId);
+  }, [approvalStatus, email]);
 
   // Registration is two steps: "form" (name/email/password) then "info"
   // (extended profile details). The account is only created when the
@@ -101,39 +197,33 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
   const lockoutStorageKey = (forEmail: string) =>
     `edunexus:lockoutUntil:${forEmail.toLowerCase().trim()}`;
 
-  // Email field change hole oi email-er jonno kono active lock ache kina check kori.
+  // Proti second tick kori jate lockout countdown live thake, ar shathe
+  // shathe expired lock-er localStorage entry cleanup kore dei.
   useEffect(() => {
-    if (!isLogin || !email.trim()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLockoutUntil(null);
-      return;
-    }
-    const stored = localStorage.getItem(lockoutStorageKey(email));
-    const storedUntil = stored ? Number(stored) : null;
-    if (storedUntil && storedUntil > Date.now()) {
-      setLockoutUntil(storedUntil);
-    } else {
-      if (stored) localStorage.removeItem(lockoutStorageKey(email));
-      setLockoutUntil(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email, isLogin]);
-
-  // Lock thakle proti second "now" update kori countdown dekhanor jonno,
-  // shomoy shesh hole nijei clear kore dei.
-  useEffect(() => {
-    if (!lockoutUntil) return;
+    if (!isLogin) return;
     const interval = setInterval(() => {
-      const current = Date.now();
-      setNow(current);
-      if (current >= lockoutUntil) {
-        localStorage.removeItem(lockoutStorageKey(email));
-        setLockoutUntil(null);
+      setNow(Date.now());
+      if (email.trim()) {
+        const key = lockoutStorageKey(email);
+        const stored = localStorage.getItem(key);
+        if (stored && Number(stored) <= Date.now()) {
+          localStorage.removeItem(key);
+        }
       }
     }, 1000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lockoutUntil]);
+  }, [isLogin, email]);
+
+  // Login form-e thakle current email-er jonno active lock ache kina, seta
+  // shorashori render-e localStorage theke derive kori (extra state lagena).
+  const lockoutUntil = (() => {
+    if (!isLogin || !email.trim() || typeof window === "undefined") {
+      return null;
+    }
+    const stored = localStorage.getItem(lockoutStorageKey(email));
+    const storedUntil = stored ? Number(stored) : null;
+    return storedUntil && storedUntil > now ? storedUntil : null;
+  })();
 
   const isLockedOut = isLogin && !!lockoutUntil && lockoutUntil > now;
   const lockoutRemainingLabel = (() => {
@@ -174,11 +264,13 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
     setConfirmPassword("");
     setRegisterStep("form");
     resetInfoFields();
+    resetTwoFactorState();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || isLockedOut) return;
+    if (isLogin && approvalStatus === "pending") return;
 
     if (!isLogin) {
       // Step 1 of registration: just validate the basics and move on to the
@@ -201,7 +293,10 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
     setIsSubmitting(true);
 
     try {
-      const {error: signInError} = await signIn.email({email, password});
+      const {data, error: signInError} = await signIn.email({
+        email,
+        password,
+      });
       if (signInError) {
         // Backend "ACCOUNT_LOCKED" code shoho lockedUntil (ISO timestamp)
         // pathay — eta diye button-take 5 ghontar jonno disable rakhi.
@@ -210,11 +305,65 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
         if (signInError.code === "ACCOUNT_LOCKED" && lockedUntilISO) {
           const until = new Date(lockedUntilISO).getTime();
           localStorage.setItem(lockoutStorageKey(email), String(until));
-          setLockoutUntil(until);
+          // "now" bumping korle re-render hoy, jate lockoutUntil (jeta
+          // localStorage theke derive hoy) shathe shathe UI-te dekha jay.
           setNow(Date.now());
+        }
+        // Ekhono frontend approval-poll miss korle o (e.g. user submit
+        // korlo thik shei shomoy-e), backend-i sheshmesh block kore dey —
+        // shei state-take button-e reflect kori.
+        if (signInError.code === "ACCOUNT_PENDING_APPROVAL") {
+          setApprovalStatus("pending");
         }
         throw new Error(signInError.message ?? "Invalid email or password.");
       }
+
+      const signInData = data as null | {
+        twoFactorRedirect?: boolean;
+        user?: {twoFactorEnabled?: boolean};
+      };
+
+      if (signInData?.twoFactorRedirect) {
+        // Returning user, 2FA already set up — ask for the app's code.
+        setTwoFactorError("");
+        setOtpCode("");
+        setTwoFactorStage("verify");
+        return;
+      }
+
+      if (signInData?.user && !signInData.user.twoFactorEnabled) {
+        // Email + password shothik, ar ei account e 2FA age theke set up
+        // kora nei — first-time setup hisebe QR code dekhai.
+        const {data: enableData, error: enableError} =
+          await authClient.twoFactor.enable({password, method: "totp"});
+
+        if (!enableError && enableData && enableData.method === "totp") {
+          const qrDataUrl = await QRCode.toDataURL(enableData.totpURI);
+          const secretMatch = /secret=([^&]+)/.exec(enableData.totpURI);
+          setTotpQrDataUrl(qrDataUrl);
+          setTotpSecret(
+            secretMatch ? decodeURIComponent(secretMatch[1]) : "",
+          );
+
+          // enable() call korte hole already-active session lage (better-auth
+          // er nijer requirement), tai upore ei call-ta hobar shomoy backend
+          // e ekta session bosey geche — kintu user ekhono OTP confirm kore
+          // nai. Shathe shathe sign out kore dei jate QR screen dekhano
+          // obosthay kono session-i na thake (Navbar tai automatically
+          // "logged out" dekhabe). DB-te unverified TOTP secret thake jay,
+          // handleVerifyOtp-e correct code dile abar login kore eta finalize
+          // kora hobe.
+          await signOut();
+
+          setTwoFactorError("");
+          setOtpCode("");
+          setTwoFactorStage("setup");
+          return;
+        }
+        // 2FA set up na hote parle-o login block kori na — shudhu shada
+        // login diye continue kore jai.
+      }
+
       toast.success("Welcome back! Redirecting to your workspace...");
       window.location.href = "/";
     } catch (err) {
@@ -226,6 +375,168 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
       toast.error(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Handles both stages: confirming a fresh authenticator-app setup, and
+  // completing a normal 2FA-protected sign-in. Correct code → logs in;
+  // wrong code → error, no login.
+  const handleVerifyOtp = async () => {
+    if (isVerifyingOtp || !otpCode) return;
+    setTwoFactorError("");
+    setIsVerifyingOtp(true);
+
+    try {
+      if (twoFactorStage === "setup") {
+        // No session exists right now — we signed out right after enable()
+        // (see handleSubmit), on purpose, so nobody counts as "logged in"
+        // while the QR/OTP step is unconfirmed. better-auth's verifyTotp
+        // needs an active session to attach the confirmation to, so we
+        // briefly re-authenticate with the already-known email+password
+        // first, then immediately verify. If the code turns out wrong we
+        // sign this session back out right away, so a bad OTP never leaves
+        // the user logged in.
+        const {error: reSignInError} = await signIn.email({email, password});
+        if (reSignInError) {
+          throw new Error(
+            reSignInError.message ??
+              "Session ferano gelo na. Doya kore abar login korun.",
+          );
+        }
+
+        const {error: verifyError} = await authClient.twoFactor.verifyTotp({
+          code: otpCode,
+        });
+        if (verifyError) {
+          await signOut();
+          throw new Error(
+            verifyError.message ?? "Bhul code. Abar try korun.",
+          );
+        }
+      } else {
+        // "verify" stage (2FA already enabled from before): better-auth
+        // itself is holding a short-lived two-factor cookie from the
+        // original sign-in.email() call — no session exists yet, and none
+        // is needed until this succeeds.
+        const {error: verifyError} = await authClient.twoFactor.verifyTotp({
+          code: otpCode,
+        });
+        if (verifyError) {
+          throw new Error(
+            verifyError.message ?? "Bhul code. Abar try korun.",
+          );
+        }
+      }
+
+      toast.success(
+        twoFactorStage === "setup"
+          ? "Authenticator app shofolvabe set up hoyeche!"
+          : "Welcome back! Redirecting to your workspace...",
+      );
+      window.location.href = "/";
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Bhul code. Abar try korun.";
+      setTwoFactorError(message);
+      toast.error(message);
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+  const resetTwoFactorState = () => {
+    setTwoFactorStage("none");
+    setOtpCode("");
+    setTwoFactorError("");
+    setTotpQrDataUrl("");
+    setTotpSecret("");
+  };
+
+  const handleCancelTwoFactor = async () => {
+    // Neither stage has a live session at this point anymore: "setup"
+    // already signed itself out right after enable() (see handleSubmit),
+    // and "verify" never had one to begin with. Nothing to undo here.
+    resetTwoFactorState();
+    setPassword("");
+  };
+
+  const resetForgotPasswordState = () => {
+    setForgotPasswordStage("none");
+    setForgotEmail("");
+    setForgotCode("");
+    setForgotError("");
+    setResetToken("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+  };
+
+  const handleOpenForgotPassword = () => {
+    setForgotError("");
+    setForgotEmail(email);
+    setForgotCode("");
+    setForgotPasswordStage("code");
+  };
+
+  // Step 1: email + authenticator code → resetToken (no email/OTP sent).
+  const handleVerifyForgotCode = async () => {
+    if (isVerifyingForgotCode || !forgotEmail.trim() || !forgotCode.trim()) {
+      return;
+    }
+    setForgotError("");
+    setIsVerifyingForgotCode(true);
+
+    try {
+      const result = await verifyPasswordResetCodeAction({
+        email: forgotEmail.trim(),
+        code: forgotCode.trim(),
+      });
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? "Incorrect authenticator code.");
+      }
+      setResetToken(result.data.resetToken);
+      setForgotPasswordStage("newPassword");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Incorrect authenticator code.";
+      setForgotError(message);
+      toast.error(message);
+    } finally {
+      setIsVerifyingForgotCode(false);
+    }
+  };
+
+  // Step 2: spend the resetToken to actually set the new password.
+  const handleSetNewPassword = async () => {
+    if (isSettingNewPassword || !newPassword || !confirmNewPassword) return;
+
+    if (newPassword !== confirmNewPassword) {
+      setForgotError("Passwords do not match.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setForgotError("Password must be at least 8 characters.");
+      return;
+    }
+
+    setForgotError("");
+    setIsSettingNewPassword(true);
+
+    try {
+      const result = await setNewPasswordAction({resetToken, newPassword});
+      if (!result.success) {
+        throw new Error(result.error ?? "Failed to update password.");
+      }
+      toast.success("Password updated! Please sign in with your new password.");
+      setEmail(forgotEmail);
+      setPassword("");
+      resetForgotPasswordState();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update password.";
+      setForgotError(message);
+      toast.error(message);
+    } finally {
+      setIsSettingNewPassword(false);
     }
   };
 
@@ -283,8 +594,14 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
         );
       }
 
-      toast.success("Account created successfully! Welcome to EduNexus 🎉");
-      window.location.href = "/";
+      toast.success(
+        "Account created! An admin needs to approve it before you can log in.",
+      );
+      setApprovalStatus("pending");
+      setRegisterStep("form");
+      setIsLogin(true);
+      setPassword("");
+      setConfirmPassword("");
     } catch (err) {
       const message =
         err instanceof Error
@@ -338,6 +655,36 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
           setQualification={setQualification}
           bio={bio}
           setBio={setBio}
+        />
+      ) : twoFactorStage !== "none" ? (
+        <TwoFactorStep
+          stage={twoFactorStage}
+          otpCode={otpCode}
+          setOtpCode={setOtpCode}
+          isVerifying={isVerifyingOtp}
+          error={twoFactorError}
+          onVerify={handleVerifyOtp}
+          onCancel={handleCancelTwoFactor}
+          qrDataUrl={totpQrDataUrl}
+          secret={totpSecret}
+        />
+      ) : forgotPasswordStage !== "none" ? (
+        <ForgotPasswordStep
+          stage={forgotPasswordStage}
+          email={forgotEmail}
+          setEmail={setForgotEmail}
+          code={forgotCode}
+          setCode={setForgotCode}
+          isVerifyingCode={isVerifyingForgotCode}
+          onVerifyCode={handleVerifyForgotCode}
+          newPassword={newPassword}
+          setNewPassword={setNewPassword}
+          confirmNewPassword={confirmNewPassword}
+          setConfirmNewPassword={setConfirmNewPassword}
+          isSettingNewPassword={isSettingNewPassword}
+          onSetNewPassword={handleSetNewPassword}
+          error={forgotError}
+          onCancel={resetForgotPasswordState}
         />
       ) : (
       <motion.div
@@ -449,6 +796,18 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               </div>
             </div>
 
+            {isLogin && (
+              <div className="flex justify-end -mt-0.5">
+                <button
+                  type="button"
+                  onClick={handleOpenForgotPassword}
+                  className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
             <AnimatePresence initial={false} mode="popLayout">
               {!isLogin && (
                 <motion.div
@@ -497,11 +856,25 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
               )}
             </AnimatePresence>
 
+            {error && (
+              <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
+                {error}
+              </p>
+            )}
+
             {isLockedOut && (
               <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1 flex items-center gap-1">
                 <ShieldCheck size={12} className="shrink-0" />
                 Onek bar bhul password deyar jonno account lock kora hoyeche.
                 Abar try korte parben {lockoutRemainingLabel} pore.
+              </p>
+            )}
+
+            {isLogin && approvalStatus === "pending" && (
+              <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400 ml-1 flex items-center gap-1">
+                <ShieldCheck size={12} className="shrink-0" />
+                Your account is awaiting admin approval. This page will
+                unlock automatically once approved.
               </p>
             )}
 
@@ -533,15 +906,28 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
 
             <motion.button
               type="submit"
-              disabled={isSubmitting || isLockedOut}
+              disabled={
+                isSubmitting ||
+                isLockedOut ||
+                (isLogin && approvalStatus === "pending")
+              }
               whileHover={{y: -1}}
               whileTap={{scale: 0.98}}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className={`w-full text-white font-bold text-sm py-2 rounded-lg shadow-lg transition-colors mt-2 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                isLogin && approvalStatus === "pending"
+                  ? "bg-amber-500 shadow-amber-500/20 disabled:opacity-90"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/20 disabled:opacity-70"
+              }`}
             >
               {isSubmitting ? (
                 <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
               ) : isLockedOut ? (
                 <>Locked — {lockoutRemainingLabel} left</>
+              ) : isLogin && approvalStatus === "pending" ? (
+                <>
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  Pending approval
+                </>
               ) : (
                 <>
                   {isLogin ? "Sign In" : "Continue"}
@@ -743,6 +1129,374 @@ export default function AuthPage({initialMode = "login"}: AuthPageProps) {
       </motion.div>
       )}
     </div>
+  );
+}
+
+interface TwoFactorStepProps {
+  stage: "verify" | "setup";
+  otpCode: string;
+  setOtpCode: (v: string) => void;
+  isVerifying: boolean;
+  error: string;
+  onVerify: () => void;
+  onCancel: () => void;
+  qrDataUrl: string;
+  secret: string;
+}
+
+function TwoFactorStep({
+  stage,
+  otpCode,
+  setOtpCode,
+  isVerifying,
+  error,
+  onVerify,
+  onCancel,
+  qrDataUrl,
+  secret,
+}: TwoFactorStepProps) {
+  const isSetup = stage === "setup";
+
+  return (
+    <motion.div
+      initial={{opacity: 0, y: 14}}
+      animate={{opacity: 1, y: 0}}
+      transition={{duration: 0.45, ease: "easeOut"}}
+      className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden border border-slate-200 dark:border-slate-800 px-7 sm:px-9 py-7"
+    >
+      <div className="flex flex-col items-center text-center mb-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 mb-2">
+          <ShieldCheck size={18} />
+        </div>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          {isSetup ? "Secure your account" : "Two-factor verification"}
+        </h2>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
+          {isSetup
+            ? "Scan this QR code with an authenticator app (Google Authenticator, Authy, etc.), then enter the 6-digit code to finish setup."
+            : "Enter the 6-digit code from your authenticator app."}
+        </p>
+      </div>
+
+      {isSetup && (
+        <div className="flex flex-col items-center mb-4">
+          {qrDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={qrDataUrl}
+              alt="Authenticator app QR code"
+              className="h-40 w-40 rounded-lg border border-slate-200 dark:border-slate-700 bg-white p-1.5"
+            />
+          ) : (
+            <div className="h-40 w-40 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+              <span className="h-5 w-5 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin" />
+            </div>
+          )}
+          {secret && (
+            <p className="mt-2 text-[10px] text-slate-500 dark:text-slate-400 text-center">
+              Can&apos;t scan? Enter this key manually:{" "}
+              <span className="font-mono font-semibold text-slate-700 dark:text-slate-200 break-all">
+                {secret}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-1 mb-1">
+        <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+          Authentication code
+        </label>
+        <div className="relative group">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+            <KeyRound size={14} />
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoFocus
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.trim())}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onVerify();
+              }
+            }}
+            placeholder="123456"
+            maxLength={6}
+            className="w-full pl-9 pr-3 py-2 text-xs tracking-widest bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+          />
+        </div>
+      </div>
+
+      {error && (
+        <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1 mt-1.5">
+          {error}
+        </p>
+      )}
+
+      <motion.button
+        type="button"
+        onClick={onVerify}
+        disabled={isVerifying || !otpCode}
+        whileHover={{y: -1}}
+        whileTap={{scale: 0.98}}
+        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {isVerifying ? (
+          <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+        ) : (
+          <>
+            {isSetup ? "Verify & enable" : "Verify"}
+            <ArrowRight size={14} />
+          </>
+        )}
+      </motion.button>
+
+      <div className="flex items-center justify-center mt-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+        >
+          <ArrowLeft size={12} /> Back to login
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+interface ForgotPasswordStepProps {
+  stage: "code" | "newPassword";
+  email: string;
+  setEmail: (v: string) => void;
+  code: string;
+  setCode: (v: string) => void;
+  isVerifyingCode: boolean;
+  onVerifyCode: () => void;
+  newPassword: string;
+  setNewPassword: (v: string) => void;
+  confirmNewPassword: string;
+  setConfirmNewPassword: (v: string) => void;
+  isSettingNewPassword: boolean;
+  onSetNewPassword: () => void;
+  error: string;
+  onCancel: () => void;
+}
+
+function ForgotPasswordStep({
+  stage,
+  email,
+  setEmail,
+  code,
+  setCode,
+  isVerifyingCode,
+  onVerifyCode,
+  newPassword,
+  setNewPassword,
+  confirmNewPassword,
+  setConfirmNewPassword,
+  isSettingNewPassword,
+  onSetNewPassword,
+  error,
+  onCancel,
+}: ForgotPasswordStepProps) {
+  const isCodeStage = stage === "code";
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  return (
+    <motion.div
+      initial={{opacity: 0, y: 14}}
+      animate={{opacity: 1, y: 0}}
+      transition={{duration: 0.45, ease: "easeOut"}}
+      className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden border border-slate-200 dark:border-slate-800 px-7 sm:px-9 py-7"
+    >
+      <div className="flex flex-col items-center text-center mb-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 mb-2">
+          <KeyRound size={18} />
+        </div>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          {isCodeStage ? "Reset your password" : "Choose a new password"}
+        </h2>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-xs">
+          {isCodeStage
+            ? "Enter your account email and the 6-digit code from your authenticator app."
+            : "Your code checked out — set a new password for your account."}
+        </p>
+      </div>
+
+      {isCodeStage ? (
+        <>
+          <div className="space-y-1 mb-2">
+            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+              Email Address
+            </label>
+            <div className="relative group">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                <Mail size={14} />
+              </div>
+              <input
+                type="email"
+                autoFocus
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@edunexus.std.com"
+                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-1">
+            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+              Authentication code
+            </label>
+            <div className="relative group">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                <ShieldCheck size={14} />
+              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={code}
+                onChange={(e) => setCode(e.target.value.trim())}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onVerifyCode();
+                  }
+                }}
+                placeholder="123456"
+                maxLength={6}
+                className="w-full pl-9 pr-3 py-2 text-xs tracking-widest bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1 mt-1.5">
+              {error}
+            </p>
+          )}
+
+          <motion.button
+            type="button"
+            onClick={onVerifyCode}
+            disabled={isVerifyingCode || !email.trim() || !code.trim()}
+            whileHover={{y: -1}}
+            whileTap={{scale: 0.98}}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isVerifyingCode ? (
+              <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            ) : (
+              <>
+                Verify code
+                <ArrowRight size={14} />
+              </>
+            )}
+          </motion.button>
+        </>
+      ) : (
+        <>
+          <div className="space-y-1 mb-2">
+            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+              New Password
+            </label>
+            <div className="relative group">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                <Lock size={14} />
+              </div>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                autoFocus
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-9 pr-9 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
+              >
+                {showNewPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-1">
+            <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+              Confirm New Password
+            </label>
+            <div className="relative group">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                <ShieldCheck size={14} />
+              </div>
+              <input
+                type={showConfirmNewPassword ? "text" : "password"}
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onSetNewPassword();
+                  }
+                }}
+                placeholder="••••••••"
+                className="w-full pl-9 pr-9 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                aria-label={
+                  showConfirmNewPassword ? "Hide password" : "Show password"
+                }
+              >
+                {showConfirmNewPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1 mt-1.5">
+              {error}
+            </p>
+          )}
+
+          <motion.button
+            type="button"
+            onClick={onSetNewPassword}
+            disabled={isSettingNewPassword || !newPassword || !confirmNewPassword}
+            whileHover={{y: -1}}
+            whileTap={{scale: 0.98}}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSettingNewPassword ? (
+              <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+            ) : (
+              <>
+                Update password
+                <ArrowRight size={14} />
+              </>
+            )}
+          </motion.button>
+        </>
+      )}
+
+      <div className="flex items-center justify-center mt-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+        >
+          <ArrowLeft size={12} /> Back to login
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
