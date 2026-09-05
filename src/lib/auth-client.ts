@@ -33,7 +33,8 @@ export const authClient = createAuthClient({
   plugins: [
     inferAdditionalFields({
       user: {
-        role: {type: "string", input: false},
+        role: { type: "string", input: false },
+      
       },
     }),
     // Authenticator-app (TOTP) 2FA. No `onTwoFactorRedirect`/`twoFactorPage`
