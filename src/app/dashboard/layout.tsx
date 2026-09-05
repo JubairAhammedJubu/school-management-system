@@ -48,20 +48,48 @@ const adminRoutes: RouteItem[] = [
 
 const teacherRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/teacher", icon: LayoutDashboard },
-  { label: "Attendance", href: "/dashboard/teacher/attendance", icon: CalendarCheck },
-  { label: "Examinations", href: "/dashboard/teacher/examinations", icon: ShieldCheck },
+  {
+    label: "Attendance",
+    href: "/dashboard/teacher/attendance",
+    icon: CalendarCheck,
+  },
+  {
+    label: "Examinations",
+    href: "/dashboard/teacher/examinations",
+    icon: ShieldCheck,
+  },
   { label: "Results", href: "/dashboard/teacher/results", icon: Award },
-  { label: "Assignments Management", href: "/dashboard/teacher/assignments", icon: FileText },
-  { label: "Class & Subject Requests", href: "/dashboard/teacher/my-classes", icon: BookOpen },
-  { label: "Students", href: "/dashboard/teacher/students", icon: GraduationCap },
+  {
+    label: "Assignments Management",
+    href: "/dashboard/teacher/assignments",
+    icon: FileText,
+  },
+  {
+    label: "Class & Subject Requests",
+    href: "/dashboard/teacher/my-classes",
+    icon: BookOpen,
+  },
+  {
+    label: "Students",
+    href: "/dashboard/teacher/students",
+    icon: GraduationCap,
+  },
   { label: "Notices", href: "/dashboard/teacher/notices", icon: Bell },
 ];
 
 const studentRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/student", icon: LayoutDashboard },
-  { label: "Attendance", href: "/dashboard/student/attendance", icon: CalendarCheck },
+  {
+    label: "Attendance",
+    href: "/dashboard/student/attendance",
+    icon: CalendarCheck,
+  },
   { label: "Results", href: "/dashboard/student/result", icon: Award },
-  { label: "Assignments", href: "/dashboard/student/assignment", icon: FileText },
+  {
+    label: "Assignments",
+    href: "/dashboard/student/assignment",
+    icon: FileText,
+  },
   { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
   { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
 ];
@@ -83,6 +111,8 @@ export default function DashboardLayout({
 
   // Sync theme state on mount
   useEffect(() => {
+    // This state mirrors browser theme state after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const isDarkMode = document.documentElement.classList.contains("dark");
     setTheme(isDarkMode ? "dark" : "light");
@@ -102,13 +132,21 @@ export default function DashboardLayout({
 
   // Close mobile drawer on route change
   useEffect(() => {
+    // Route changes must close the mobile navigation drawer.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileMenuOpen(false);
   }, [pathname]);
 
   // Determine role safely
-  const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const rawRole = (
+    session?.user as { role?: string } | undefined
+  )?.role?.toLowerCase();
   const userRole: UserRole =
-    rawRole === "admin" ? "admin" : rawRole === "teacher" ? "teacher" : "student";
+    rawRole === "admin"
+      ? "admin"
+      : rawRole === "teacher"
+        ? "teacher"
+        : "student";
 
   // Redirect unauthorized attempts
   useEffect(() => {
@@ -138,7 +176,7 @@ export default function DashboardLayout({
       await signOut();
       toast.success("Logged out successfully.");
       setShowLogoutModal(false);
-      window.location.href = "/";
+      router.push("/");
     } catch {
       toast.error("Failed to log out. Please try again.");
     } finally {
@@ -152,20 +190,23 @@ export default function DashboardLayout({
       case "admin":
         return {
           label: "Administrator",
-          badgeBg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60",
+          badgeBg:
+            "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60",
           accentGradient: "from-rose-600 via-pink-600 to-purple-600",
         };
       case "teacher":
         return {
           label: "Faculty Teacher",
-          badgeBg: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60",
+          badgeBg:
+            "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60",
           accentGradient: "from-indigo-600 via-purple-600 to-blue-600",
         };
       case "student":
       default:
         return {
           label: "Student Portal",
-          badgeBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/60",
+          badgeBg:
+            "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/60",
           accentGradient: "from-blue-600 via-cyan-600 to-teal-600",
         };
     }
@@ -198,7 +239,12 @@ export default function DashboardLayout({
         },
         {
           title: "Classroom & Academics",
-          items: [teacherRoutes[1], teacherRoutes[2], teacherRoutes[3], teacherRoutes[4]],
+          items: [
+            teacherRoutes[1],
+            teacherRoutes[2],
+            teacherRoutes[3],
+            teacherRoutes[4],
+          ],
         },
         {
           title: "Students & Communication",
@@ -279,7 +325,8 @@ export default function DashboardLayout({
           <div className="flex flex-col">
             <div className="flex items-center gap-1">
               <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                Edu<span className="text-blue-600 dark:text-blue-400">Nexus</span>
+                Edu
+                <span className="text-blue-600 dark:text-blue-400">Nexus</span>
               </span>
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
             </div>
@@ -330,7 +377,8 @@ export default function DashboardLayout({
 
               const isActive = isOverview
                 ? pathname === route.href
-                : pathname === route.href || pathname.startsWith(`${route.href}/`);
+                : pathname === route.href ||
+                  pathname.startsWith(`${route.href}/`);
 
               return (
                 <motion.div
@@ -352,7 +400,11 @@ export default function DashboardLayout({
                       <motion.div
                         layoutId="activeLeftIndicator"
                         className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 rounded-r-full bg-white dark:bg-white shadow-xs"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
                       />
                     )}
 
@@ -399,8 +451,21 @@ export default function DashboardLayout({
           className="relative flex items-center gap-2.5 p-1.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700/60 hover:bg-slate-100/70 dark:hover:bg-slate-800/80 shadow-xs transition-all cursor-pointer group"
         >
           <div className="relative shrink-0">
-            <div className="h-7.5 w-7.5 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-sm group-hover:scale-105 transition-transform">
-              {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : <User className="h-3.5 w-3.5" />}
+            <div className="h-7.5 w-7.5 overflow-hidden rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-sm group-hover:scale-105 transition-transform">
+              {session?.user?.image ? (
+                <Image
+                  src={session.user.image}
+                  alt=""
+                  width={30}
+                  height={30}
+                  unoptimized
+                  className="h-full w-full object-cover"
+                />
+              ) : session?.user?.name ? (
+                session.user.name.charAt(0).toUpperCase()
+              ) : (
+                <User className="h-3.5 w-3.5" />
+              )}
             </div>
             <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-950 absolute -bottom-0.5 -right-0.5" />
           </div>
@@ -611,8 +676,19 @@ export default function DashboardLayout({
               title="View & Edit Profile"
               className="relative flex items-center gap-2.5 p-1 px-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group"
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
-                {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "U"}
+              <div className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt=""
+                    width={32}
+                    height={32}
+                    unoptimized
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  (session?.user?.name?.charAt(0).toUpperCase() ?? "U")
+                )}
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">
@@ -713,7 +789,10 @@ function DashboardLayoutSkeleton() {
           <div className="space-y-3 pt-2">
             <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60" />
+              <div
+                key={i}
+                className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60"
+              />
             ))}
           </div>
         </div>
@@ -733,7 +812,10 @@ function DashboardLayoutSkeleton() {
           <div className="h-32 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl bg-slate-200/70 dark:bg-slate-800/60" />
+              <div
+                key={i}
+                className="h-28 rounded-2xl bg-slate-200/70 dark:bg-slate-800/60"
+              />
             ))}
           </div>
           <div className="h-80 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
@@ -742,4 +824,3 @@ function DashboardLayoutSkeleton() {
     </div>
   );
 }
-
