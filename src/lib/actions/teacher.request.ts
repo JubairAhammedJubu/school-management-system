@@ -1,11 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
-
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   try {
+    const { headers } = await import("next/headers");
     const reqHeaders = await headers();
     const cookie = reqHeaders.get("cookie");
     return cookie ? { cookie } : {};
