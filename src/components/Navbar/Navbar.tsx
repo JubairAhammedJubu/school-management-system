@@ -314,7 +314,7 @@ const Navbar: React.FC = () => {
       setShowLogoutModal(false);
       setShowUserDropdown(false);
       setIsOpen(false);
-      window.location.href = "/";
+      router.push("/");
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
     } finally {
@@ -481,8 +481,19 @@ const Navbar: React.FC = () => {
                     aria-label="User menu"
                     aria-expanded={showUserDropdown}
                   >
-                    <div className="h-6.5 w-6.5 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
-                      {session.user.name?.charAt(0).toUpperCase() ?? "U"}
+                    <div className="h-6.5 w-6.5 overflow-hidden rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                      {session.user.image ? (
+                        <Image
+                          src={session.user.image}
+                          alt=""
+                          width={26}
+                          height={26}
+                          unoptimized
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        (session.user.name?.charAt(0).toUpperCase() ?? "U")
+                      )}
                     </div>
                     <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
                       {session.user.name?.split(" ")[0] ?? "User"}
@@ -507,9 +518,20 @@ const Navbar: React.FC = () => {
                         {/* User Header */}
                         <div className="px-3 py-2.5 mb-1 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800/80">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
-                              {session.user.name?.charAt(0).toUpperCase() ??
-                                "U"}
+                            <div className="h-9 w-9 overflow-hidden rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
+                              {session.user.image ? (
+                                <Image
+                                  src={session.user.image}
+                                  alt=""
+                                  width={36}
+                                  height={36}
+                                  unoptimized
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                (session.user.name?.charAt(0).toUpperCase() ??
+                                "U")
+                              )}
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-snug">
@@ -653,8 +675,19 @@ const Navbar: React.FC = () => {
                 ) : session ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
-                      <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
-                        {session.user.name?.charAt(0).toUpperCase() ?? "U"}
+                      <div className="h-8 w-8 overflow-hidden rounded-lg bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                        {session.user.image ? (
+                          <Image
+                            src={session.user.image}
+                            alt=""
+                            width={32}
+                            height={32}
+                            unoptimized
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          (session.user.name?.charAt(0).toUpperCase() ?? "U")
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">

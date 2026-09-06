@@ -38,11 +38,44 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6, .font-heading {
+.profile-select {
+  color-scheme: light;
+}
+
+.profile-select option {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.dark .profile-select {
+  color-scheme: dark;
+}
+
+.dark .profile-select option {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
   font-family: var(--font-sora), var(--font-inter), system-ui, sans-serif;
 }
 
@@ -59,7 +92,9 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   padding: 14px 18px !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.08),
+    0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
   border: 1px solid rgba(226, 232, 240, 0.9) !important;
   background: rgba(255, 255, 255, 0.92) !important;
   backdrop-filter: blur(12px) !important;
@@ -71,7 +106,9 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: rgba(15, 23, 42, 0.9) !important;
   border-color: rgba(51, 65, 85, 0.8) !important;
   color: #f8fafc !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.25) !important;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 8px 10px -6px rgba(0, 0, 0, 0.25) !important;
 }
 
 .Toastify__toast--success {
@@ -202,4 +239,3 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .dark * {
   scrollbar-color: #6366f1 transparent;
 }
-

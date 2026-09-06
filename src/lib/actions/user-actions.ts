@@ -18,6 +18,7 @@ export interface UpdateProfileInput {
   bloodGroup?: string;
   schoolName?: string;
   studentClass?: string;
+  studentSection?: string;
   section?: string;
   roll?: string;
   qualification?: string;
@@ -35,13 +36,19 @@ export interface ActionResponse<T = any> {
  * without relying on cookies.
  */
 export async function updateUserProfileAction(
-  data: UpdateProfileInput
+  data: UpdateProfileInput,
 ): Promise<ActionResponse> {
   try {
+    const authToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("better-auth.session_token")
+        : null;
     const response = await fetch(`${SERVER_URL}/api/user/profile`, {
       method: "PUT",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
       body: JSON.stringify(data),
       cache: "no-store",
