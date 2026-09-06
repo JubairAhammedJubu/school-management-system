@@ -1,6 +1,18 @@
 "use server";
 
+import { headers } from "next/headers";
+
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    const reqHeaders = await headers();
+    const cookie = reqHeaders.get("cookie");
+    return cookie ? { cookie } : {};
+  } catch {
+    return {};
+  }
+}
 
 export interface ClassSubjectRequestItem {
   id: string;
@@ -62,6 +74,7 @@ export async function getTeacherRequestsAction(
   status?: string
 ): Promise<GetRequestsResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const params = new URLSearchParams();
     if (teacherEmail) params.append("teacherEmail", teacherEmail);
     if (status) params.append("status", status);
@@ -71,6 +84,9 @@ export async function getTeacherRequestsAction(
 
     const res = await fetch(url, {
       cache: "no-store",
+      headers: {
+        ...authHeaders,
+      },
     });
 
     if (!res.ok) {
@@ -99,10 +115,12 @@ export async function createTeacherRequestAction(
   payload: CreateRequestPayload
 ): Promise<CreateRequestResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders,
       },
       body: JSON.stringify(payload),
     });
@@ -128,8 +146,12 @@ export async function createTeacherRequestAction(
  */
 export async function deleteTeacherRequestAction(requestId: string): Promise<ActionResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
+      headers: {
+        ...authHeaders,
+      },
     });
 
     const data = await res.json();
@@ -156,10 +178,12 @@ export async function updateTeacherRequestStatusAction(
   adminFeedback?: string
 ): Promise<ActionResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders,
       },
       body: JSON.stringify({ status, adminFeedback }),
     });
