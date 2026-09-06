@@ -2,15 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 import {
   FileText,
   Sparkles,
   Clock3,
   CheckCircle2,
   UploadCloud,
+  Loader2,
+  Trash2,
 } from "lucide-react";
 
 interface AssignmentRecord {
+  id?: string;
   title: string;
   subject: string;
   dueDate: string;
@@ -80,6 +84,10 @@ const statusStyles: Record<
 
 export default function StudentAssignmentsPage() {
   const [assignments, setAssignments] = useState<AssignmentRecord[]>([]);
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -97,6 +105,122 @@ export default function StudentAssignmentsPage() {
     (a) => a.status === "ACTIVE",
   ).length;
   const gradedCount = assignments.filter((a) => a.status === "graded").length;
+  const selectedAssignment = assignments.find(
+    (assignment) =>
+      (assignment.id ?? assignment.title) === selectedAssignmentId,
+  );
+  const submittableAssignments = assignments.filter(
+    (assignment) =>
+      assignment.status === "pending" || assignment.status === "ACTIVE",
+  );
+
+  const handleFileChange = (file: File | undefined) => {
+    setSubmitError("");
+
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    if (
+      file.type !== "application/pdf" &&
+      !file.name.toLowerCase().endsWith(".pdf")
+    ) {
+      setSelectedFile(null);
+      setSubmitError("Please choose a PDF file.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setSelectedFile(null);
+      setSubmitError("PDF files must be 10 MB or smaller.");
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitError("");
+
+    if (!selectedAssignment || !selectedFile) {
+      toast.error(
+        "Select an assignment and attach your PDF before submitting.",
+      );
+      setSubmitError(
+        "Select an assignment and attach your PDF before submitting.",
+      );
+      return;
+    }
+
+    if (!selectedAssignment.id) {
+      toast.error(
+        "This assignment cannot be submitted because it has no identifier.",
+      );
+      setSubmitError(
+        "This assignment cannot be submitted because it has no identifier.",
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const uploadResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
+        { method: "POST", credentials: "include", body: formData },
+      );
+      const uploadData = await uploadResponse.json();
+
+      if (!uploadResponse.ok) {
+        throw new Error(uploadData.error || "Failed to upload assignment PDF");
+      }
+
+      const fileUrl = uploadData.fileUrl || uploadData.url;
+      if (typeof fileUrl !== "string" || !fileUrl.trim()) {
+        throw new Error("The uploaded PDF URL was not returned by the server.");
+      }
+
+      const submitResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: `PDF submission: ${selectedFile.name}`,
+            fileUrl: fileUrl.trim(),
+          }),
+        },
+      );
+      const submitData = await submitResponse.json();
+
+      if (!submitResponse.ok) {
+        throw new Error(submitData.error || "Failed to submit assignment");
+      }
+
+      setAssignments((current) =>
+        current.map((assignment) =>
+          assignment.id === selectedAssignment.id
+            ? { ...assignment, status: "ACTIVE" }
+            : assignment,
+        ),
+      );
+      setSelectedFile(null);
+      setSelectedAssignmentId("");
+      toast.success("Assignment submitted successfully!");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to submit assignment";
+      toast.error(message);
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -164,6 +288,115 @@ export default function StudentAssignmentsPage() {
           </motion.div>
         ))}
       </div>
+
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.12, ease: "easeOut" }}
+        className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 shadow-xs dark:border-blue-900/60 dark:bg-blue-950/20 sm:p-6"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+            <UploadCloud className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              Submit an assignment
+            </h2>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+              Upload a PDF up to 10 MB. You can submit each assignment up to two
+              times.
+            </p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
+        >
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+              Assignment
+            </span>
+            <select
+              value={selectedAssignmentId}
+              onChange={(event) => {
+                setSelectedAssignmentId(event.target.value);
+                setSubmitError("");
+              }}
+              disabled={submittableAssignments.length === 0 || isSubmitting}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
+            >
+              <option value="">Choose an assignment</option>
+              {submittableAssignments.map((assignment) => (
+                <option
+                  key={assignment.id ?? assignment.title}
+                  value={assignment.id ?? assignment.title}
+                >
+                  {assignment.title}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+              PDF file
+            </span>
+            <input
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(event) => handleFileChange(event.target.files?.[0])}
+              disabled={isSubmitting}
+              className="block h-11 w-full cursor-pointer rounded-xl border border-slate-200 bg-white text-xs text-slate-600 file:mr-3 file:h-full file:border-0 file:bg-slate-100 file:px-3 file:font-semibold dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:file:bg-slate-800"
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !selectedAssignment || !selectedFile}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <UploadCloud className="h-4 w-4" />
+            )}
+            {isSubmitting ? "Submitting..." : "Submit PDF"}
+          </button>
+        </form>
+
+        {selectedFile && (
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs dark:border-blue-900/60 dark:bg-slate-900">
+            <span className="flex min-w-0 items-center gap-2 text-slate-700 dark:text-slate-300">
+              <FileText className="h-4 w-4 shrink-0 text-blue-600" />
+              <span className="truncate">{selectedFile.name}</span>
+              <span className="shrink-0 text-slate-400">
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedFile(null)}
+              disabled={isSubmitting}
+              className="shrink-0 text-slate-500 hover:text-red-600"
+              aria-label="Remove selected PDF"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+        {submitError && (
+          <p className="mt-3 text-xs font-semibold text-red-600 dark:text-red-400">
+            {submitError}
+          </p>
+        )}
+        {submittableAssignments.length === 0 && (
+          <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            There are no open assignments to submit right now.
+          </p>
+        )}
+      </motion.section>
 
       {/* Assignments Table */}
       <motion.div
