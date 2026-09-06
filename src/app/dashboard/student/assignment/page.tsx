@@ -31,6 +31,7 @@ interface AssignmentRecord {
 //   { title: "Recursion Practice Set", subject: "Computer Science", dueDate: "Aug 12, 2026", status: "graded", grade: "20/20" },
 // ];
 
+const authToken = localStorage.getItem("better-auth.session_token");
 const getAssignments = async () => {
   try {
     const response = await fetch(
@@ -38,10 +39,14 @@ const getAssignments = async () => {
       {
         method: "GET",
         credentials: "include",
+        headers: {
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
       },
     );
 
     const data = await response.json();
+    console.log("Response:", data);
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch assignments");
@@ -51,6 +56,7 @@ const getAssignments = async () => {
     return data.assignments;
   } catch (error) {
     console.error("Error fetching assignments:", error);
+    return [];
   }
 };
 
@@ -171,7 +177,12 @@ export default function StudentAssignmentsPage() {
 
       const uploadResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
-        { method: "POST", credentials: "include", body: formData },
+        {
+          method: "POST",
+          credentials: "include",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          body: formData,
+        },
       );
       const uploadData = await uploadResponse.json();
 
