@@ -24,7 +24,7 @@ export interface UpdateProfileInput {
   qualification?: string;
 }
 
-export interface ActionResponse<T = any> {
+export interface ActionResponse<T = unknown> {
   success: boolean;
   message?: string;
   error?: string;
@@ -69,11 +69,15 @@ export async function updateUserProfileAction(
       message: result.message || "Profile updated successfully!",
       user: result.user,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("updateUserProfileAction error:", error);
+
     return {
       success: false,
-      error: error?.message || "Server action request failed.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Server action request failed.",
     };
   }
 }
