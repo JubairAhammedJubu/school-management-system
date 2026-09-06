@@ -1,4 +1,4 @@
-"use server";
+
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -53,6 +53,7 @@ export async function updateUserProfileAction(
       body: JSON.stringify(data),
       cache: "no-store",
     });
+    // console.log("updateUserProfileAction request body:",data);
 
     const result = await response.json();
 
