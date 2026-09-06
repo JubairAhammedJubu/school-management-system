@@ -1,6 +1,18 @@
 "use server";
 
+import { headers } from "next/headers";
+
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    const reqHeaders = await headers();
+    const cookie = reqHeaders.get("cookie");
+    return cookie ? { cookie } : {};
+  } catch {
+    return {};
+  }
+}
 
 export interface NoticePayload {
   teacherName?: string;
@@ -44,8 +56,12 @@ export interface CreateNoticeResponse {
  */
 export async function getNoticesAction(): Promise<GetNoticesResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       cache: "no-store",
+      headers: {
+        ...authHeaders,
+      },
     });
 
     const contentType = res.headers.get("content-type");
