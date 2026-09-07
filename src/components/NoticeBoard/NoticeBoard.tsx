@@ -287,7 +287,7 @@ export default function NoticeBoard({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-4 sm:p-6 md:p-7 shadow-lg backdrop-blur-xl"
+        className="rounded-xl border border-slate-200/90 bg-white p-4 sm:p-6 md:p-7 shadow-md backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
@@ -357,11 +357,14 @@ export default function NoticeBoard({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-28 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-4 animate-pulse space-y-3"
+                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-4 space-y-3 shadow-md dark:shadow-xl"
               >
-                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
-                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
-                <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-1/2" />
+                <div className="flex items-center justify-between">
+                  <div className="h-4 skeleton-shimmer rounded-md w-1/3" />
+                  <div className="h-4 skeleton-shimmer-subtle rounded-full w-16" />
+                </div>
+                <div className="h-4 skeleton-shimmer rounded-md w-3/4" />
+                <div className="h-3 skeleton-shimmer-subtle rounded-md w-1/2" />
               </div>
             ))}
           </div>
@@ -383,9 +386,9 @@ export default function NoticeBoard({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.25, delay: index * 0.04 }}
-                    className={`group relative rounded-2xl sm:rounded-3xl border bg-white dark:bg-slate-900 p-3.5 sm:p-5 md:p-6 shadow-md transition-all hover:shadow-lg ${notice.isPinned
-                        ? "border-indigo-300 dark:border-indigo-800/80 bg-gradient-to-r from-indigo-50/30 to-white dark:from-indigo-950/20 dark:to-slate-900"
-                        : "border-slate-200/80 dark:border-slate-800/80"
+                    className={`group relative rounded-xl border bg-white dark:bg-slate-950 p-3.5 sm:p-5 md:p-6 shadow-md transition-all hover:shadow-lg dark:shadow-xl dark:shadow-black/60 ${notice.isPinned
+                        ? "border-indigo-300 dark:border-indigo-800/80 bg-gradient-to-r from-indigo-50/30 to-white dark:from-indigo-950/30 dark:to-slate-950"
+                        : "border-slate-200/90 dark:border-slate-800"
                       }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -451,7 +454,7 @@ export default function NoticeBoard({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="rounded-2xl sm:rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-6 sm:p-10 text-center bg-white/50 dark:bg-slate-900/50"
+                className="rounded-xl border border-dashed border-slate-300 dark:border-slate-800 p-6 sm:p-10 text-center bg-white/50 dark:bg-slate-950/50"
               >
                 <Bell className="mx-auto h-7 w-7 text-slate-400 mb-2" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">No notices found</h3>
@@ -480,7 +483,7 @@ export default function NoticeBoard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 z-10 space-y-4 my-auto"
+              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10 space-y-4 my-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
@@ -661,7 +664,7 @@ export default function NoticeBoard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 z-10 space-y-4 my-auto"
+              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10 space-y-4 my-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
@@ -842,7 +845,7 @@ export default function NoticeBoard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-sm rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 z-10 space-y-4 my-auto text-center"
+              className="relative w-full max-w-sm rounded-xl border border-slate-200/90 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10 space-y-4 my-auto text-center"
             >
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400">
                 <AlertTriangle className="h-6 w-6" />

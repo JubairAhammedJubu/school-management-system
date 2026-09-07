@@ -341,7 +341,7 @@ export default function TeacherMyClassesPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-950/90 sm:p-7"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-7"
       >
         <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-gradient-to-tr from-blue-600/15 via-indigo-500/10 to-cyan-500/15 blur-3xl" />
 
@@ -482,8 +482,21 @@ export default function TeacherMyClassesPage() {
 
           {isLoadingRequests ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-48 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 animate-pulse" />
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-5 shadow-md dark:shadow-xl space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="h-6 w-24 rounded-full skeleton-shimmer" />
+                    <div className="h-8 w-8 rounded-lg skeleton-shimmer" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-5 w-44 rounded-md skeleton-shimmer" />
+                    <div className="h-3 w-32 rounded-md skeleton-shimmer-subtle" />
+                  </div>
+                  <div className="h-12 w-full rounded-lg skeleton-shimmer-subtle" />
+                </div>
               ))}
             </div>
           ) : approvedRequests.length === 0 ? (
@@ -543,11 +556,20 @@ export default function TeacherMyClassesPage() {
 
           {isLoadingRequests ? (
             <div className="space-y-3">
-              {[1, 2].map((i) => (
+              {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-28 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/60 animate-pulse"
-                />
+                  className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-4 shadow-md dark:shadow-xl flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-10 w-10 rounded-xl skeleton-shimmer" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-40 rounded-md skeleton-shimmer" />
+                      <div className="h-3 w-28 rounded-md skeleton-shimmer-subtle" />
+                    </div>
+                  </div>
+                  <div className="h-7 w-20 rounded-full skeleton-shimmer" />
+                </div>
               ))}
             </div>
           ) : requests.length === 0 ? (
@@ -866,7 +888,7 @@ function RequestCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.05 }}
-      className={`relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 ${isPending
+      className={`relative overflow-hidden rounded-xl border p-5 shadow-md transition-all duration-300 dark:shadow-xl dark:shadow-black/60 ${isPending
         ? "border-amber-200/80 bg-amber-50/20 dark:border-amber-500/30 dark:bg-amber-950/30"
         : isApproved
           ? "border-emerald-200/80 bg-emerald-50/20 dark:border-emerald-500/30 dark:bg-emerald-950/30"
@@ -1004,7 +1026,7 @@ function ClassCard({
         duration: 0.4,
         delay: 0.2 + index * 0.07,
       }}
-      className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-900/5 dark:border-slate-800/80 dark:bg-slate-950/90 dark:hover:border-indigo-800"
+      className="group relative overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 dark:hover:border-slate-700"
     >
       <div className="absolute left-0 right-0 top-0 h-[3px] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 opacity-80" />
 
@@ -1103,7 +1125,7 @@ function SummaryCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800/80 dark:bg-slate-950/90 sm:p-5"
+      className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/50 sm:p-5"
     >
       <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconClass}`}>
         <Icon className="h-4 w-4" />
@@ -1191,7 +1213,7 @@ function NiceSelect({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/70"
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-950/95 dark:shadow-black/70"
           >
             <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
               {options.map((opt) => {
