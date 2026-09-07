@@ -20,6 +20,7 @@ interface AssignmentRecord {
   dueDate: string;
   status: "pending" | "ACTIVE" | "graded";
   grade?: string;
+  fileUrl?: string;
 }
 
 // Safely retrieve token on client side
@@ -114,9 +115,10 @@ export default function StudentAssignmentsPage() {
   }, []);
 
   const pendingCount = assignments.filter((a) => a.status === "pending").length;
-  const submittedCount = assignments.filter(
+  const submittedAssignments = assignments.filter(
     (a) => a.status === "ACTIVE"
-  ).length;
+  );
+  const submittedCount = submittedAssignments.length;
   const gradedCount = assignments.filter((a) => a.status === "graded").length;
   const selectedAssignment = assignments.find(
     (assignment) =>
@@ -227,7 +229,7 @@ export default function StudentAssignmentsPage() {
       setAssignments((current) =>
         current.map((assignment) =>
           assignment.id === selectedAssignment.id
-            ? { ...assignment, status: "ACTIVE" }
+            ? { ...assignment, status: "ACTIVE", fileUrl: fileUrl.trim() }
             : assignment
         )
       );
@@ -417,6 +419,106 @@ export default function StudentAssignmentsPage() {
           <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
             There are no open assignments to submit right now.
           </p>
+        )}
+      </motion.section>
+
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+      >
+        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Submitted assignments
+              </h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                After you submit a PDF, it appears here.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {submittedAssignments.length === 0 ? (
+          <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+            You haven&apos;t submitted any assignments yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800">
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Assignment
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Subject
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Due Date
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Status
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    PDF
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {submittedAssignments.map((item, idx) => {
+                  const style = statusStyles[item.status];
+                  console.log("style for status", item, style);
+                  const StatusIcon = style?.icon || CheckCircle2;
+                  return (
+                    <tr
+                      key={item.id ?? `${item.title}-submitted-${idx}`}
+                      className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                    >
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {item.title}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {item.subject}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {item.dueDate}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                            style?.className || ""
+                          }`}
+                        >
+                          <StatusIcon className="h-3.5 w-3.5" />
+                          {style?.label || item.status}
+                        </span>
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
+                        {item.fileUrl ? (
+                          <a
+                            href={item.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            View PDF
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </motion.section>
 
