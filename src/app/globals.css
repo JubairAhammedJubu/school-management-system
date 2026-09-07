@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -32,6 +32,93 @@ html {
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Custom Skeleton Moving Shade / Left-to-Right Shimmer Sweep */
+  .skeleton-shimmer {
+    position: relative !important;
+    overflow: hidden !important;
+    background-color: rgba(226, 232, 240, 0.9) !important;
+  }
+
+  .dark .skeleton-shimmer {
+    background-color: rgba(30, 41, 59, 0.75) !important;
+  }
+
+  .skeleton-shimmer::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.85) 50%,
+      rgba(255, 255, 255, 0) 100%
+    ) !important;
+    animation: skeleton-shimmer-sweep 1.5s infinite linear !important;
+    pointer-events: none !important;
+    will-change: transform;
+  }
+
+  .dark .skeleton-shimmer::after {
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      rgba(255, 255, 255, 0) 100%
+    ) !important;
+  }
+
+  .skeleton-shimmer-subtle {
+    position: relative !important;
+    overflow: hidden !important;
+    background-color: rgba(226, 232, 240, 0.6) !important;
+  }
+
+  .dark .skeleton-shimmer-subtle {
+    background-color: rgba(30, 41, 59, 0.45) !important;
+  }
+
+  .skeleton-shimmer-subtle::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%
+    ) !important;
+    animation: skeleton-shimmer-sweep 1.5s infinite linear !important;
+    pointer-events: none !important;
+    will-change: transform;
+  }
+
+  .dark .skeleton-shimmer-subtle::after {
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0) 100%
+    ) !important;
+  }
+}
+
+/* Keyframes for hardware-accelerated left-to-right skeleton shimmer sweep */
+@keyframes skeleton-shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 
