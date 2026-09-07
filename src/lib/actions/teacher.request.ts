@@ -2,15 +2,38 @@
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
+async function getAuthHeaders(authToken?: string): Promise<Record<string, string>> {
+  const headersMap: Record<string, string> = {};
+  if (authToken) {
+    headersMap["Authorization"] = `Bearer ${authToken}`;
+  }
   try {
     const { headers } = await import("next/headers");
     const reqHeaders = await headers();
     const cookie = reqHeaders.get("cookie");
-    return cookie ? { cookie } : {};
+    if (cookie) {
+      headersMap["cookie"] = cookie;
+      if (!headersMap["Authorization"]) {
+        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
+        if (match) {
+          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
+        }
+      }
+    }
   } catch {
-    return {};
+    // running outside request context
   }
+  return headersMap;
+}
+
+// Helper to safely handle non-JSON or HTML server errors (e.g., 401, 500 pages)
+async function parseResponse(res: Response) {
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return await res.json();
+  }
+  const rawText = await res.text();
+  throw new Error(`Server Non-JSON Response [Status ${res.status}]: ${rawText.substring(0, 150)}`);
 }
 
 export interface ClassSubjectRequestItem {
@@ -70,10 +93,15 @@ export interface ActionResponse {
  */
 export async function getTeacherRequestsAction(
   teacherEmail?: string,
-  status?: string
+  status?: string,
+  authToken?: string
 ): Promise<GetRequestsResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+    if (!SERVER_URL) {
+      return { success: false, requests: [], error: "SERVER_URL is missing in Production ENV" };
+    }
+
+    const authHeaders = await getAuthHeaders(authToken);
     const params = new URLSearchParams();
     if (teacherEmail) params.append("teacherEmail", teacherEmail);
     if (status) params.append("status", status);
@@ -88,11 +116,12 @@ export async function getTeacherRequestsAction(
       },
     });
 
+    const data = await parseResponse(res);
+
     if (!res.ok) {
-      return { success: false, requests: [], error: "Failed to fetch requests from server" };
+      return { success: false, requests: [], error: data.error || `Unauthorized or HTTP Error ${res.status}` };
     }
 
-    const data = await res.json();
     if (data.success && Array.isArray(data.requests)) {
       return {
         success: true,
@@ -111,12 +140,18 @@ export async function getTeacherRequestsAction(
  * Create a new class & subject request
  */
 export async function createTeacherRequestAction(
-  payload: CreateRequestPayload
+  payload: CreateRequestPayload,
+  authToken?: string
 ): Promise<CreateRequestResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+    if (!SERVER_URL) {
+      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+    }
+
+    const authHeaders = await getAuthHeaders(authToken);
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...authHeaders,
@@ -124,7 +159,8 @@ export async function createTeacherRequestAction(
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
+
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to submit request" };
     }
@@ -143,17 +179,26 @@ export async function createTeacherRequestAction(
 /**
  * Cancel/Delete a pending request
  */
-export async function deleteTeacherRequestAction(requestId: string): Promise<ActionResponse> {
+export async function deleteTeacherRequestAction(
+  requestId: string,
+  authToken?: string
+): Promise<ActionResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+    if (!SERVER_URL) {
+      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+    }
+
+    const authHeaders = await getAuthHeaders(authToken);
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
+      cache: "no-store",
       headers: {
         ...authHeaders,
       },
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
+
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to delete request" };
     }
@@ -174,12 +219,18 @@ export async function deleteTeacherRequestAction(requestId: string): Promise<Act
 export async function updateTeacherRequestStatusAction(
   requestId: string,
   status: "APPROVED" | "REJECTED" | "PENDING",
-  adminFeedback?: string
+  adminFeedback?: string,
+  authToken?: string
 ): Promise<ActionResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+    if (!SERVER_URL) {
+      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+    }
+
+    const authHeaders = await getAuthHeaders(authToken);
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         ...authHeaders,
@@ -187,7 +238,8 @@ export async function updateTeacherRequestStatusAction(
       body: JSON.stringify({ status, adminFeedback }),
     });
 
-    const data = await res.json();
+    const data = await parseResponse(res);
+
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to update request status" };
     }

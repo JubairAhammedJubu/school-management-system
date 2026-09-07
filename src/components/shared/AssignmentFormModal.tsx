@@ -322,19 +322,24 @@ export default function AssignmentFormModal({
         return;
       }
 
-      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
       const url = isEditing
         ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
         : `${SERVER_URL}/api/teacher/assignments`;
 
       const method = isEditing ? "PATCH" : "POST";
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("better-auth.session_token")
+          : null;
 
       const response = await fetch(url, {
         method,
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        credentials: "include",
         body: JSON.stringify({
           title: form.title.trim(),
           description: form.description.trim() || null,
