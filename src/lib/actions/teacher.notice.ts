@@ -2,15 +2,28 @@
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
+async function getAuthHeaders(token?: string | null): Promise<Record<string, string>> {
+  const headersMap: Record<string, string> = {};
+  if (token) {
+    headersMap["Authorization"] = `Bearer ${token}`;
+  }
   try {
     const { headers } = await import("next/headers");
     const reqHeaders = await headers();
     const cookie = reqHeaders.get("cookie");
-    return cookie ? { cookie } : {};
+    if (cookie) {
+      headersMap["cookie"] = cookie;
+      if (!headersMap["Authorization"]) {
+        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
+        if (match) {
+          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
+        }
+      }
+    }
   } catch {
-    return {};
+    // running outside request context
   }
+  return headersMap;
 }
 
 export interface NoticePayload {
@@ -111,19 +124,17 @@ export async function createNoticeAction(
   token?: string | null
 ): Promise<CreateNoticeResponse> {
   try {
+    const authHeaders = await getAuthHeaders(token);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      ...authHeaders,
     };
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
 
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       method: "POST",
+      cache: "no-store",
       headers,
       body: JSON.stringify(payload),
-      cache: "no-store",
     });
 
     const contentType = res.headers.get("content-type");
@@ -180,19 +191,17 @@ export async function updateNoticeAction(
   token?: string | null
 ): Promise<CreateNoticeResponse> {
   try {
+    const authHeaders = await getAuthHeaders(token);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      ...authHeaders,
     };
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
 
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "PUT",
+      cache: "no-store",
       headers,
       body: JSON.stringify(payload),
-      cache: "no-store",
     });
 
     const contentType = res.headers.get("content-type");
@@ -248,16 +257,15 @@ export async function deleteNoticeAction(
   token?: string | null
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
-    const headers: Record<string, string> = {};
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    const authHeaders = await getAuthHeaders(token);
+    const headers: Record<string, string> = {
+      ...authHeaders,
+    };
 
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "DELETE",
-      headers,
       cache: "no-store",
+      headers,
     });
 
     const contentType = res.headers.get("content-type");

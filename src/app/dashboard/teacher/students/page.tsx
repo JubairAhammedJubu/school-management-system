@@ -32,6 +32,7 @@ import {
   UserRound,
   Filter,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getTeacherStudentsAction,
@@ -64,6 +65,7 @@ export default function TeacherStudentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // NEW
   const [, startTransition] = useTransition();
 
   // Modal State
@@ -75,13 +77,23 @@ export default function TeacherStudentsPage() {
   const fetchStudents = useCallback(
     (pageNum: number, searchVal: string, classVal: string) => {
       setIsLoading(true);
+      setErrorMessage(null); // NEW
       startTransition(async () => {
-        const res = await getTeacherStudentsAction({
-          page: pageNum,
-          limit: 20,
-          search: searchVal,
-          studentClass: classVal,
-        });
+        // NEW: read the Better Auth bearer token stored on sign-in.
+        // Server Actions run in Node and cannot read localStorage
+        // themselves, so it must be passed in explicitly here.
+        const token =
+          localStorage.getItem("better-auth.session_token") ?? undefined;
+
+        const res = await getTeacherStudentsAction(
+          {
+            page: pageNum,
+            limit: 20,
+            search: searchVal,
+            studentClass: classVal,
+          },
+          token, // NEW: forwarded to the server action
+        );
 
         if (res.success) {
           setStudents(res.students);
@@ -92,6 +104,7 @@ export default function TeacherStudentsPage() {
         } else {
           setStudents([]);
           setPagination({ total: 0, page: 1, limit: 20, totalPages: 1 });
+          setErrorMessage(res.error ?? "Failed to load students"); // NEW
         }
         setIsLoading(false);
       });
@@ -142,6 +155,14 @@ export default function TeacherStudentsPage() {
         <div className="absolute left-1/4 -top-20 h-72 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/20 blur-[130px]" />
         <div className="absolute right-10 top-1/3 h-80 w-80 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-[130px]" />
       </div>
+
+      {/* NEW: visible error banner */}
+      {errorMessage && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* ===================================================== */}
       {/* HEADER BANNER WITH TOTAL STUDENTS BADGE */}
