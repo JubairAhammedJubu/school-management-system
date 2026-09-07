@@ -58,7 +58,7 @@ export default function TeacherAttendancePage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100/90 p-6 shadow-xs transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-7"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-7"
       >
         <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl" />
 
@@ -148,7 +148,7 @@ export default function TeacherAttendancePage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.15 }}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+          className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:p-6"
         >
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -270,7 +270,7 @@ export default function TeacherAttendancePage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.22 }}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+          className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:p-6"
         >
           <div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -387,7 +387,7 @@ export default function TeacherAttendancePage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.28 }}
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+        className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:p-6"
       >
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -479,7 +479,7 @@ export default function TeacherAttendancePage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.35 }}
-        className="flex flex-col gap-4 rounded-2xl border border-blue-100 bg-blue-50/60 p-5 dark:border-blue-500/10 dark:bg-blue-500/[0.06] sm:flex-row sm:items-center sm:justify-between sm:p-6"
+        className="flex flex-col gap-4 rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:flex-row sm:items-center sm:justify-between sm:p-6"
       >
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -527,7 +527,7 @@ function StatCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5"
+      className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/50 sm:p-5"
     >
       <div
         className={`flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconClass}`}
