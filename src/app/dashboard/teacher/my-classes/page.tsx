@@ -21,6 +21,7 @@ import {
   Info,
   ChevronDown,
   Check,
+  Search,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -781,22 +782,23 @@ export default function TeacherMyClassesPage() {
       {/* ===================================================== */}
       <AnimatePresence>
         {cancelConfirmId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setCancelConfirmId(null)}
-              className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-md"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 14 }}
-              className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-slate-800/80 dark:bg-slate-950 z-10 text-center"
+              className="relative w-full max-w-[calc(100%-1.25rem)] sm:max-w-md max-h-[85vh] overflow-y-auto rounded-2xl border border-rose-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-rose-500/30 dark:bg-slate-950 z-10 text-center custom-scrollbar"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 mb-4">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 mb-4 border border-rose-200 dark:border-rose-500/20">
                 <Trash2 className="h-6 w-6" />
               </div>
 
@@ -807,12 +809,12 @@ export default function TeacherMyClassesPage() {
                 Are you sure you want to cancel this pending class & subject authorization request? This action cannot be undone.
               </p>
 
-              <div className="mt-6 flex items-center gap-3">
+              <div className="mt-6 flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   disabled={!!deletingId}
                   onClick={() => setCancelConfirmId(null)}
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
+                  className="w-full sm:flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   Keep Request
                 </button>
@@ -820,7 +822,7 @@ export default function TeacherMyClassesPage() {
                   type="button"
                   disabled={!!deletingId}
                   onClick={() => handleDeleteRequest(cancelConfirmId)}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs font-bold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs font-bold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {deletingId ? (
                     <>
@@ -1150,8 +1152,15 @@ function NiceSelect({
         setIsOpen(false);
       }
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
@@ -1159,46 +1168,57 @@ function NiceSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/90 px-3.5 py-2.5 text-left text-xs font-semibold text-slate-900 shadow-2xs transition-all duration-200 hover:border-indigo-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-800/60 dark:text-white dark:hover:border-indigo-500 cursor-pointer"
+        className={`group flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-left text-xs font-semibold outline-none transition-all duration-200 cursor-pointer dark:bg-slate-800/80 ${
+          isOpen
+            ? "border-indigo-500 bg-white ring-4 ring-indigo-500/15 shadow-sm dark:border-indigo-400 dark:bg-slate-800 text-slate-900 dark:text-white"
+            : "border-slate-200/90 bg-slate-50/90 text-slate-800 hover:border-indigo-400 hover:bg-slate-100/80 dark:border-slate-700/80 dark:text-slate-100 dark:hover:border-indigo-500 dark:hover:bg-slate-800"
+        }`}
       >
-        <span className={selectedOption ? "truncate" : "truncate text-slate-400 dark:text-slate-500 font-normal"}>
+        <span className={selectedOption ? "truncate font-bold text-slate-900 dark:text-white" : "truncate text-slate-400 dark:text-slate-500 font-normal"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-slate-400 transition-transform duration-200 shrink-0 ml-2 ${isOpen ? "rotate-180 text-indigo-500" : ""
-            }`}
+          className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ml-2 ${
+            isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : "group-hover:text-slate-600 dark:group-hover:text-slate-300"
+          }`}
         />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 overflow-y-auto max-h-48 rounded-xl border border-slate-200 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/70 shadow-slate-900/10 custom-scrollbar"
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/70"
           >
-            {options.map((opt) => {
-              const isSelected = opt.value === value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(opt.value);
-                    setIsOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${isSelected
-                    ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400"
-                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+            <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
+              {options.map((opt) => {
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt.value);
+                      setIsOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50/90 text-indigo-700 font-extrabold dark:bg-indigo-500/20 dark:text-indigo-300 shadow-2xs"
+                        : "text-slate-700 font-semibold hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
                     }`}
-                >
-                  <span className="truncate">{opt.label}</span>
-                  {isSelected && <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-2" />}
-                </button>
-              );
-            })}
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      {isSelected && <span className="h-3.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />}
+                      <span className="truncate">{opt.label}</span>
+                    </span>
+                    {isSelected && <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-2" />}
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
