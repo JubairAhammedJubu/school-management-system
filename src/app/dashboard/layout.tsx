@@ -303,12 +303,12 @@ export default function DashboardLayout({
       variants={sidebarContainerVariants}
       initial="hidden"
       animate="show"
-      className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800/80 shadow-xl dark:shadow-2xl transition-colors duration-300 overflow-hidden selection:bg-indigo-500 selection:text-white"
+      className="flex flex-col h-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800/80 shadow-xl dark:shadow-2xl transition-colors duration-300 overflow-hidden selection:bg-indigo-500 selection:text-white"
     >
       {/* Brand Header - Height aligned to h-16 (64px) to perfectly match top main header border */}
       <motion.div
         variants={sidebarItemVariants}
-        className="h-16 px-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-black/60 shrink-0"
+        className="h-16 px-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/90 shrink-0"
       >
         <Link href="/" className="flex items-center gap-2.5 group">
           <motion.div
@@ -343,7 +343,7 @@ export default function DashboardLayout({
       {/* Role Pill Banner */}
       <motion.div
         variants={sidebarItemVariants}
-        className="px-3 py-1.5 bg-slate-100/60 dark:bg-black/60 border-b border-slate-200/80 dark:border-slate-800/60 flex items-center justify-between"
+        className="px-3 py-1.5 bg-slate-100/60 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-800/60 flex items-center justify-between"
       >
         <div className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
@@ -530,7 +530,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col lg:flex-row font-sans">
       {/* Desktop Permanent Sidebar */}
       <aside className="hidden lg:block w-64 h-screen sticky top-0 shrink-0 z-30">
         {renderSidebarContent()}
@@ -541,7 +541,7 @@ export default function DashboardLayout({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="lg:hidden sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between backdrop-blur-md"
+        className="lg:hidden sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-950/90 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between backdrop-blur-md"
       >
         <div className="flex items-center gap-3">
           <button
@@ -633,7 +633,7 @@ export default function DashboardLayout({
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="hidden lg:flex h-16 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between sticky top-0 z-20"
+          className="hidden lg:flex h-16 w-full bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between sticky top-0 z-20"
         >
           <div className="flex items-center gap-2.5">
             <span className="relative flex h-2 w-2">
@@ -780,21 +780,21 @@ export default function DashboardLayout({
 
 function DashboardLayoutSkeleton() {
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans animate-pulse">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans">
       {/* Sidebar Skeleton */}
-      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-black border-r border-slate-200 dark:border-slate-800 shrink-0 flex flex-col">
-        <div className="h-16 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3 shrink-0">
-          <div className="h-8.5 w-8.5 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
-          <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200/90 dark:border-slate-800 shrink-0 flex flex-col">
+        <div className="h-16 px-4 border-b border-slate-200/90 dark:border-slate-800 flex items-center gap-3 shrink-0">
+          <div className="h-8.5 w-8.5 rounded-xl skeleton-shimmer shrink-0" />
+          <div className="h-4 w-32 rounded-md skeleton-shimmer" />
         </div>
         <div className="p-4 space-y-6 flex-1">
-          <div className="h-6 w-full rounded-lg bg-indigo-50 dark:bg-indigo-950/40" />
+          <div className="h-6 w-full rounded-lg skeleton-shimmer" />
           <div className="space-y-3 pt-2">
-            <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-3 w-20 rounded-md skeleton-shimmer-subtle" />
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-9 w-full rounded-lg bg-slate-100 dark:bg-slate-800/60"
+                className="h-9 w-full rounded-lg skeleton-shimmer-subtle"
               />
             ))}
           </div>
@@ -803,25 +803,34 @@ function DashboardLayoutSkeleton() {
 
       {/* Main Area Skeleton */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="hidden lg:flex h-16 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 items-center justify-between">
-          <div className="h-4 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+        <header className="hidden lg:flex h-16 w-full bg-white dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 px-8 items-center justify-between">
+          <div className="h-4 w-44 rounded-md skeleton-shimmer" />
           <div className="flex items-center gap-3">
-            <div className="h-8 w-24 rounded-lg bg-slate-200 dark:bg-slate-800" />
-            <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-950/50" />
+            <div className="h-8 w-24 rounded-lg skeleton-shimmer" />
+            <div className="h-8 w-8 rounded-full skeleton-shimmer" />
           </div>
         </header>
 
         <main className="flex-1 p-6 lg:p-8 space-y-6">
-          <div className="h-32 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
+          <div className="h-32 w-full rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-6 shadow-md dark:shadow-xl flex flex-col justify-between">
+            <div className="h-6 w-56 rounded-md skeleton-shimmer" />
+            <div className="h-4 w-80 rounded-md skeleton-shimmer-subtle" />
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-28 rounded-2xl bg-slate-200/70 dark:bg-slate-800/60"
-              />
+                className="h-28 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-4 shadow-md dark:shadow-xl space-y-3"
+              >
+                <div className="h-4 w-20 rounded-md skeleton-shimmer" />
+                <div className="h-7 w-12 rounded-md skeleton-shimmer" />
+              </div>
             ))}
           </div>
-          <div className="h-80 w-full rounded-2xl bg-slate-200/80 dark:bg-slate-800/80" />
+          <div className="h-80 w-full rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-6 shadow-md dark:shadow-xl space-y-4">
+            <div className="h-5 w-48 rounded-md skeleton-shimmer" />
+            <div className="h-56 w-full rounded-lg skeleton-shimmer-subtle" />
+          </div>
         </main>
       </div>
     </div>

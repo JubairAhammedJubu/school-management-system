@@ -421,11 +421,11 @@ export default function AssignmentFormModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 15 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-900"
+            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md">
                   <FileText className="h-5 w-5" />
@@ -737,7 +737,7 @@ function ModalSelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-0 top-full z-40 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-900"
+            className="absolute left-0 top-full z-40 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950"
           >
             {options.map((option) => {
               const isSelected = option === value;
