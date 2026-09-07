@@ -2,15 +2,28 @@
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
+async function getAuthHeaders(token?: string): Promise<Record<string, string>> {
+  const headersMap: Record<string, string> = {};
+  if (token) {
+    headersMap["Authorization"] = `Bearer ${token}`;
+  }
   try {
     const { headers } = await import("next/headers");
     const reqHeaders = await headers();
     const cookie = reqHeaders.get("cookie");
-    return cookie ? { cookie } : {};
+    if (cookie) {
+      headersMap["cookie"] = cookie;
+      if (!headersMap["Authorization"]) {
+        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
+        if (match) {
+          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
+        }
+      }
+    }
   } catch {
-    return {};
+    // running outside request context
   }
+  return headersMap;
 }
 
 export interface StudentUser {
@@ -56,11 +69,22 @@ export interface GetTeacherStudentsResponse {
   error?: string;
 }
 
+const emptyResponse = (
+  error: string,
+): GetTeacherStudentsResponse => ({
+  success: false,
+  students: [],
+  pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
+  classes: ["All Classes"],
+  error,
+});
+
 /**
  * Server action to fetch students from Express backend API
  */
 export async function getTeacherStudentsAction(
-  params: GetTeacherStudentsParams = {}
+  params: GetTeacherStudentsParams = {},
+  token?: string,
 ): Promise<GetTeacherStudentsResponse> {
   try {
     const { page = 1, limit = 20, search = "", studentClass = "" } = params;
@@ -69,10 +93,11 @@ export async function getTeacherStudentsAction(
     query.set("page", page.toString());
     query.set("limit", limit.toString());
     if (search) query.set("search", search);
-    if (studentClass && studentClass !== "All Classes") query.set("studentClass", studentClass);
+    if (studentClass && studentClass !== "All Classes") {
+      query.set("studentClass", studentClass);
+    }
 
-    const authHeaders = await getAuthHeaders();
-
+    const authHeaders = await getAuthHeaders(token);
     const res = await fetch(`${SERVER_URL}/api/teacher/students?${query.toString()}`, {
       cache: "no-store",
       headers: {
@@ -81,42 +106,26 @@ export async function getTeacherStudentsAction(
     });
 
     const contentType = res.headers.get("content-type");
-    if (!res.ok || !contentType?.includes("application/json")) {
-      return {
-        success: false,
-        students: [],
-        pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
-        classes: ["All Classes"],
-        error: "Invalid response from server",
-      };
+    if (!contentType?.includes("application/json")) {
+      return emptyResponse("Invalid response from server");
     }
 
     const data = await res.json();
-    if (data.success) {
-      return {
-        success: true,
-        students: data.students || [],
-        pagination: data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 },
-        classes: data.classes || ["All Classes"],
-      };
+    if (!res.ok || !data.success) {
+      return emptyResponse(data.error || "Failed to fetch student list");
     }
 
     return {
-      success: false,
-      students: [],
-      pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
-      classes: ["All Classes"],
-      error: data.error || "Failed to fetch student list",
+      success: true,
+      students: data.students || [],
+      pagination:
+        data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 },
+      classes: data.classes || ["All Classes"],
     };
   } catch (error: unknown) {
     console.error("getTeacherStudentsAction error:", error);
-    const errMessage = error instanceof Error ? error.message : "Failed to fetch student list";
-    return {
-      success: false,
-      students: [],
-      pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
-      classes: ["All Classes"],
-      error: errMessage,
-    };
+    const errMessage =
+      error instanceof Error ? error.message : "Failed to fetch student list";
+    return emptyResponse(errMessage);
   }
 }
