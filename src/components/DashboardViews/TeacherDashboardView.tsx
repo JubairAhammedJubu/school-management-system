@@ -97,18 +97,18 @@ export default function TeacherDashboardView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100/90 p-6 shadow-xs transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-8"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-slate-100/90 p-6 shadow-md transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-8"
       >
         <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
 
         <div className="relative flex items-center gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-200">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
             <LayoutDashboard className="h-6 w-6" />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/80 bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300">
+              <span className="inline-flex items-center gap-1 rounded-md border border-slate-200/80 bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
                 <Sparkles className="h-3 w-3 text-blue-500" />
                 Teacher Workspace
               </span>
@@ -547,7 +547,7 @@ function StatCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5"
+      className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/50 sm:p-5"
     >
       <div
         className={`flex h-9 w-9 items-center justify-center rounded-xl ${iconBg} ${iconClass}`}
@@ -602,7 +602,7 @@ function DashboardCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+      className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/50 sm:p-6"
     >
       <div className="mb-6 flex items-start gap-3">
         <div
@@ -645,7 +645,7 @@ function QuickAction({
   iconBg: string;
 }) {
   return (
-    <button className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
+    <button className="group flex items-center gap-3 rounded-xl border border-slate-200/90 bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-lg dark:shadow-black/40 dark:hover:border-slate-700">
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconClass}`}
       >
