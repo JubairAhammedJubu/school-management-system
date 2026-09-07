@@ -22,7 +22,14 @@ import AssignmentCard, { Assignment } from "@/components/shared/AssignmentCard";
 import AssignmentFormModal from "@/components/shared/AssignmentFormModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
-const API_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+
+const getAuthToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("better-auth.session_token");
+  }
+  return null;
+};
 
 const STATUS_OPTIONS = ["All Status", "ACTIVE", "DRAFT", "CLOSED"];
 const CLASS_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
@@ -58,12 +65,16 @@ export default function TeacherAssignmentsPage() {
       setIsLoading(true);
       setError("");
 
+      const token = getAuthToken();
       const response = await fetch(
-        `${API_URL}/api/teacher/assignments?teacherEmail=${encodeURIComponent(
+        `${SERVER_URL}/api/teacher/assignments?teacherEmail=${encodeURIComponent(
           teacherEmail
         )}`,
         {
           credentials: "include",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         }
       );
 
@@ -154,15 +165,19 @@ export default function TeacherAssignmentsPage() {
 
     try {
       setIsDeleting(true);
-
-      const url = `${API_URL}/api/teacher/assignments/${assignmentToDelete.id}${
-        teacherEmail ? `?teacherEmail=${encodeURIComponent(teacherEmail)}` : ""
-      }`;
-
-      const response = await fetch(url, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const token = getAuthToken();
+      const response = await fetch(
+        `${SERVER_URL}/api/teacher/assignments/${assignmentToDelete.id}${
+          teacherEmail ? `?teacherEmail=${encodeURIComponent(teacherEmail)}` : ""
+        }`,
+        {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
 
       const data = await response.json();
 
