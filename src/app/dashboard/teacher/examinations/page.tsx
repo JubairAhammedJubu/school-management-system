@@ -342,7 +342,7 @@ export default function TeacherExaminationsPage() {
       if (res.success && res.exam) {
         setExams((prev) => [res.exam!, ...prev]);
         setIsCreateModalOpen(false);
-        showToast(`Exam "${res.exam.title}" created & saved to DB!`);
+        showToast(`Exam "${res.exam.title}" created & saved!`);
       } else {
         showToast(res.error || "Failed to create examination.");
       }
@@ -389,88 +389,302 @@ export default function TeacherExaminationsPage() {
     });
 
     const rowsHtml = filteredExams
-      .map(
-        (e, idx) => `
-        <tr style="background-color: ${idx % 2 === 0 ? "#ffffff" : "#f8fafc"};">
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: bold;">
-            ${e.title}<br/>
-            <span style="font-size: 11px; color: #4f46e5; font-weight: 600;">${e.subject} (${e.examType})</span>
-          </td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${e.studentClass} (${e.section})${e.group ? ` - ${e.group}` : ""}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${e.date}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${e.startTime} - ${e.endTime}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${e.roomNo}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-            <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; background-color: ${
-              e.status === "Ongoing" ? "#dcfce7" : e.status === "Cancelled" ? "#ffe4e6" : "#e0e7ff"
-            }; color: ${
-              e.status === "Ongoing" ? "#15803d" : e.status === "Cancelled" ? "#be123c" : "#4338ca"
-            };">
-              ${e.status}
-            </span>
-          </td>
-        </tr>
-      `
-      )
+      .map((e) => {
+        let badgeClass = "badge-upcoming";
+        if (e.status === "Ongoing") badgeClass = "badge-ongoing";
+        else if (e.status === "Completed") badgeClass = "badge-completed";
+        else if (e.status === "Cancelled") badgeClass = "badge-cancelled";
+
+        return `
+          <tr>
+            <td>
+              <div class="title-text">${e.title}</div>
+              <div class="sub-text">${e.subject} · ${e.examType}</div>
+            </td>
+            <td>
+              <strong style="color: #0f172a;">${e.studentClass}</strong> (${e.section})
+              ${e.group ? `<br/><span style="font-size: 10px; color: #64748b; font-weight: 600;">${e.group} Stream</span>` : ""}
+            </td>
+            <td style="font-weight: 600; color: #334155;">${e.date}</td>
+            <td style="font-weight: 600; color: #334155;">${e.startTime} - ${e.endTime}</td>
+            <td><span class="room-pill">${e.roomNo}</span></td>
+            <td style="font-weight: 800; color: #0f172a;">${e.totalMarks} Marks</td>
+            <td style="text-align: center;">
+              <span class="badge ${badgeClass}">${e.status}</span>
+            </td>
+          </tr>
+        `;
+      })
       .join("");
 
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="utf-8"/>
           <title>EduNexus Examination Schedule - ${currentDate}</title>
           <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+            
+            * { box-sizing: border-box; }
+            
             @media print {
-              @page { size: A4 landscape; margin: 15mm; }
-              body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+              @page { size: A4 landscape; margin: 8mm 10mm; }
+              html, body { width: 100% !important; margin: 0 !important; padding: 0 !important; background: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             }
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #0f172a; }
-            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6366f1; padding-bottom: 15px; margin-bottom: 20px; }
-            .brand { font-size: 22px; font-weight: 900; color: #4f46e5; letter-spacing: -0.5px; }
-            .subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
-            .meta { text-align: right; font-size: 11px; color: #64748b; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-            th { background-color: #f1f5f9; color: #475569; text-transform: uppercase; font-size: 10px; font-weight: 800; text-align: left; padding: 10px; border-bottom: 2px solid #cbd5e1; }
-            .footer { margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            
+            body {
+              font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+              background: #ffffff;
+              color: #0f172a;
+              padding: 20px 24px;
+              margin: 0;
+              width: 100%;
+              box-sizing: border-box;
+            }
+            
+            .top-accent {
+              height: 6px;
+              background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
+              border-radius: 4px;
+              margin-bottom: 20px;
+              width: 100%;
+            }
+            
+            .header-container {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-bottom: 18px;
+              border-bottom: 2px solid #e2e8f0;
+              margin-bottom: 20px;
+              width: 100%;
+            }
+            
+            .brand-box {
+              display: flex;
+              align-items: center;
+              gap: 14px;
+            }
+            
+            .logo-icon {
+              width: 46px;
+              height: 46px;
+              background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: #ffffff;
+              font-weight: 900;
+              font-size: 22px;
+              box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+            }
+            
+            .brand-name {
+              font-size: 24px;
+              font-weight: 900;
+              color: #0f172a;
+              letter-spacing: -0.5px;
+              line-height: 1.1;
+            }
+            
+            .brand-name span { color: #4f46e5; }
+            
+            .doc-type {
+              font-size: 11px;
+              font-weight: 800;
+              color: #4f46e5;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              margin-top: 3px;
+            }
+            
+            .meta-grid {
+              display: flex;
+              gap: 12px;
+            }
+            
+            .meta-pill {
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              padding: 8px 14px;
+              border-radius: 10px;
+              text-align: right;
+            }
+            
+            .meta-label {
+              font-size: 9px;
+              font-weight: 800;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .meta-val {
+              font-size: 12px;
+              font-weight: 800;
+              color: #0f172a;
+              margin-top: 2px;
+            }
+            
+            .table-wrapper {
+              border: 1px solid #cbd5e1;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              text-align: left;
+              font-size: 12px;
+            }
+            
+            thead {
+              background-color: #4f46e5;
+              color: #ffffff;
+            }
+            
+            th {
+              padding: 12px 14px;
+              font-size: 10px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+              border-right: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            th:last-child { border-right: none; }
+            
+            td {
+              padding: 11px 14px;
+              border-bottom: 1px solid #e2e8f0;
+              border-right: 1px solid #f1f5f9;
+              vertical-align: middle;
+            }
+            td:last-child { border-right: none; }
+            
+            tr:nth-child(even) { background-color: #f8fafc; }
+            tr:last-child td { border-bottom: none; }
+            
+            .title-text {
+              font-weight: 800;
+              font-size: 13px;
+              color: #0f172a;
+            }
+            
+            .sub-text {
+              font-size: 11px;
+              color: #4f46e5;
+              font-weight: 700;
+              margin-top: 2px;
+            }
+            
+            .badge {
+              display: inline-block;
+              padding: 4px 10px;
+              border-radius: 6px;
+              font-size: 10px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            
+            .badge-upcoming { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+            .badge-ongoing { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+            .badge-completed { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+            .badge-cancelled { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+            
+            .room-pill {
+              display: inline-block;
+              background: #f1f5f9;
+              border: 1px solid #cbd5e1;
+              padding: 3px 8px;
+              border-radius: 6px;
+              font-weight: 800;
+              color: #334155;
+              font-size: 11px;
+            }
+            
+            .footer-container {
+              margin-top: 24px;
+              padding-top: 14px;
+              border-top: 1px solid #e2e8f0;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 10px;
+              color: #64748b;
+              font-weight: 600;
+            }
+            
+            .seal {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              color: #4f46e5;
+              font-weight: 800;
+            }
           </style>
         </head>
         <body>
-          <div class="header">
-            <div>
-              <div class="brand">EduNexus School Management System</div>
-              <div class="subtitle">Official Examination & Roster Timetable</div>
+          <div class="top-accent"></div>
+          <div class="header-container">
+            <div class="brand-box">
+              <div class="logo-icon">E</div>
+              <div>
+                <div class="brand-name">Edu<span>Nexus</span></div>
+                <div class="doc-type">Official Examination & Timetable Schedule</div>
+              </div>
             </div>
-            <div class="meta">
-              <strong>Generated On:</strong> ${currentDate}<br/>
-              <strong>Total Exams:</strong> ${filteredExams.length}<br/>
-              <strong>Class Filter:</strong> ${selectedClass}
+            <div class="meta-grid">
+              <div class="meta-pill">
+                <div class="meta-label">Generated Date</div>
+                <div class="meta-val">${currentDate}</div>
+              </div>
+              <div class="meta-pill">
+                <div class="meta-label">Class Filter</div>
+                <div class="meta-val">${selectedClass}</div>
+              </div>
+              <div class="meta-pill">
+                <div class="meta-label">Total Exams</div>
+                <div class="meta-val">${filteredExams.length} Scheduled</div>
+              </div>
             </div>
           </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Examination & Subject</th>
-                <th>Class & Section</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Room</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Examination & Subject</th>
+                  <th style="width: 18%;">Class & Section</th>
+                  <th style="width: 12%;">Date</th>
+                  <th style="width: 15%;">Time</th>
+                  <th style="width: 10%;">Room / Hall</th>
+                  <th style="width: 10%;">Total Marks</th>
+                  <th style="width: 10%; text-align: center;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
 
-          <div class="footer">
-            <div>EduNexus Management System · Confidential Academic Document</div>
-            <div>Page 1 of 1</div>
+          <div class="footer-container">
+            <div class="seal">
+              ✓ Official Authoritative Timetable Record · EduNexus Academic Management System
+            </div>
+            <div>Confidential Academic Document</div>
           </div>
 
           <script>
             window.onload = function() {
-              window.print();
+              setTimeout(function() {
+                window.print();
+              }, 250);
             };
           </script>
         </body>
@@ -514,7 +728,7 @@ export default function TeacherExaminationsPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-6 sm:p-8 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-900/80"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70"
       >
         <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
 
@@ -552,8 +766,8 @@ export default function TeacherExaminationsPage() {
             <button
               type="button"
               onClick={() => fetchExams(true)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
-              title="Refresh DB Data"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
+              title="Refresh Data"
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin text-indigo-600" : ""}`} />
             </button>
@@ -617,7 +831,7 @@ export default function TeacherExaminationsPage() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="overflow-visible rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-900/80"
+        className="overflow-visible rounded-xl border border-slate-200/90 bg-white shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70"
       >
         {/* Toolbar */}
         <div className="border-b border-slate-100/90 p-5 sm:p-6 dark:border-slate-800/90">
@@ -681,21 +895,16 @@ export default function TeacherExaminationsPage() {
           </div>
         </div>
 
-        {/* LOADING STATE */}
+        {/* LOADING STATE SKELETON */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 dark:text-indigo-400" />
-            <p className="mt-3 text-xs font-bold text-slate-600 dark:text-slate-400">
-              Loading examinations from database...
-            </p>
-          </div>
+          <ExaminationTableSkeleton />
         ) : (
           <>
             {/* Desktop Exam Schedule Table */}
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[850px]">
                 <thead>
-                  <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-950/60">
+                  <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-900/90">
                     <th className="px-6 py-4">Examination & Subject</th>
                     <th className="px-6 py-4">Class & Section</th>
                     <th className="px-6 py-4">Date</th>
@@ -1188,7 +1397,7 @@ function CreateExamModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+          className="relative w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
         >
           {/* Header */}
           <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-4 sm:p-6 dark:border-slate-800">
@@ -1475,7 +1684,7 @@ function CreateExamModal({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Saving to DB...</span>
+                    <span>Saving...</span>
                   </>
                 ) : (
                   <span>Save & Schedule Exam</span>
@@ -1578,7 +1787,7 @@ function CustomFormSelect({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/70"
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/70"
           >
             <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
               {normalizedOptions.map((opt) => {
@@ -1657,7 +1866,7 @@ function CancelExamModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-[calc(100%-1.5rem)] sm:max-w-sm md:max-w-[390px] max-h-[85vh] overflow-y-auto rounded-2xl border border-rose-200/80 bg-white p-4 sm:p-5 shadow-2xl dark:border-rose-500/30 dark:bg-slate-900 custom-scrollbar"
+          className="relative z-10 w-full max-w-[calc(100%-1.5rem)] sm:max-w-sm md:max-w-[390px] max-h-[85vh] overflow-y-auto rounded-xl border border-rose-200/90 bg-white p-4 sm:p-5 shadow-2xl dark:border-rose-500/40 dark:bg-slate-950 custom-scrollbar"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -1712,7 +1921,7 @@ function CancelExamModal({
               {isCancelling ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Updating DB...</span>
+                  <span>Updating...</span>
                 </>
               ) : (
                 <>
@@ -1749,7 +1958,7 @@ function ExamDetailModal({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+          className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
         >
           <div className="flex items-start justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
             <div className="flex items-center gap-3">
@@ -1851,6 +2060,102 @@ function ExamDetailModal({
 /* HELPER COMPONENTS */
 /* ========================================================= */
 
+function ExaminationTableSkeleton() {
+  return (
+    <>
+      {/* Desktop Table Skeleton */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[850px]">
+          <thead>
+            <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-900/90">
+              <th className="px-6 py-4">Examination & Subject</th>
+              <th className="px-6 py-4">Class & Section</th>
+              <th className="px-6 py-4">Date</th>
+              <th className="px-6 py-4">Time</th>
+              <th className="px-6 py-4">Room</th>
+              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/80">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}>
+                {/* Examination & Subject */}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-9 w-9 shrink-0 rounded-lg skeleton-shimmer" />
+                    <div className="space-y-2">
+                      <div className="h-3.5 w-44 rounded-md skeleton-shimmer" />
+                      <div className="h-2.5 w-28 rounded-md skeleton-shimmer-subtle" />
+                    </div>
+                  </div>
+                </td>
+
+                {/* Class & Section */}
+                <td className="px-6 py-4">
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded-md skeleton-shimmer" />
+                    <div className="h-2.5 w-16 rounded-md skeleton-shimmer-subtle" />
+                  </div>
+                </td>
+
+                {/* Date */}
+                <td className="px-6 py-4">
+                  <div className="h-3.5 w-20 rounded-md skeleton-shimmer" />
+                </td>
+
+                {/* Time */}
+                <td className="px-6 py-4">
+                  <div className="h-3.5 w-16 rounded-md skeleton-shimmer" />
+                </td>
+
+                {/* Room */}
+                <td className="px-6 py-4">
+                  <div className="h-3.5 w-16 rounded-md skeleton-shimmer" />
+                </td>
+
+                {/* Status */}
+                <td className="px-6 py-4">
+                  <div className="h-6 w-20 rounded-full skeleton-shimmer" />
+                </td>
+
+                {/* Actions */}
+                <td className="px-6 py-4 text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <div className="h-8 w-16 rounded-xl skeleton-shimmer" />
+                    <div className="h-8 w-16 rounded-xl skeleton-shimmer" />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card Skeleton */}
+      <div className="divide-y divide-slate-100 dark:divide-slate-800 md:hidden">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-2">
+                <div className="h-4 w-20 rounded skeleton-shimmer" />
+                <div className="h-4 w-40 rounded skeleton-shimmer" />
+                <div className="h-3 w-28 rounded skeleton-shimmer-subtle" />
+              </div>
+              <div className="h-6 w-16 rounded-full skeleton-shimmer" />
+            </div>
+            <div className="h-16 w-full rounded-lg skeleton-shimmer-subtle" />
+            <div className="flex justify-end gap-2 pt-1">
+              <div className="h-7 w-20 rounded-lg skeleton-shimmer" />
+              <div className="h-7 w-20 rounded-lg skeleton-shimmer" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function SummaryCard({
   icon: Icon,
   label,
@@ -1871,7 +2176,7 @@ function SummaryCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-xs backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:border-slate-800/80 dark:bg-slate-900/80"
+      className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/70"
     >
       <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl" />
 
@@ -1883,9 +2188,13 @@ function SummaryCard({
         {label}
       </p>
 
-      <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
-        {value}
-      </p>
+      <div className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+        {value === "..." ? (
+          <div className="h-7 w-12 rounded-md skeleton-shimmer my-0.5" />
+        ) : (
+          value
+        )}
+      </div>
 
       <p className={`mt-1 text-[10px] font-medium ${badgeColor}`}>
         {detail}
@@ -2011,7 +2320,7 @@ function SelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-full min-w-[170px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-900/95 dark:shadow-black/70"
+            className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-full min-w-[170px] rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-black/95 dark:shadow-black/70"
           >
             <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
               {options.map((option) => {
