@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileCheck,
@@ -276,9 +276,12 @@ export default function TeacherExaminationsPage() {
   };
 
   // Fetch Exams & Requests from DB on Mount
-  const fetchExams = async (showRefreshSpinner = false) => {
-    if (showRefreshSpinner) setIsRefreshing(true);
-    else setIsLoading(true);
+  const fetchExams = useCallback(async (showRefreshSpinner = false) => {
+    if (showRefreshSpinner) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
 
     try {
       const [examRes, requestRes] = await Promise.all([
@@ -295,17 +298,20 @@ export default function TeacherExaminationsPage() {
       if (requestRes.success && Array.isArray(requestRes.requests)) {
         setClassRequests(requestRes.requests);
       }
-    } catch (err: any) {
+    } catch {
       showToast("Error connecting to database.");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchExams();
-  }, []);
+    const loadExams = async () => {
+      await fetchExams();
+    };
+    void loadExams();
+  }, [fetchExams]);
 
   // Filtered Exams
   const filteredExams = useMemo(() => {
@@ -346,7 +352,7 @@ export default function TeacherExaminationsPage() {
       } else {
         showToast(res.error || "Failed to create examination.");
       }
-    } catch (error: any) {
+    } catch {
       showToast("Error creating exam.");
     }
   };
@@ -365,7 +371,7 @@ export default function TeacherExaminationsPage() {
       } else {
         showToast(res.error || "Failed to cancel exam.");
       }
-    } catch (error: any) {
+    } catch {
       showToast("Error cancelling exam.");
     }
   };
@@ -1109,7 +1115,7 @@ export default function TeacherExaminationsPage() {
                 </h3>
 
                 <p className="mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
-                  No examination entries in the database matched your search query or class filter. Click <strong>"Create Exam"</strong> to add one!
+                  No examination entries in the database matched your search query or class filter. Click <strong>&quot;Create Exam&quot;</strong> to add one!
                 </p>
               </div>
             )}
@@ -1189,7 +1195,6 @@ function CreateExamModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
 
   // Auto Passing Marks Calculation (40% threshold)
   const passingMarks = useMemo(() => {
@@ -1258,32 +1263,33 @@ function CreateExamModal({
     });
   }, [startTime]);
 
-  // Auto-adjust endTime if current endTime is less than 30 minutes after startTime
-  useEffect(() => {
+  // Keep the selected end time valid without synchronizing state inside an effect.
+  const safeEndTime = useMemo(() => {
     const startMins = parseTimeToMinutes(startTime);
     const endMins = parseTimeToMinutes(endTime);
-    if (endMins - startMins < 30) {
-      if (availableEndTimes.length > 0) {
-        setEndTime(availableEndTimes[0]);
-      }
+
+    if (endMins - startMins >= 30) {
+      return endTime;
     }
+
+    return availableEndTimes[0] || endTime;
   }, [startTime, endTime, availableEndTimes]);
 
-  // Update selected subject when availableSubjects changes or class/group changes
-  useEffect(() => {
-    if (availableSubjects.length > 0) {
-      if (!subject || !availableSubjects.includes(subject)) {
-        setSubject(availableSubjects[0]);
-      }
+  // Keep the selected subject valid when the available subjects change.
+  const selectedSubject = useMemo(() => {
+    if (subject && availableSubjects.includes(subject)) {
+      return subject;
     }
-  }, [availableSubjects, studentClass, group, subject]);
 
-  // Auto conflict checking when room, class, section, date change
-  useEffect(() => {
+    return availableSubjects[0] || "";
+  }, [subject, availableSubjects]);
+
+  // Derive conflict warning directly from current form values.
+  const conflictWarning = useMemo(() => {
     if (!date || !roomNo) {
-      setConflictWarning(null);
-      return;
+      return null;
     }
+
     const conflict = existingExams.find(
       (e) =>
         e.date === date &&
@@ -1291,13 +1297,12 @@ function CreateExamModal({
           (e.studentClass === studentClass && e.section === section)) &&
         e.status !== "Cancelled"
     );
-    if (conflict) {
-      setConflictWarning(
-        `Warning: ${conflict.roomNo} / ${conflict.studentClass} (${conflict.section}) already has an exam ("${conflict.title}") scheduled on ${date}.`
-      );
-    } else {
-      setConflictWarning(null);
+
+    if (!conflict) {
+      return null;
     }
+
+    return `Warning: ${conflict.roomNo} / ${conflict.studentClass} (${conflict.section}) already has an exam ("${conflict.title}") scheduled on ${date}.`;
   }, [date, roomNo, studentClass, section, existingExams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1319,7 +1324,7 @@ function CreateExamModal({
 
     // 30 Minutes Minimum Duration Rule
     const startMins = parseTimeToMinutes(startTime);
-    const endMins = parseTimeToMinutes(endTime);
+    const endMins = parseTimeToMinutes(safeEndTime);
     const durationMins = endMins - startMins;
 
     if (durationMins < 30) {
@@ -1364,14 +1369,14 @@ function CreateExamModal({
     setIsSubmitting(true);
     await onSubmit({
       title,
-      subject,
+      subject: selectedSubject,
       studentClass,
       section,
       group: studentClass === "Class 9" || studentClass === "Class 10" ? group : undefined,
       examType,
       date,
       startTime,
-      endTime,
+      endTime: safeEndTime,
       roomNo,
       totalMarks: Number(totalMarks),
       passingMarks: Number(passingMarks),
@@ -1714,7 +1719,7 @@ function CustomFormSelect({
   label?: string;
   value: string | number;
   options: (string | number)[] | { label: string; value: string | number }[];
-  onChange: (val: any) => void;
+  onChange: (val: string ) => void;
   icon?: React.ElementType;
   required?: boolean;
   helperText?: string;
@@ -1797,7 +1802,7 @@ function CustomFormSelect({
                     key={String(opt.value)}
                     type="button"
                     onClick={() => {
-                      onChange(opt.value);
+                      onChange(String(opt.value));
                       setIsOpen(false);
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-all cursor-pointer ${isSelected
