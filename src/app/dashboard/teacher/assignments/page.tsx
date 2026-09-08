@@ -22,7 +22,14 @@ import AssignmentCard, { Assignment } from "@/components/shared/AssignmentCard";
 import AssignmentFormModal from "@/components/shared/AssignmentFormModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
-const API_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+
+const getAuthToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("better-auth.session_token");
+  }
+  return null;
+};
 
 const STATUS_OPTIONS = ["All Status", "ACTIVE", "DRAFT", "CLOSED"];
 const CLASS_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
@@ -58,12 +65,16 @@ export default function TeacherAssignmentsPage() {
       setIsLoading(true);
       setError("");
 
+      const token = getAuthToken();
       const response = await fetch(
-        `${API_URL}/api/teacher/assignments?teacherEmail=${encodeURIComponent(
+        `${SERVER_URL}/api/teacher/assignments?teacherEmail=${encodeURIComponent(
           teacherEmail
         )}`,
         {
           credentials: "include",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
         }
       );
 
@@ -154,15 +165,19 @@ export default function TeacherAssignmentsPage() {
 
     try {
       setIsDeleting(true);
-
-      const url = `${API_URL}/api/teacher/assignments/${assignmentToDelete.id}${
-        teacherEmail ? `?teacherEmail=${encodeURIComponent(teacherEmail)}` : ""
-      }`;
-
-      const response = await fetch(url, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const token = getAuthToken();
+      const response = await fetch(
+        `${SERVER_URL}/api/teacher/assignments/${assignmentToDelete.id}${
+          teacherEmail ? `?teacherEmail=${encodeURIComponent(teacherEmail)}` : ""
+        }`,
+        {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
 
       const data = await response.json();
 
@@ -222,7 +237,7 @@ export default function TeacherAssignmentsPage() {
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
       >
         <div className="pointer-events-none absolute -right-10 -bottom-10 h-60 w-60 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl" />
 
@@ -285,7 +300,7 @@ export default function TeacherAssignmentsPage() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="overflow-visible rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-900/80 p-5 sm:p-6"
+        className="overflow-visible rounded-xl border border-slate-200/90 bg-white shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 p-5 sm:p-6"
       >
         {/* Toolbar */}
         <div className="mb-6 flex flex-col gap-4 border-b border-slate-100/90 pb-5 dark:border-slate-800/90 lg:flex-row lg:items-center lg:justify-between">
@@ -338,8 +353,25 @@ export default function TeacherAssignmentsPage() {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="h-56 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900"
-              />
+                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-5 shadow-md dark:shadow-xl space-y-4 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="h-6 w-20 rounded-full skeleton-shimmer" />
+                    <div className="h-4 w-16 rounded-md skeleton-shimmer-subtle" />
+                  </div>
+                  <div className="h-5 w-3/4 rounded-md skeleton-shimmer" />
+                  <div className="h-3 w-1/2 rounded-md skeleton-shimmer-subtle" />
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                  <div className="h-4 w-28 rounded-md skeleton-shimmer-subtle" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg skeleton-shimmer" />
+                    <div className="h-7 w-7 rounded-lg skeleton-shimmer" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredAssignments.length > 0 ? (
@@ -425,7 +457,7 @@ function SummaryCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-900/90"
+      className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/70"
     >
       <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl" />
 
@@ -493,7 +525,7 @@ function SelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full z-30 mt-1.5 w-full min-w-[160px] max-h-60 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-900"
+            className="absolute right-0 top-full z-30 mt-1.5 w-full min-w-[160px] max-h-60 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950"
           >
             {options.map((option) => {
               const isSelected = option === value;

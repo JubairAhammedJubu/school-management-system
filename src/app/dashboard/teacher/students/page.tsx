@@ -32,6 +32,7 @@ import {
   UserRound,
   Filter,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getTeacherStudentsAction,
@@ -64,6 +65,7 @@ export default function TeacherStudentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // NEW
   const [, startTransition] = useTransition();
 
   // Modal State
@@ -75,13 +77,23 @@ export default function TeacherStudentsPage() {
   const fetchStudents = useCallback(
     (pageNum: number, searchVal: string, classVal: string) => {
       setIsLoading(true);
+      setErrorMessage(null); // NEW
       startTransition(async () => {
-        const res = await getTeacherStudentsAction({
-          page: pageNum,
-          limit: 20,
-          search: searchVal,
-          studentClass: classVal,
-        });
+        // NEW: read the Better Auth bearer token stored on sign-in.
+        // Server Actions run in Node and cannot read localStorage
+        // themselves, so it must be passed in explicitly here.
+        const token =
+          localStorage.getItem("better-auth.session_token") ?? undefined;
+
+        const res = await getTeacherStudentsAction(
+          {
+            page: pageNum,
+            limit: 20,
+            search: searchVal,
+            studentClass: classVal,
+          },
+          token, // NEW: forwarded to the server action
+        );
 
         if (res.success) {
           setStudents(res.students);
@@ -92,6 +104,7 @@ export default function TeacherStudentsPage() {
         } else {
           setStudents([]);
           setPagination({ total: 0, page: 1, limit: 20, totalPages: 1 });
+          setErrorMessage(res.error ?? "Failed to load students"); // NEW
         }
         setIsLoading(false);
       });
@@ -143,6 +156,14 @@ export default function TeacherStudentsPage() {
         <div className="absolute right-10 top-1/3 h-80 w-80 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-[130px]" />
       </div>
 
+      {/* NEW: visible error banner */}
+      {errorMessage && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
       {/* ===================================================== */}
       {/* HEADER BANNER WITH TOTAL STUDENTS BADGE */}
       {/* ===================================================== */}
@@ -150,7 +171,7 @@ export default function TeacherStudentsPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/80 p-6 sm:p-8 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-900/80"
+        className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70"
       >
         <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
 
@@ -212,7 +233,7 @@ export default function TeacherStudentsPage() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="overflow-visible rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur-xl transition-all duration-300 dark:border-slate-800/80 dark:bg-slate-900/80"
+        className="overflow-visible rounded-xl border border-slate-200/90 bg-white shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70"
       >
         {/* Toolbar */}
         <div className="border-b border-slate-100/90 p-5 sm:p-6 dark:border-slate-800/90">
@@ -263,7 +284,7 @@ export default function TeacherStudentsPage() {
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[700px]">
             <thead>
-              <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-950/60">
+              <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-950/80">
                 <th className="px-6 py-4">Student</th>
                 <th className="px-6 py-4">Class</th>
                 <th className="px-6 py-4">Roll No</th>
@@ -475,10 +496,10 @@ export default function TeacherStudentsPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-900"
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
             >
               {/* Header Banner */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md shadow-indigo-500/20">
                     {selectedStudent?.image ? (
@@ -671,8 +692,15 @@ function ClassSelectDropdown({
         setIsOpen(false);
       }
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
@@ -680,49 +708,62 @@ function ClassSelectDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-800 cursor-pointer"
+        className={`group flex h-10 w-full items-center justify-between gap-2 rounded-xl border bg-slate-50/90 px-3.5 text-xs font-bold transition-all duration-200 cursor-pointer dark:bg-slate-800/80 ${
+          isOpen
+            ? "border-indigo-500 bg-white ring-4 ring-indigo-500/15 shadow-sm dark:border-indigo-400 dark:bg-slate-800 text-slate-900 dark:text-white"
+            : "border-slate-200/90 text-slate-700 hover:border-indigo-400 hover:bg-slate-100/80 dark:border-slate-700/80 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-800"
+        }`}
       >
         <span className="truncate flex items-center gap-2">
-          <Filter className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span>{value}</span>
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 transition-transform group-hover:scale-105 dark:bg-indigo-500/15 dark:text-indigo-400">
+            <Filter className="h-3.5 w-3.5" />
+          </span>
+          <span className="truncate">{value}</span>
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""}`}
+          className={`h-4 w-4 text-slate-400 transition-transform duration-300 shrink-0 ${
+            isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : "group-hover:text-slate-600 dark:group-hover:text-slate-300"
+          }`}
         />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 6, scale: 0.98 }}
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full z-30 mt-1.5 w-full min-w-[200px] max-h-60 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-900"
+            className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-full min-w-[200px] rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/70"
           >
-            {options.map((option) => {
-              const isSelected = option === value;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    onChange(option);
-                    setIsOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${
-                    isSelected
-                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300 font-extrabold"
-                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                  }`}
-                >
-                  <span className="truncate">{option}</span>
-                  {isSelected && (
-                    <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  )}
-                </button>
-              );
-            })}
+            <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
+              {options.map((option) => {
+                const isSelected = option === value;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      onChange(option);
+                      setIsOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50/90 text-indigo-700 font-extrabold dark:bg-indigo-500/20 dark:text-indigo-300 shadow-2xs"
+                        : "text-slate-700 font-semibold hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      {isSelected && <span className="h-3.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0" />}
+                      <span className="truncate">{option}</span>
+                    </span>
+                    {isSelected && (
+                      <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-1.5" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -736,27 +777,27 @@ function ClassSelectDropdown({
 
 function SkeletonRow({ index }: { index: number }) {
   return (
-    <tr className="animate-pulse">
+    <tr>
       <td className="px-6 py-4">
         <div className="flex items-center gap-3.5">
-          <div className="h-9 w-9 rounded-lg bg-slate-200/80 dark:bg-slate-800/80 shrink-0" />
+          <div className="h-9 w-9 rounded-lg skeleton-shimmer shrink-0" />
           <div className="space-y-2">
             <div
-              className="h-3.5 rounded-md bg-slate-200/80 dark:bg-slate-800/80"
+              className="h-3.5 rounded-md skeleton-shimmer"
               style={{ width: `${110 + (index % 3) * 35}px` }}
             />
-            <div className="h-2.5 w-36 rounded-md bg-slate-100/90 dark:bg-slate-800/50" />
+            <div className="h-2.5 w-36 rounded-md skeleton-shimmer-subtle" />
           </div>
         </div>
       </td>
       <td className="px-6 py-4">
-        <div className="h-6 w-20 rounded-lg bg-slate-200/70 dark:bg-slate-800/60" />
+        <div className="h-6 w-20 rounded-lg skeleton-shimmer" />
       </td>
       <td className="px-6 py-4">
-        <div className="h-6 w-16 rounded-lg bg-indigo-100/60 dark:bg-indigo-950/40" />
+        <div className="h-6 w-16 rounded-lg skeleton-shimmer" />
       </td>
       <td className="px-6 py-4 text-right">
-        <div className="ml-auto h-8 w-28 rounded-lg bg-indigo-100/70 dark:bg-indigo-950/50" />
+        <div className="ml-auto h-8 w-28 rounded-lg skeleton-shimmer" />
       </td>
     </tr>
   );
@@ -764,16 +805,16 @@ function SkeletonRow({ index }: { index: number }) {
 
 function MobileSkeletonCard() {
   return (
-    <div className="p-4 space-y-3 animate-pulse">
+    <div className="p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-9 w-9 rounded-lg bg-slate-200/80 dark:bg-slate-800/80 shrink-0" />
+          <div className="h-9 w-9 rounded-lg skeleton-shimmer shrink-0" />
           <div className="space-y-1.5 min-w-0">
-            <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
-            <div className="h-2.5 w-36 rounded bg-slate-100 dark:bg-slate-800/60" />
+            <div className="h-3.5 w-28 rounded-md skeleton-shimmer" />
+            <div className="h-2.5 w-36 rounded-md skeleton-shimmer-subtle" />
           </div>
         </div>
-        <div className="h-8 w-20 rounded-lg bg-indigo-100/70 dark:bg-indigo-950/50" />
+        <div className="h-8 w-20 rounded-lg skeleton-shimmer" />
       </div>
     </div>
   );
