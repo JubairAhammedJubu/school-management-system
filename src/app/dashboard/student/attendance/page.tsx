@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck, Sparkles, CheckCircle2, XCircle, Clock3 } from "lucide-react";
+import { CalendarCheck, CalendarDays, Sparkles, CheckCircle2, XCircle, Clock3 } from "lucide-react";
 
 interface AttendanceRecord {
   date: string;
@@ -45,6 +45,34 @@ const summary = [
   { label: "Absent", value: "3%", className: "text-rose-600 dark:text-rose-400" },
   { label: "Late", value: "3%", className: "text-amber-600 dark:text-amber-400" },
 ];
+
+// Groups the flat attendance log into one entry per day, in the order days
+// first appear in `attendanceLog`, so each day can be rendered as its own
+// division instead of one long mixed-date table.
+function groupByDate(records: AttendanceRecord[]) {
+  const order: string[] = [];
+  const groups = new Map<string, AttendanceRecord[]>();
+
+  for (const record of records) {
+    if (!groups.has(record.date)) {
+      groups.set(record.date, []);
+      order.push(record.date);
+    }
+    groups.get(record.date)!.push(record);
+  }
+
+  return order.map((date) => {
+    const dayRecords = groups.get(date)!;
+    const counts = dayRecords.reduce(
+      (acc, r) => {
+        acc[r.status] += 1;
+        return acc;
+      },
+      { present: 0, absent: 0, late: 0 } as Record<AttendanceRecord["status"], number>
+    );
+    return { date, records: dayRecords, counts };
+  });
+}
 
 export default function StudentAttendancePage() {
   return (
@@ -96,62 +124,88 @@ export default function StudentAttendancePage() {
         ))}
       </div>
 
-      {/* Attendance Log Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
-      >
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent Log</h2>
-        </div>
+      {/* Attendance Log — one division per day */}
+      <div className="space-y-4">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white px-1">Recent Log</h2>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800">
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Date
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Subject
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {attendanceLog.map((record, idx) => {
-                const style = statusStyles[record.status];
-                const StatusIcon = style.icon;
-                return (
-                  <tr
-                    key={`${record.date}-${record.subject}-${idx}`}
-                    className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
-                  >
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                      {record.date}
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                      {record.subject}
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${style.className}`}
-                      >
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        {style.label}
-                      </span>
-                    </td>
+        {groupByDate(attendanceLog).map((day, dayIdx) => (
+          <motion.div
+            key={day.date}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.2 + dayIdx * 0.06, ease: "easeOut" }}
+            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+          >
+            {/* Day header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shrink-0">
+                  <CalendarDays className="h-4.5 w-4.5 text-slate-500 dark:text-slate-400" />
+                </div>
+                <span className="text-sm font-bold text-slate-900 dark:text-white">{day.date}</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {day.counts.present > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                    {day.counts.present} Present
+                  </span>
+                )}
+                {day.counts.absent > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400">
+                    {day.counts.absent} Absent
+                  </span>
+                )}
+                {day.counts.late > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                    {day.counts.late} Late
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Per-subject rows for this day */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Subject
+                    </th>
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Status
+                    </th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+                </thead>
+                <tbody>
+                  {day.records.map((record, idx) => {
+                    const style = statusStyles[record.status];
+                    const StatusIcon = style.icon;
+                    return (
+                      <tr
+                        key={`${record.date}-${record.subject}-${idx}`}
+                        className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                      >
+                        <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          {record.subject}
+                        </td>
+                        <td className="px-5 sm:px-6 py-3.5">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${style.className}`}
+                          >
+                            <StatusIcon className="h-3.5 w-3.5" />
+                            {style.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }
