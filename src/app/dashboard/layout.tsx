@@ -16,6 +16,7 @@ import {
   Bell,
   FileText,
   CalendarCheck,
+  CalendarDays,
   Home,
   LogOut,
   Sun,
@@ -86,6 +87,11 @@ const studentRoutes: RouteItem[] = [
     label: "Attendance",
     href: "/dashboard/student/attendance",
     icon: CalendarCheck,
+  },
+  {
+    label: "Examinations",
+    href: "/dashboard/student/examinations",
+    icon: CalendarDays,
   },
   { label: "Results", href: "/dashboard/student/result", icon: Award },
   {
@@ -262,11 +268,11 @@ export default function DashboardLayout({
         },
         {
           title: "Academic Workspace",
-          items: [studentRoutes[1], studentRoutes[2], studentRoutes[3]],
+          items: [studentRoutes[1], studentRoutes[2], studentRoutes[3], studentRoutes[4]],
         },
         {
           title: "Finance & Alerts",
-          items: [studentRoutes[4], studentRoutes[5]],
+          items: [studentRoutes[5], studentRoutes[6]],
         },
       ];
     }
