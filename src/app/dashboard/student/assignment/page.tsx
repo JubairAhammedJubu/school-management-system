@@ -20,20 +20,30 @@ interface AssignmentRecord {
   dueDate: string;
   status: "pending" | "ACTIVE" | "graded";
   grade?: string;
+  fileUrl?: string;
 }
 
-// const assignments: AssignmentRecord[] = [
-//   { title: "Algebra Problem Set 4", subject: "Mathematics", dueDate: "Aug 27, 2026", status: "pending" },
-//   { title: "Lab Report: Photosynthesis", subject: "Biology", dueDate: "Aug 29, 2026", status: "pending" },
-//   { title: "Essay: Industrial Revolution", subject: "History", dueDate: "Aug 31, 2026", status: "pending" },
-//   { title: "Grammar Worksheet 3", subject: "English", dueDate: "Aug 20, 2026", status: "submitted" },
-//   { title: "Newton's Laws Quiz Prep", subject: "Physics", dueDate: "Aug 15, 2026", status: "graded", grade: "18/20" },
-//   { title: "Recursion Practice Set", subject: "Computer Science", dueDate: "Aug 12, 2026", status: "graded", grade: "20/20" },
-// ];
+// Safely retrieve token on client side
+const getAuthToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("better-auth.session_token");
+  }
+  return null;
+};
 
-const authToken = localStorage.getItem("better-auth.session_token");
+// Helper function to safely parse API responses
+const parseJsonResponse = async (response: Response) => {
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return await response.json();
+  }
+  const rawText = await response.text();
+  throw new Error(`Server returned non-JSON response (${response.status}): ${rawText.slice(0, 100)}...`);
+};
+
 const getAssignments = async () => {
   try {
+    const authToken = getAuthToken();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
       {
@@ -42,18 +52,16 @@ const getAssignments = async () => {
         headers: {
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
-      },
+      }
     );
 
-    const data = await response.json();
-    console.log("Response:", data);
+    const data = await parseJsonResponse(response);
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch assignments");
     }
 
-    console.log("Assignments:", data.assignments);
-    return data.assignments;
+    return data.assignments || [];
   } catch (error) {
     console.error("Error fetching assignments:", error);
     return [];
@@ -107,17 +115,18 @@ export default function StudentAssignmentsPage() {
   }, []);
 
   const pendingCount = assignments.filter((a) => a.status === "pending").length;
-  const submittedCount = assignments.filter(
-    (a) => a.status === "ACTIVE",
-  ).length;
+  const submittedAssignments = assignments.filter(
+    (a) => a.status === "ACTIVE"
+  );
+  const submittedCount = submittedAssignments.length;
   const gradedCount = assignments.filter((a) => a.status === "graded").length;
   const selectedAssignment = assignments.find(
     (assignment) =>
-      (assignment.id ?? assignment.title) === selectedAssignmentId,
+      (assignment.id ?? assignment.title) === selectedAssignmentId
   );
   const submittableAssignments = assignments.filter(
     (assignment) =>
-      assignment.status === "pending" || assignment.status === "ACTIVE",
+      assignment.status === "pending" || assignment.status === "ACTIVE"
   );
 
   const handleFileChange = (file: File | undefined) => {
@@ -151,40 +160,39 @@ export default function StudentAssignmentsPage() {
     setSubmitError("");
 
     if (!selectedAssignment || !selectedFile) {
-      toast.error(
-        "Select an assignment and attach your PDF before submitting.",
-      );
-      setSubmitError(
-        "Select an assignment and attach your PDF before submitting.",
-      );
+      const msg = "Select an assignment and attach your PDF before submitting.";
+      toast.error(msg);
+      setSubmitError(msg);
       return;
     }
 
     if (!selectedAssignment.id) {
-      toast.error(
-        "This assignment cannot be submitted because it has no identifier.",
-      );
-      setSubmitError(
-        "This assignment cannot be submitted because it has no identifier.",
-      );
+      const msg = "This assignment cannot be submitted because it has no identifier.";
+      toast.error(msg);
+      setSubmitError(msg);
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const authToken = getAuthToken();
       const formData = new FormData();
       formData.append("file", selectedFile);
 
+      // 1. Upload File (Do NOT set Content-Type header when sending FormData)
       const uploadResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
         {
           method: "POST",
           credentials: "include",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          headers: {
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
           body: formData,
-        },
+        }
       );
-      const uploadData = await uploadResponse.json();
+
+      const uploadData = await parseJsonResponse(uploadResponse);
 
       if (!uploadResponse.ok) {
         throw new Error(uploadData.error || "Failed to upload assignment PDF");
@@ -195,19 +203,24 @@ export default function StudentAssignmentsPage() {
         throw new Error("The uploaded PDF URL was not returned by the server.");
       }
 
+      // 2. Submit Assignment (Include Auth header and application/json)
       const submitResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
         {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
           body: JSON.stringify({
             content: `PDF submission: ${selectedFile.name}`,
             fileUrl: fileUrl.trim(),
           }),
-        },
+        }
       );
-      const submitData = await submitResponse.json();
+
+      const submitData = await parseJsonResponse(submitResponse);
 
       if (!submitResponse.ok) {
         throw new Error(submitData.error || "Failed to submit assignment");
@@ -216,9 +229,9 @@ export default function StudentAssignmentsPage() {
       setAssignments((current) =>
         current.map((assignment) =>
           assignment.id === selectedAssignment.id
-            ? { ...assignment, status: "ACTIVE" }
-            : assignment,
-        ),
+            ? { ...assignment, status: "ACTIVE", fileUrl: fileUrl.trim() }
+            : assignment
+        )
       );
       setSelectedFile(null);
       setSelectedAssignmentId("");
@@ -409,6 +422,106 @@ export default function StudentAssignmentsPage() {
         )}
       </motion.section>
 
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+      >
+        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Submitted assignments
+              </h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                After you submit a PDF, it appears here.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {submittedAssignments.length === 0 ? (
+          <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+            You haven&apos;t submitted any assignments yet.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800">
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Assignment
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Subject
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Due Date
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Status
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    PDF
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {submittedAssignments.map((item, idx) => {
+                  const style = statusStyles[item.status];
+                  console.log("style for status", item, style);
+                  const StatusIcon = style?.icon || CheckCircle2;
+                  return (
+                    <tr
+                      key={item.id ?? `${item.title}-submitted-${idx}`}
+                      className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                    >
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {item.title}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {item.subject}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                        {item.dueDate}
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                            style?.className || ""
+                          }`}
+                        >
+                          <StatusIcon className="h-3.5 w-3.5" />
+                          {style?.label || item.status}
+                        </span>
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
+                        {item.fileUrl ? (
+                          <a
+                            href={item.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            View PDF
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.section>
+
       {/* Assignments Table */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -446,7 +559,7 @@ export default function StudentAssignmentsPage() {
             <tbody>
               {assignments.map((item, idx) => {
                 const style = statusStyles[item.status];
-                const StatusIcon = style.icon;
+                const StatusIcon = style?.icon || Clock3;
                 return (
                   <tr
                     key={`${item.title}-${idx}`}
@@ -463,10 +576,12 @@ export default function StudentAssignmentsPage() {
                     </td>
                     <td className="px-5 sm:px-6 py-3.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${style.className}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                          style?.className || ""
+                        }`}
                       >
                         <StatusIcon className="h-3.5 w-3.5" />
-                        {style.label}
+                        {style?.label || item.status}
                       </span>
                     </td>
                     <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">

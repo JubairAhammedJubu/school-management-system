@@ -322,19 +322,24 @@ export default function AssignmentFormModal({
         return;
       }
 
-      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
       const url = isEditing
         ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
         : `${SERVER_URL}/api/teacher/assignments`;
 
       const method = isEditing ? "PATCH" : "POST";
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("better-auth.session_token")
+          : null;
 
       const response = await fetch(url, {
         method,
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        credentials: "include",
         body: JSON.stringify({
           title: form.title.trim(),
           description: form.description.trim() || null,
@@ -416,11 +421,11 @@ export default function AssignmentFormModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 15 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-900"
+            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-950"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md">
                   <FileText className="h-5 w-5" />
@@ -470,7 +475,7 @@ export default function AssignmentFormModal({
                     onChange={(e) => updateField("title", e.target.value)}
                     placeholder="e.g. Chapter 5 Algebra & Functions"
                     disabled={isSaving}
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3.5 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3.5 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
                   />
                 </div>
               </div>
@@ -541,7 +546,7 @@ export default function AssignmentFormModal({
                     value={form.totalMarks}
                     onChange={(e) => updateField("totalMarks", Number(e.target.value))}
                     disabled={isSaving}
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
                   />
                 </div>
               </div>
@@ -574,7 +579,7 @@ export default function AssignmentFormModal({
                   onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Add coursework instructions, guidelines, or submission requirements..."
                   disabled={isSaving}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 outline-none focus:border-indigo-600 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
                 />
               </div>
 
@@ -669,7 +674,7 @@ function SingleFieldDateTimePicker({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className="h-10 w-full rounded-xl border border-slate-200/90 bg-slate-50/80 pl-11 pr-3 text-xs font-bold text-slate-800 outline-none transition-all duration-200 hover:border-indigo-300 hover:bg-white focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/90 dark:bg-slate-800/80 dark:text-slate-100 cursor-pointer"
+          className="h-10 w-full rounded-xl border border-slate-200/90 bg-slate-50/80 pl-11 pr-3 text-xs font-bold text-slate-800 outline-none transition-all duration-200 hover:border-indigo-300 hover:bg-slate-100/80 focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/90 dark:bg-slate-800/80 dark:text-slate-100 dark:hover:border-indigo-500 dark:hover:bg-slate-800 dark:focus:border-indigo-500 dark:focus:bg-slate-800 cursor-pointer"
         />
       </div>
     </div>
@@ -716,7 +721,7 @@ function ModalSelectDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-white focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+        className="flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-slate-100/80 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-slate-800 dark:focus:border-indigo-500 dark:focus:bg-slate-800 cursor-pointer disabled:opacity-50"
       >
         <span className="truncate flex items-center gap-2">
           <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -732,7 +737,7 @@ function ModalSelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute left-0 top-full z-40 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-900"
+            className="absolute left-0 top-full z-40 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950"
           >
             {options.map((option) => {
               const isSelected = option === value;
