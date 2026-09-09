@@ -48,7 +48,7 @@ Browser (Next.js)
                     └── Database (not in this repo)
 ```
 
-Session token is stored in **localStorage** (`better-auth.session_token`) and mirrored to a **same-origin cookie** so server actions can send it. The Express domain’s httpOnly cookie is not visible to Next.js when apps run on different origins.
+Session token is stored in **localStorage** (`better-auth.session_token`) and mirrored to a **same-origin cookie** so server actions can send it. The Express domain's httpOnly cookie is not visible to Next.js when apps run on different origins.
 
 Environment:
 
@@ -78,7 +78,7 @@ Path alias: `@/*` → `src/*`.
 | --- | --- |
 | `/` | Landing: hero, solutions, success, showcase, steps, FAQ, CTA |
 | `/about` | About content |
-| `/contact` | Contact / “Talk to us” |
+| `/contact` | Contact / "Talk to us" |
 | `/notices` | Public notice board (`NoticeBoard`) |
 | `/login` | Combined login/register (`AuthPage`) |
 | `/profile` | Edit profile + image upload (authenticated) |
@@ -94,7 +94,7 @@ Root layout: Navbar + Footer + ToastContainer, light/dark theme bootstrap from `
 Implemented in `src/components/CombinedLoginRegister/AuthPage.tsx` and `src/lib/auth-client.ts`.
 
 - **Sign up / sign in** via Better Auth (`signUp`, `signIn`, `signOut`, `useSession`)
-- **Admin approval gate:** login polls `checkApprovalStatusAction` (`GET /api/approval-status`). Unapproved emails show a disabled “Pending approval” state and re-check without a full refresh
+- **Admin approval gate:** login polls `checkApprovalStatusAction` (`GET /api/approval-status`). Unapproved emails show a disabled "Pending approval" state and re-check without a full refresh
 - **TOTP 2FA:** verify existing authenticator code, or first-login QR setup (`qrcode` package). No backup-code path in the UI
 - **Forgot password:** email + authenticator code → `verifyPasswordResetCodeAction` → `setNewPasswordAction` (no email OTP)
 - **Client lockout:** failed passwords tracked per email in localStorage (comments describe 3 failures → 5-hour lock)
@@ -126,16 +126,27 @@ Dashboard layout (`src/app/dashboard/layout.tsx`):
 
 ## Server actions (`src/lib/actions`)
 
-| File | Role | API |
+All server actions share the same auth pattern: forward the `cookie` header from `next/headers` **and** extract `better-auth.session_token` from the cookie to set an explicit `Authorization: Bearer` header. This covers cross-origin sessions.
+
+| File | Role | Endpoints |
 | --- | --- | --- |
-| `user-actions.ts` | Profile update | `PUT /api/user/profile` (token from localStorage; not `"use server"`) |
+| `user-actions.ts` | Profile update | `PUT /api/user/profile` (token from localStorage; **not** `"use server"`) |
 | `approval-actions.ts` | Public approval check | `GET /api/approval-status` |
 | `password-reset-actions.ts` | Reset via TOTP | `POST /api/password-reset/verify-code`, `.../set-password` |
-| `teacher.notice.ts` | Notices CRUD | `/api/notices`, `/api/notices/:id` |
-| `teacher.request.ts` | Class/subject requests | `/api/teacher/requests`, `PATCH /api/admin/requests/:id` |
+| `teacher.notice.ts` | Notices CRUD | `GET/POST /api/notices`, `PUT/DELETE /api/notices/:id` |
+| `teacher.request.ts` | Class/subject requests | `GET/POST/DELETE /api/teacher/requests`, `PATCH /api/admin/requests/:id` |
 | `teacher-students.ts` | Teacher student list | `GET /api/teacher/students` (pagination, search, class filter) |
+| `teacher.exam.ts` | Exam schedule CRUD | `GET/POST /api/exams`, `PATCH /api/exams/:id/cancel` |
 
-Auth for server actions: optional Bearer token from the client plus forwarded cookies. Cross-domain sessions rely on the mirrored cookie / explicit token.
+### `teacher.exam.ts` — detail
+
+Exports three server actions for the teacher examinations page:
+
+- **`getTeacherExamsAction()`** — Fetches all exams; maps raw API data onto the `ExamItem` interface with safe defaults (`section`, `startTime`, `endTime`, `roomNo`, `totalMarks`, `passingMarks`, `invigilator`, `status`).
+- **`createTeacherExamAction(payload: CreateExamPayload)`** — `POST /api/exams`; maps the created record back to `ExamItem`.
+- **`cancelTeacherExamAction(examId: string)`** — `PATCH /api/exams/:id/cancel`; marks an exam as Cancelled.
+
+Key types exported: `ExamItem`, `CreateExamPayload`, `GetExamsResponse`, `ActionExamResponse`.
 
 ---
 
@@ -148,14 +159,15 @@ Auth for server actions: optional Bearer token from the client plus forwarded co
 - Notices (public + teacher create/edit/delete via `NoticeBoard`)
 - Teacher class/subject requests (`/dashboard/teacher/my-classes`)
 - Teacher student directory (`/dashboard/teacher/students`)
-- Teacher assignment CRUD (`/api/teacher/assignments`)
+- Teacher assignment CRUD (`/api/teacher/assignments`) — create, edit, delete, list
+- Teacher exam schedule CRUD (`/api/exams`) — list, create, cancel
 - Student assignment list, file upload, submit (`/api/student/assignments...`)
 - Admin pending users, approve, 2FA lookup/reset
 
 ### UI with local/demo data (not persisted here)
 
 - Admin overview stats, teachers, students, classes, results, fees
-- Teacher overview charts, attendance, examinations, results
+- Teacher overview charts, attendance, results
 - Student overview stats, attendance, results, fees
 - README items such as AI at-risk prediction, academic calendar, and report generation are **not implemented** in this frontend
 
@@ -164,9 +176,24 @@ Auth for server actions: optional Bearer token from the client plus forwarded co
 ## Shared components (notable)
 
 - `NoticeBoard` — list/filter/pin; teachers can create/update/delete
-- `AssignmentFormModal`, `AssignmentCard`, `DeleteConfirmationModal`
+- `AssignmentFormModal` — animated modal (Framer Motion) for create/edit; class-dependent subject list; custom `ModalSelectDropdown` and `SingleFieldDateTimePicker` sub-components; supports both `onSubmit` (external handler) and direct `fetch` paths
+- `AssignmentCard`, `DeleteConfirmationModal`
 - `TeacherDashboardView` / `StudentDashboardView` — overview widgets (demo numbers)
 - Marketing: Hero, FAQ, About, Footer, Navbar, RoleBasedAccess (homepage explainer; not used as a route guard)
+
+---
+
+## Teacher Assignments page (`/dashboard/teacher/assignments`)
+
+`src/app/dashboard/teacher/assignments/page.tsx`
+
+- Client component; fetches assignments via direct `fetch` (not a server action) on mount using `teacherEmail` from session
+- Summary cards: Total, Active, Closed counts
+- Toolbar: text search, Status dropdown (All / ACTIVE / DRAFT / CLOSED), Class dropdown (All / Class 6–10)
+- Assignment grid with skeleton loading state (6 placeholder cards)
+- `AssignmentFormModal` for create/edit; `DeleteConfirmationModal` for delete confirmation
+- Live state update on save: inserts new assignment at front (sorted by due date) or replaces in-place; falls back to re-fetch if no saved record returned
+- Auth: `localStorage` `better-auth.session_token` forwarded as `Authorization: Bearer` header
 
 ---
 
@@ -177,6 +204,7 @@ Auth for server actions: optional Bearer token from the client plus forwarded co
 3. **`user-actions.ts`** uses `localStorage` and is not a server action despite the name.
 4. Admin teachers page includes Bengali comments; rest of the app is English.
 5. `tsconfig.json` include list has a leftover `"src/app/dashboard/notices"` entry.
+6. `teacher.exam.ts` uses a hard-coded fallback URL (`http://localhost:5000`) while other action files default to `undefined` when `NEXT_PUBLIC_SERVER_URL` is missing.
 
 ---
 
