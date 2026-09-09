@@ -18,9 +18,10 @@ interface AssignmentRecord {
   title: string;
   subject: string;
   dueDate: string;
-  status: "pending" | "ACTIVE" | "graded";
+  submitStatus:"PENDING" | "SUBMITTED" | "GRADED";
   grade?: string;
   fileUrl?: string;
+  attemptsUsed: number;
 }
 
 // Safely retrieve token on client side
@@ -69,26 +70,26 @@ const getAssignments = async () => {
 };
 
 const statusStyles: Record<
-  AssignmentRecord["status"],
+  AssignmentRecord["submitStatus"],
   {
     label: string;
     className: string;
     icon: React.ComponentType<{ className?: string }>;
   }
 > = {
-  pending: {
+  PENDING: {
     label: "Pending",
     className:
       "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60",
     icon: Clock3,
   },
-  ACTIVE: {
-    label: "ACTIVE",
+  SUBMITTED: {
+    label: "Submitted",
     className:
       "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/60",
     icon: UploadCloud,
   },
-  graded: {
+  GRADED: {
     label: "Graded",
     className:
       "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60",
@@ -114,19 +115,19 @@ export default function StudentAssignmentsPage() {
     fetchAssignments();
   }, []);
 
-  const pendingCount = assignments.filter((a) => a.status === "pending").length;
+  const pendingCount = assignments.filter((a) => a.submitStatus === 'PENDING').length;
   const submittedAssignments = assignments.filter(
-    (a) => a.status === "ACTIVE"
+    (a) => a.submitStatus === "SUBMITTED" 
   );
   const submittedCount = submittedAssignments.length;
-  const gradedCount = assignments.filter((a) => a.status === "graded").length;
+  const gradedCount = assignments.filter((a) => a.submitStatus === "GRADED").length;
   const selectedAssignment = assignments.find(
     (assignment) =>
       (assignment.id ?? assignment.title) === selectedAssignmentId
   );
   const submittableAssignments = assignments.filter(
     (assignment) =>
-      assignment.status === "pending" || assignment.status === "ACTIVE"
+      assignment.submitStatus === "PENDING" || assignment.submitStatus === "SUBMITTED"
   );
 
   const handleFileChange = (file: File | undefined) => {
@@ -189,8 +190,10 @@ export default function StudentAssignmentsPage() {
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
           body: formData,
+          
         }
       );
+      // console.log("Upload response status:", uploadResponse, uploadResponse.statusText);
 
       const uploadData = await parseJsonResponse(uploadResponse);
 
@@ -221,18 +224,25 @@ export default function StudentAssignmentsPage() {
       );
 
       const submitData = await parseJsonResponse(submitResponse);
-
+// console.log("Submit response status:", submitResponse, submitResponse.statusText, submitData);
       if (!submitResponse.ok) {
         throw new Error(submitData.error || "Failed to submit assignment");
       }
 
-      setAssignments((current) =>
-        current.map((assignment) =>
-          assignment.id === selectedAssignment.id
-            ? { ...assignment, status: "ACTIVE", fileUrl: fileUrl.trim() }
-            : assignment
-        )
-      );
+ const newAttemptsUsed = submitData.attemptsUsed ?? (selectedAssignment.attemptsUsed || 0) + 1;
+
+setAssignments((current) =>
+  current.map((assignment) =>
+    assignment.id === selectedAssignment.id
+      ? {
+          ...assignment,
+          submitStatus: "SUBMITTED",
+          fileUrl: fileUrl.trim(),
+          attemptsUsed: newAttemptsUsed,   // ← update attempts
+        }
+      : assignment
+  )
+);
       setSelectedFile(null);
       setSelectedAssignmentId("");
       toast.success("Assignment submitted successfully!");
@@ -422,178 +432,202 @@ export default function StudentAssignmentsPage() {
         )}
       </motion.section>
 
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
-      >
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Submitted assignments
-              </h2>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                After you submit a PDF, it appears here.
-              </p>
-            </div>
-          </div>
-        </div>
+ <motion.section
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
+  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+>
+  <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+        <CheckCircle2 className="h-5 w-5" />
+      </div>
+      <div>
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+          Submitted assignments
+        </h2>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          After you submit a PDF, it appears here.
+        </p>
+      </div>
+    </div>
+  </div>
 
-        {submittedAssignments.length === 0 ? (
-          <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
-            You haven&apos;t submitted any assignments yet.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Assignment
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Subject
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Due Date
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Status
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    PDF
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {submittedAssignments.map((item, idx) => {
-                  const style = statusStyles[item.status];
-                  console.log("style for status", item, style);
-                  const StatusIcon = style?.icon || CheckCircle2;
-                  return (
-                    <tr
-                      key={item.id ?? `${item.title}-submitted-${idx}`}
-                      className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
-                    >
-                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {item.title}
-                      </td>
-                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                        {item.subject}
-                      </td>
-                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                        {item.dueDate}
-                      </td>
-                      <td className="px-5 sm:px-6 py-3.5">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                            style?.className || ""
-                          }`}
-                        >
-                          <StatusIcon className="h-3.5 w-3.5" />
-                          {style?.label || item.status}
-                        </span>
-                      </td>
-                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
-                        {item.fileUrl ? (
-                          <a
-                            href={item.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
-                          >
-                            View PDF
-                          </a>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </motion.section>
+  {submittedAssignments.length === 0 ? (
+    <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+      You haven&apos;t submitted any assignments yet.
+    </p>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-slate-100 dark:border-slate-800">
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Assignment
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Subject
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Due Date
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Status
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Attempts
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              PDF
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {submittedAssignments.map((item, idx) => {
+            const style = statusStyles[item.submitStatus];
+            const StatusIcon = style?.icon || CheckCircle2;
+            const attemptsUsed = item.attemptsUsed ?? 0;
 
-      {/* Assignments Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
-      >
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-            All Assignments
-          </h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800">
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Assignment
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Subject
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Due Date
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Status
-                </th>
-                <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Grade
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {assignments.map((item, idx) => {
-                const style = statusStyles[item.status];
-                const StatusIcon = style?.icon || Clock3;
-                return (
-                  <tr
-                    key={`${item.title}-${idx}`}
-                    className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+            return (
+              <tr
+                key={item.id ?? `${item.title}-submitted-${idx}`}
+                className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+              >
+                <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                  {item.title}
+                </td>
+                <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                  {item.subject}
+                </td>
+                <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                  {item.dueDate}
+                </td>
+                <td className="px-5 sm:px-6 py-3.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                      style?.className || ""
+                    }`}
                   >
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                      {item.title}
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                      {item.subject}
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                      {item.dueDate}
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                          style?.className || ""
-                        }`}
-                      >
-                        <StatusIcon className="h-3.5 w-3.5" />
-                        {style?.label || item.status}
-                      </span>
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                      {item.grade ?? "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
+                    <StatusIcon className="h-3.5 w-3.5" />
+                    {style?.label || item.submitStatus}
+                  </span>
+                </td>
+                <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {attemptsUsed} / 2
+                </td>
+                <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
+                  {item.fileUrl ? (
+                    <a
+                      href={item.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      View PDF
+                    </a>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  )}
+</motion.section>
+
+     
+    {/* Assignments Table */}
+<motion.div
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
+  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+>
+  <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+    <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+      All Assignments
+    </h2>
+  </div>
+
+  {assignments.filter((item) => item.submitStatus === "PENDING").length === 0 ? (
+    <div className="px-5 sm:px-6 py-12 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+        <FileText className="h-6 w-6 text-slate-400" />
+      </div>
+      <h3 className="mt-4 text-sm font-semibold text-slate-900 dark:text-white">
+        No pending assignments
+      </h3>
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        You have submitted all your assignments or there are none available right now.
+      </p>
+    </div>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <thead>
+          <tr className="border-b border-slate-100 dark:border-slate-800">
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Assignment
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Subject
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Due Date
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Status
+            </th>
+            <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Grade
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {assignments
+            .filter((item) => item.submitStatus === "PENDING")
+            .map((item, idx) => {
+              const style = statusStyles[item.submitStatus];
+              const StatusIcon = style?.icon || Clock3;
+              return (
+                <tr
+                  key={`${item.title}-${idx}`}
+                  className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                >
+                  <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    {item.title}
+                  </td>
+                  <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                    {item.subject}
+                  </td>
+                  <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                    {item.dueDate}
+                  </td>
+                  <td className="px-5 sm:px-6 py-3.5">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                        style?.className || ""
+                      }`}
+                    >
+                      <StatusIcon className="h-3.5 w-3.5" />
+                      {style?.label || item.submitStatus}
+                    </span>
+                  </td>
+                  <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                    {item.grade ?? "—"}
+                  </td>
+                </tr>
+              );
+            })}
+        </tbody>
+      </table>
+    </div>
+  )}
+</motion.div>
     </div>
   );
 }
