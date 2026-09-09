@@ -3,6 +3,7 @@
 import { useState } from "react";
 import EnterResultButton from "@/components/shared/EnterResultButton";
 import SubmitResultModal from "@/components/shared/SubmitResultModal";
+import ResultList from "@/components/shared/ResultList";
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -12,75 +13,12 @@ import {
   TrendingUp,
   FileCheck2,
   Clock3,
-  ChevronDown,
   MoreHorizontal,
   Eye,
-  Pencil,
   Send,
 } from "lucide-react";
 
-const results = [
-  {
-    student: "Aarav Sharma",
-    initials: "AS",
-    className: "Grade 8 A",
-    exam: "Mid-Term Examination",
-    score: 92,
-    total: 100,
-    grade: "A",
-    status: "Published",
-  },
-  {
-    student: "Emma Wilson",
-    initials: "EW",
-    className: "Grade 8 A",
-    exam: "Mid-Term Examination",
-    score: 87,
-    total: 100,
-    grade: "A",
-    status: "Published",
-  },
-  {
-    student: "Noah Williams",
-    initials: "NW",
-    className: "Grade 8 B",
-    exam: "Mid-Term Examination",
-    score: 78,
-    total: 100,
-    grade: "B+",
-    status: "Published",
-  },
-  {
-    student: "Olivia Brown",
-    initials: "OB",
-    className: "Grade 9 A",
-    exam: "Unit Test 03",
-    score: 95,
-    total: 100,
-    grade: "A+",
-    status: "Published",
-  },
-  {
-    student: "Liam Davis",
-    initials: "LD",
-    className: "Grade 9 A",
-    exam: "Unit Test 03",
-    score: 71,
-    total: 100,
-    grade: "B",
-    status: "Draft",
-  },
-  {
-    student: "Sophia Miller",
-    initials: "SM",
-    className: "Grade 10 A",
-    exam: "Unit Test 03",
-    score: 89,
-    total: 100,
-    grade: "A",
-    status: "Draft",
-  },
-];
+
 
 const gradeDistribution = [
   { grade: "A+", count: 12 },
@@ -93,6 +31,7 @@ const gradeDistribution = [
 export default function TeacherResultsPage() {
   const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] =
     useState(false);
+    const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
   return (
     <div className="space-y-6 pb-8">
       {/* ===================================================== */}
@@ -187,81 +126,7 @@ export default function TeacherResultsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Recent Results */}
-        <motion.section
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.18 }}
-          className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60"
-        >
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-slate-800 sm:px-6">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Recent Results
-              </h2>
-
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                Latest student examination records
-              </p>
-            </div>
-
-            <button className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[10px] font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-              All Classes
-              <ChevronDown className="h-3 w-3" />
-            </button>
-          </div>
-
-          {/* Desktop table */}
-          <div className="hidden overflow-x-auto sm:block">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  <th className="px-6 py-3 text-left text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    Student
-                  </th>
-
-                  <th className="px-4 py-3 text-left text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    Examination
-                  </th>
-
-                  <th className="px-4 py-3 text-center text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    Score
-                  </th>
-
-                  <th className="px-4 py-3 text-center text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    Grade
-                  </th>
-
-                  <th className="px-4 py-3 text-right text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                    Status
-                  </th>
-
-                  <th className="w-10 px-4 py-3" />
-                </tr>
-              </thead>
-
-              <tbody>
-                {results.map((result, index) => (
-                  <ResultRow
-                    key={`${result.student}-${result.exam}`}
-                    result={result}
-                    index={index}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile cards */}
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
-            {results.map((result, index) => (
-              <MobileResultCard
-                key={`${result.student}-${result.exam}`}
-                result={result}
-                index={index}
-              />
-            ))}
-          </div>
-        </motion.section>
+       <ResultList refreshKey={resultsRefreshKey} />
 
         {/* Grade Distribution */}
         <motion.section
@@ -391,6 +256,9 @@ export default function TeacherResultsPage() {
     <SubmitResultModal
   isOpen={isSubmitResultModalOpen}
   onClose={() => setIsSubmitResultModalOpen(false)}
+  onSuccess={() => {
+    setResultsRefreshKey((current) => current + 1);
+  }}
 />
     </div>
   );
