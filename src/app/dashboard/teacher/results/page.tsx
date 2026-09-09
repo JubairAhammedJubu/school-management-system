@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import EnterResultButton from "@/components/shared/EnterResultButton";
+import SubmitResultModal from "@/components/shared/SubmitResultModal";
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -88,6 +91,8 @@ const gradeDistribution = [
 ];
 
 export default function TeacherResultsPage() {
+  const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] =
+    useState(false);
   return (
     <div className="space-y-6 pb-8">
       {/* ===================================================== */}
@@ -126,10 +131,9 @@ export default function TeacherResultsPage() {
             </div>
           </div>
 
-          <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:bg-blue-700">
-            <Pencil className="h-3.5 w-3.5" />
-            Enter Results
-          </button>
+          <EnterResultButton
+  onClick={() => setIsSubmitResultModalOpen(true)}
+/>
         </div>
       </motion.div>
 
@@ -384,6 +388,10 @@ export default function TeacherResultsPage() {
           </button>
         </div>
       </motion.section>
+    <SubmitResultModal
+  isOpen={isSubmitResultModalOpen}
+  onClose={() => setIsSubmitResultModalOpen(false)}
+/>
     </div>
   );
 }
