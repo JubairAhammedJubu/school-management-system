@@ -156,52 +156,33 @@ export default function TeacherAssignmentsPage() {
   /**
    * Delete assignment trigger
    */
-  const handleDeleteClick = (assignment: Assignment) => {
-    setAssignmentToDelete(assignment);
-  };
-
-  const confirmDeleteAssignment = async () => {
-    if (!assignmentToDelete) return;
-
-    try {
-      setIsDeleting(true);
-      const token = getAuthToken();
-      const response = await fetch(
-        `${SERVER_URL}/api/teacher/assignments/${assignmentToDelete.id}${
-          teacherEmail ? `?teacherEmail=${encodeURIComponent(teacherEmail)}` : ""
-        }`,
-        {
-          method: "DELETE",
-          credentials: "include",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to delete assignment.");
+ const handleDelete = async (assignmentId: string) => {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/teacher/assignments/${assignmentId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
       }
+    );
 
-      setAssignments((current) =>
-        current.filter((item) => item.id !== assignmentToDelete.id)
-      );
+    const data = await response.json();
 
-      toast.success("Assignment deleted successfully.");
-      setAssignmentToDelete(null);
-    } catch (err) {
-      console.error("Assignment delete error:", err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to delete assignment.";
-      toast.error(message);
-    } finally {
-      setIsDeleting(false);
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Failed to delete assignment");
     }
-  };
+
+    setAssignments((current) =>
+      current.filter((item) => item.id !== assignmentId)
+    );
+
+    toast.success("Assignment deleted successfully!");
+  } catch (error: any) {
+    console.error("Delete assignment error:", error);
+    toast.error(error.message || "Failed to delete assignment");
+    throw error;
+  }
+};
 
   /**
    * Filtered assignments list based on search and selected dropdown options.
@@ -381,7 +362,7 @@ export default function TeacherAssignmentsPage() {
                 key={assignment.id}
                 assignment={assignment}
                 onEdit={handleEdit}
-                onDelete={handleDeleteClick}
+                onDeleted={handleDelete}
               />
             ))}
           </div>
