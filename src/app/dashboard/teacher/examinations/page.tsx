@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileCheck,
@@ -276,9 +276,12 @@ export default function TeacherExaminationsPage() {
   };
 
   // Fetch Exams & Requests from DB on Mount
-  const fetchExams = async (showRefreshSpinner = false) => {
-    if (showRefreshSpinner) setIsRefreshing(true);
-    else setIsLoading(true);
+  const fetchExams = useCallback(async (showRefreshSpinner = false) => {
+    if (showRefreshSpinner) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
 
     try {
       const [examRes, requestRes] = await Promise.all([
@@ -295,17 +298,20 @@ export default function TeacherExaminationsPage() {
       if (requestRes.success && Array.isArray(requestRes.requests)) {
         setClassRequests(requestRes.requests);
       }
-    } catch (err: any) {
+    } catch {
       showToast("Error connecting to database.");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchExams();
-  }, []);
+    const loadExams = async () => {
+      await fetchExams();
+    };
+    void loadExams();
+  }, [fetchExams]);
 
   // Filtered Exams
   const filteredExams = useMemo(() => {
@@ -346,7 +352,7 @@ export default function TeacherExaminationsPage() {
       } else {
         showToast(res.error || "Failed to create examination.");
       }
-    } catch (error: any) {
+    } catch {
       showToast("Error creating exam.");
     }
   };
@@ -365,7 +371,7 @@ export default function TeacherExaminationsPage() {
       } else {
         showToast(res.error || "Failed to cancel exam.");
       }
-    } catch (error: any) {
+    } catch {
       showToast("Error cancelling exam.");
     }
   };
@@ -1109,7 +1115,7 @@ export default function TeacherExaminationsPage() {
                 </h3>
 
                 <p className="mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
-                  No examination entries in the database matched your search query or class filter. Click <strong>"Create Exam"</strong> to add one!
+                  No examination entries in the database matched your search query or class filter. Click <strong>&quot;Create Exam&quot;</strong> to add one!
                 </p>
               </div>
             )}
@@ -1189,7 +1195,6 @@ function CreateExamModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
 
   // Auto Passing Marks Calculation (40% threshold)
   const passingMarks = useMemo(() => {
@@ -1258,32 +1263,33 @@ function CreateExamModal({
     });
   }, [startTime]);
 
-  // Auto-adjust endTime if current endTime is less than 30 minutes after startTime
-  useEffect(() => {
+  // Keep the selected end time valid without synchronizing state inside an effect.
+  const safeEndTime = useMemo(() => {
     const startMins = parseTimeToMinutes(startTime);
     const endMins = parseTimeToMinutes(endTime);
-    if (endMins - startMins < 30) {
-      if (availableEndTimes.length > 0) {
-        setEndTime(availableEndTimes[0]);
-      }
+
+    if (endMins - startMins >= 30) {
+      return endTime;
     }
+
+    return availableEndTimes[0] || endTime;
   }, [startTime, endTime, availableEndTimes]);
 
-  // Update selected subject when availableSubjects changes or class/group changes
-  useEffect(() => {
-    if (availableSubjects.length > 0) {
-      if (!subject || !availableSubjects.includes(subject)) {
-        setSubject(availableSubjects[0]);
-      }
+  // Keep the selected subject valid when the available subjects change.
+  const selectedSubject = useMemo(() => {
+    if (subject && availableSubjects.includes(subject)) {
+      return subject;
     }
-  }, [availableSubjects, studentClass, group, subject]);
 
-  // Auto conflict checking when room, class, section, date change
-  useEffect(() => {
+    return availableSubjects[0] || "";
+  }, [subject, availableSubjects]);
+
+  // Derive conflict warning directly from current form values.
+  const conflictWarning = useMemo(() => {
     if (!date || !roomNo) {
-      setConflictWarning(null);
-      return;
+      return null;
     }
+
     const conflict = existingExams.find(
       (e) =>
         e.date === date &&
@@ -1291,13 +1297,12 @@ function CreateExamModal({
           (e.studentClass === studentClass && e.section === section)) &&
         e.status !== "Cancelled"
     );
-    if (conflict) {
-      setConflictWarning(
-        `Warning: ${conflict.roomNo} / ${conflict.studentClass} (${conflict.section}) already has an exam ("${conflict.title}") scheduled on ${date}.`
-      );
-    } else {
-      setConflictWarning(null);
+
+    if (!conflict) {
+      return null;
     }
+
+    return `Warning: ${conflict.roomNo} / ${conflict.studentClass} (${conflict.section}) already has an exam ("${conflict.title}") scheduled on ${date}.`;
   }, [date, roomNo, studentClass, section, existingExams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1319,7 +1324,7 @@ function CreateExamModal({
 
     // 30 Minutes Minimum Duration Rule
     const startMins = parseTimeToMinutes(startTime);
-    const endMins = parseTimeToMinutes(endTime);
+    const endMins = parseTimeToMinutes(safeEndTime);
     const durationMins = endMins - startMins;
 
     if (durationMins < 30) {
@@ -1364,14 +1369,14 @@ function CreateExamModal({
     setIsSubmitting(true);
     await onSubmit({
       title,
-      subject,
+      subject: selectedSubject,
       studentClass,
       section,
       group: studentClass === "Class 9" || studentClass === "Class 10" ? group : undefined,
       examType,
       date,
       startTime,
-      endTime,
+      endTime: safeEndTime,
       roomNo,
       totalMarks: Number(totalMarks),
       passingMarks: Number(passingMarks),
@@ -1392,24 +1397,24 @@ function CreateExamModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 sm:p-4 sm:py-6 overflow-y-auto backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-2.5 sm:p-4 overflow-y-auto backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative w-full max-w-2xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+          className="relative w-full max-w-2xl max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10"
         >
           {/* Header */}
-          <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-4 sm:p-6 dark:border-slate-800">
+          <div className="shrink-0 flex items-center justify-between border-b border-slate-100 p-3.5 sm:p-5 dark:border-slate-800">
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
-                <FileCheck className="h-5 w-5" />
+              <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+                <FileCheck className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                <h3 className="text-sm sm:text-lg font-black text-slate-900 dark:text-white">
                   Schedule New Examination
                 </h3>
-                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Save examination details into database collection.
                 </p>
               </div>
@@ -1423,10 +1428,10 @@ function CreateExamModal({
           </div>
 
           {/* Form Body - Scrollable */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
             {/* Error Message */}
             {errorMessage && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-bold text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+              <div className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-bold text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
                 <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
                 <span>{errorMessage}</span>
               </div>
@@ -1434,14 +1439,14 @@ function CreateExamModal({
 
             {/* Room/Class Conflict Warning */}
             {conflictWarning && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs font-bold text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+              <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
                 <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <span>{conflictWarning}</span>
               </div>
             )}
 
             {/* Title & Exam Type */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-3">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                   Exam Title *
@@ -1469,7 +1474,7 @@ function CreateExamModal({
             </div>
 
             {/* Class, Section, Group (for Class 9/10), Subject */}
-            <div className={`grid grid-cols-1 gap-3 ${showGroupField ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
+            <div className={`grid grid-cols-2 gap-2.5 sm:gap-3 ${showGroupField ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
               <div>
                 <CustomFormSelect
                   label="Class"
@@ -1503,7 +1508,7 @@ function CreateExamModal({
                 </div>
               )}
 
-              <div>
+              <div className={showGroupField ? "col-span-2 sm:col-span-1" : "col-span-2 sm:col-span-1"}>
                 <CustomFormSelect
                   label="Subject"
                   required
@@ -1516,8 +1521,8 @@ function CreateExamModal({
             </div>
 
             {/* Date, Start Time Dropdown, End Time Dropdown */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3">
+              <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                   Exam Date *
                 </label>
@@ -1559,7 +1564,7 @@ function CreateExamModal({
             </div>
 
             {/* Room Select Dropdown, Invigilator Name */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2.5 sm:gap-3 sm:grid-cols-2">
               <div>
                 <CustomFormSelect
                   label="Room / Hall No."
@@ -1595,7 +1600,7 @@ function CreateExamModal({
             </div>
 
             {/* Invigilation Duty Toggle Field (isYourDuty) */}
-            <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-700/80 dark:bg-slate-800/60 flex items-center justify-between">
+            <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 sm:p-3.5 dark:border-slate-700/80 dark:bg-slate-800/60 flex items-center justify-between">
               <div>
                 <span className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
                   <UserCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -1622,7 +1627,7 @@ function CreateExamModal({
             </div>
 
             {/* Total Marks Dropdown & Auto Passing Marks */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 bg-slate-50 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-4 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
               <div>
                 <CustomFormSelect
                   label="Total Marks"
@@ -1645,7 +1650,7 @@ function CreateExamModal({
                 <div className="flex h-10 w-full items-center rounded-xl border border-slate-200 bg-slate-100 px-3.5 text-xs font-black text-slate-900 dark:border-slate-700 dark:bg-slate-800/90 dark:text-emerald-400">
                   {passingMarks} pts (40%)
                 </div>
-                <p className="mt-1 text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                <p className="mt-1 text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold truncate">
                   Fixed pass threshold automatically set to 40%
                 </p>
               </div>
@@ -1658,28 +1663,28 @@ function CreateExamModal({
               </label>
               <textarea
                 required
-                rows={3}
+                rows={2.5}
                 value={syllabus}
                 onChange={(e) => setSyllabus(e.target.value)}
                 placeholder="Enter covered chapters, topics, or exam hall guidelines (Required)..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-slate-100/60 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-slate-100/60 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
               />
             </div>
 
             {/* Actions Footer */}
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="shrink-0 flex flex-row items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+                className="flex-1 sm:flex-initial justify-center rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 cursor-pointer disabled:opacity-50"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-black text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -1714,7 +1719,7 @@ function CustomFormSelect({
   label?: string;
   value: string | number;
   options: (string | number)[] | { label: string; value: string | number }[];
-  onChange: (val: any) => void;
+  onChange: (val: string ) => void;
   icon?: React.ElementType;
   required?: boolean;
   helperText?: string;
@@ -1797,7 +1802,7 @@ function CustomFormSelect({
                     key={String(opt.value)}
                     type="button"
                     onClick={() => {
-                      onChange(opt.value);
+                      onChange(String(opt.value));
                       setIsOpen(false);
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs transition-all cursor-pointer ${isSelected

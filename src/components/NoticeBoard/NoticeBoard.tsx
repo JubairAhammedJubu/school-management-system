@@ -470,7 +470,7 @@ export default function NoticeBoard({
       {/* Create Notice Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -483,9 +483,9 @@ export default function NoticeBoard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10 space-y-4 my-auto"
+              className="relative w-full max-w-md max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 p-3.5 sm:p-5">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   Publish New Notice
                 </h3>
@@ -498,7 +498,7 @@ export default function NoticeBoard({
                 </button>
               </div>
 
-              <form onSubmit={handleCreateNotice} className="space-y-3.5">
+              <form onSubmit={handleCreateNotice} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-3.5 custom-scrollbar">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Title *
@@ -592,7 +592,7 @@ export default function NoticeBoard({
                   </label>
                   <textarea
                     required
-                    rows={4}
+                    rows={3}
                     disabled={isSubmitting}
                     placeholder="Enter announcement details..."
                     value={formDetail}
@@ -615,7 +615,7 @@ export default function NoticeBoard({
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="shrink-0 flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <button
                     type="button"
                     disabled={isSubmitting}
@@ -651,7 +651,7 @@ export default function NoticeBoard({
       {/* Edit Notice Modal */}
       <AnimatePresence>
         {isEditModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -664,9 +664,9 @@ export default function NoticeBoard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10 space-y-4 my-auto"
+              className="relative w-full max-w-md max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 z-10"
             >
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 p-3.5 sm:p-5">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   Edit Notice
                 </h3>
@@ -679,7 +679,7 @@ export default function NoticeBoard({
                 </button>
               </div>
 
-              <form onSubmit={handleUpdateNotice} className="space-y-3.5">
+              <form onSubmit={handleUpdateNotice} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-3.5 custom-scrollbar">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Title *
@@ -773,7 +773,7 @@ export default function NoticeBoard({
                   </label>
                   <textarea
                     required
-                    rows={4}
+                    rows={3}
                     disabled={isUpdating}
                     placeholder="Enter announcement details..."
                     value={editFormDetail}
@@ -796,7 +796,7 @@ export default function NoticeBoard({
                   </label>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="shrink-0 flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <button
                     type="button"
                     disabled={isUpdating}
