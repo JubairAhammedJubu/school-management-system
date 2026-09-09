@@ -406,7 +406,7 @@ export default function AssignmentFormModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-6 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -421,20 +421,20 @@ export default function AssignmentFormModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 15 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-950"
+            className="relative w-full max-w-xl max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-2xl dark:border-slate-800/80 dark:bg-slate-950 z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md">
-                  <FileText className="h-5 w-5" />
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 bg-white/95 px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-indigo-600 text-white font-black text-xs shadow-md shrink-0">
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-950 dark:text-white">
+                  <h3 className="text-sm sm:text-base font-black text-slate-950 dark:text-white">
                     {isEditing ? "Edit Assignment" : "Create New Assignment"}
                   </h3>
-                  <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                  <p className="text-[11px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                     {isEditing
                       ? "Update assignment details & class settings"
                       : "Fill in assignment title, class, section, subject & due date"}
@@ -446,14 +446,14 @@ export default function AssignmentFormModal({
                 type="button"
                 onClick={handleClose}
                 disabled={isSaving}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:hover:bg-indigo-500/10 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {/* Form - Scrollable */}
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5 sm:space-y-4 custom-scrollbar">
               {error && (
                 <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
                   {error}
@@ -481,7 +481,7 @@ export default function AssignmentFormModal({
               </div>
 
               {/* Sequence: 1. Class -> 2. Section -> 3. Subject */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 {/* 1. Class Select */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -511,7 +511,7 @@ export default function AssignmentFormModal({
                 </div>
 
                 {/* 3. Subject Select */}
-                <div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     Subject *
                   </label>
@@ -574,17 +574,17 @@ export default function AssignmentFormModal({
                 <textarea
                   id="assignment-description"
                   required
-                  rows={3}
+                  rows={2.5}
                   value={form.description}
                   onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Add coursework instructions, guidelines, or submission requirements..."
                   disabled={isSaving}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 text-xs font-medium text-slate-800 outline-none transition-all focus:border-indigo-600 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:bg-slate-800"
                 />
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <div className="flex justify-end gap-2 border-t border-slate-100 pt-3 sm:pt-4 dark:border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={handleClose}
