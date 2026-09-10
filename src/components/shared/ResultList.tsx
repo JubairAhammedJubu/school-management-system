@@ -61,11 +61,11 @@ export default function ResultList({
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/teacher/results"
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results`
       );
 
       const data = await response.json();
-
+console.log("Fetched results data:", data);
       if (!response.ok || !data.success) {
         throw new Error(
           data.error || "Failed to fetch results."

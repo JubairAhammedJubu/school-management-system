@@ -197,8 +197,8 @@ export default function SubmitResultModal({
       setIsSubmitting(true);
 
       const url = isEditMode
-        ? `http://localhost:5000/api/teacher/results/${result?.id}`
-        : "http://localhost:5000/api/teacher/results";
+        ? `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results/${result?.id}`
+        : `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results`;
 
       const method = isEditMode ? "PATCH" : "POST";
 
