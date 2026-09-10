@@ -305,6 +305,10 @@ export default function TeacherResultsPage() {
         result={selectedResult}
         isOpen={Boolean(selectedResult)}
         onClose={() => setSelectedResult(null)}
+        onEdit={(res) => {
+          setSelectedResult(null);
+          setEditingResult(res);
+        }}
       />
       <DeleteConfirmationModal
         isOpen={Boolean(resultToDelete)}
