@@ -22,10 +22,12 @@ export type Result = {
 
 type ResultListProps = {
   refreshKey?: number;
+  onResultsChange?: (results: Result[]) => void;
 };
 
 export default function ResultList({
   refreshKey = 0,
+  onResultsChange,
 }: ResultListProps) {
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +50,10 @@ export default function ResultList({
         );
       }
 
-      setResults(data.results || []);
+      const fetchedResults = data.results || [];
+
+setResults(fetchedResults);
+onResultsChange?.(fetchedResults);
     } catch (error: any) {
       console.error("Error fetching results:", error);
 

@@ -3,7 +3,9 @@
 import { useState } from "react";
 import EnterResultButton from "@/components/shared/EnterResultButton";
 import SubmitResultModal from "@/components/shared/SubmitResultModal";
-import ResultList from "@/components/shared/ResultList";
+import ResultList, {
+  type Result,
+} from "@/components/shared/ResultList";
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -32,6 +34,7 @@ export default function TeacherResultsPage() {
   const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] =
     useState(false);
     const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
+    const [results, setResults] = useState<Result[]>([]);
   return (
     <div className="space-y-6 pb-8">
       {/* ===================================================== */}
@@ -84,7 +87,7 @@ export default function TeacherResultsPage() {
         <SummaryCard
           icon={Users}
           label="Students Graded"
-          value="67"
+          value={String(results.length)}
           detail="This term"
           delay={0}
         />
@@ -92,7 +95,16 @@ export default function TeacherResultsPage() {
         <SummaryCard
           icon={TrendingUp}
           label="Average Score"
-          value="86.4%"
+          value={
+    results.length > 0
+      ? `${(
+          results.reduce(
+            (sum, result) => sum + (result.score / result.total) * 100,
+            0
+          ) / results.length
+        ).toFixed(1)}%`
+      : "0.0%"
+  }
           detail="+4.2% from last exam"
           delay={0.05}
           iconClass="text-emerald-600 dark:text-emerald-400"
@@ -102,7 +114,9 @@ export default function TeacherResultsPage() {
         <SummaryCard
           icon={FileCheck2}
           label="Published"
-          value="58"
+          value={String(
+    results.filter((result) => result.status === "PUBLISHED").length
+  )}
           detail="Results available"
           delay={0.1}
           iconClass="text-indigo-600 dark:text-indigo-400"
@@ -112,7 +126,9 @@ export default function TeacherResultsPage() {
         <SummaryCard
           icon={Clock3}
           label="Draft Results"
-          value="09"
+          value={String(
+    results.filter((result) => result.status === "DRAFT").length
+  )}
           detail="Need your review"
           delay={0.15}
           iconClass="text-amber-600 dark:text-amber-400"
@@ -126,7 +142,10 @@ export default function TeacherResultsPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         {/* Recent Results */}
-       <ResultList refreshKey={resultsRefreshKey} />
+       <ResultList
+  refreshKey={resultsRefreshKey}
+  onResultsChange={setResults}
+/>
 
         {/* Grade Distribution */}
         <motion.section
@@ -263,209 +282,6 @@ export default function TeacherResultsPage() {
     </div>
   );
 }
-
-/* ========================================================= */
-/* RESULT ROW */
-/* ========================================================= */
-
-function ResultRow({
-  result,
-  index,
-}: {
-  result: (typeof results)[number];
-  index: number;
-}) {
-  return (
-    <motion.tr
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.22 + index * 0.04 }}
-      className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50/70 dark:border-slate-800 dark:hover:bg-slate-800/30"
-    >
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[9px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-            {result.initials}
-          </div>
-
-          <div>
-            <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
-              {result.student}
-            </p>
-
-            <p className="mt-0.5 text-[9px] text-slate-400">
-              {result.className}
-            </p>
-          </div>
-        </div>
-      </td>
-
-      <td className="px-4 py-4">
-        <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">
-          {result.exam}
-        </span>
-      </td>
-
-      <td className="px-4 py-4 text-center">
-        <span className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200">
-          {result.score}
-        </span>
-
-        <span className="text-[9px] text-slate-400">
-          /{result.total}
-        </span>
-      </td>
-
-      <td className="px-4 py-4 text-center">
-        <GradeBadge grade={result.grade} />
-      </td>
-
-      <td className="px-4 py-4 text-right">
-        <StatusBadge status={result.status} />
-      </td>
-
-      <td className="px-4 py-4">
-        <button
-          aria-label={`More options for ${result.student}`}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </td>
-    </motion.tr>
-  );
-}
-
-/* ========================================================= */
-/* MOBILE RESULT CARD */
-/* ========================================================= */
-
-function MobileResultCard({
-  result,
-  index,
-}: {
-  result: (typeof results)[number];
-  index: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.2 + index * 0.04 }}
-      className="p-4"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-[9px] font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-            {result.initials}
-          </div>
-
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-bold text-slate-800 dark:text-slate-200">
-              {result.student}
-            </p>
-
-            <p className="mt-0.5 text-[9px] text-slate-400">
-              {result.className}
-            </p>
-          </div>
-        </div>
-
-        <StatusBadge status={result.status} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800/60">
-          <p className="text-[8px] uppercase tracking-wider text-slate-400">
-            Exam
-          </p>
-
-          <p className="mt-1 truncate text-[9px] font-semibold text-slate-600 dark:text-slate-300">
-            {result.exam}
-          </p>
-        </div>
-
-        <div className="rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800/60">
-          <p className="text-[8px] uppercase tracking-wider text-slate-400">
-            Score
-          </p>
-
-          <p className="mt-1 text-[10px] font-bold text-slate-700 dark:text-slate-200">
-            {result.score}/{result.total}
-          </p>
-        </div>
-
-        <div className="rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800/60">
-          <p className="text-[8px] uppercase tracking-wider text-slate-400">
-            Grade
-          </p>
-
-          <div className="mt-1">
-            <GradeBadge grade={result.grade} />
-          </div>
-        </div>
-      </div>
-
-      <button className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 py-2 text-[9px] font-bold text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        <Eye className="h-3 w-3" />
-        View Result
-      </button>
-    </motion.div>
-  );
-}
-
-/* ========================================================= */
-/* GRADE BADGE */
-/* ========================================================= */
-
-function GradeBadge({ grade }: { grade: string }) {
-  const styles =
-    grade === "A+"
-      ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
-      : grade === "A"
-        ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-        : grade === "B+"
-          ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
-          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
-
-  return (
-    <span
-      className={`inline-flex rounded-md px-2 py-1 text-[9px] font-extrabold ${styles}`}
-    >
-      {grade}
-    </span>
-  );
-}
-
-/* ========================================================= */
-/* STATUS BADGE */
-/* ========================================================= */
-
-function StatusBadge({ status }: { status: string }) {
-  const published = status === "Published";
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold ${
-        published
-          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-          : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-      }`}
-    >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          published ? "bg-emerald-500" : "bg-amber-500"
-        }`}
-      />
-      {status}
-    </span>
-  );
-}
-
-/* ========================================================= */
-/* SUMMARY CARD */
-/* ========================================================= */
-
 function SummaryCard({
   icon: Icon,
   label,
@@ -496,7 +312,7 @@ function SummaryCard({
         <Icon className="h-4 w-4" />
       </div>
 
-      <p className="mt-4 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+      <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
         {label}
       </p>
 
@@ -504,7 +320,7 @@ function SummaryCard({
         {value}
       </p>
 
-      <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500">
+      <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
         {detail}
       </p>
     </motion.div>
