@@ -47,6 +47,8 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -63,6 +65,7 @@ import {
 } from "@/lib/actions/teacher-students";
 import { getTeacherExamsAction, ExamItem } from "@/lib/actions/teacher.exam";
 import { getNoticesAction, NoticeItem } from "@/lib/actions/teacher.notice";
+import type { Result } from "@/components/shared/ResultList";
 
 /* ========================================================= */
 /* DUMMY / DEMO ANALYTICS DATA FOR OVERVIEW PREVIEWS */
@@ -88,20 +91,6 @@ const classAttendanceRatesDemo = [
   { name: "Grade 9 A", rate: 94, present: 26, total: 28 },
   { name: "Grade 8 B", rate: 91, present: 27, total: 30 },
   { name: "Grade 9 B", rate: 88, present: 22, total: 25 },
-];
-
-const subjectResultsDemo = [
-  { subject: "Mathematics", avgScore: 88, highest: 99, passRate: 96, grade: "A" },
-  { subject: "Physics", avgScore: 92, highest: 100, passRate: 98, grade: "A+" },
-  { subject: "Chemistry", avgScore: 84, highest: 96, passRate: 92, grade: "B+" },
-  { subject: "Biology", avgScore: 89, highest: 97, passRate: 95, grade: "A" },
-  { subject: "English", avgScore: 86, highest: 95, passRate: 94, grade: "A-" },
-];
-
-const recentTestResultsDemo = [
-  { title: "Mid-Term Algebra Quiz", className: "Grade 8 A", date: "May 14, 2026", avg: "88%", passCount: "28/30", status: "Published" },
-  { title: "Physics Motion Assessment", className: "Grade 10 A", date: "May 10, 2026", avg: "94%", passCount: "31/32", status: "Published" },
-  { title: "Human Biology Lab Evaluation", className: "Grade 9 A", date: "May 06, 2026", avg: "85%", passCount: "25/28", status: "Published" },
 ];
 
 interface ScheduleSlot {
@@ -152,6 +141,7 @@ export default function TeacherDashboardView() {
   const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
   const [upcomingExams, setUpcomingExams] = useState<ExamItem[]>([]);
   const [recentNotices, setRecentNotices] = useState<NoticeItem[]>([]);
+  const [resultsList, setResultsList] = useState<Result[]>([]);
   const [isLoadingRealData, setIsLoadingRealData] = useState<boolean>(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
 
@@ -198,7 +188,7 @@ export default function TeacherDashboardView() {
 
       if (teacherEmail) {
         const token = typeof window !== "undefined" ? localStorage.getItem("better-auth.session_token") : null;
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
         const assignRes = await fetch(`${serverUrl}/api/teacher/assignments?teacherEmail=${encodeURIComponent(teacherEmail)}`, {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -222,6 +212,16 @@ export default function TeacherDashboardView() {
         setRecentNotices((noticesRes.notices || []).slice(0, 3));
       }
 
+      // Fetch Real Results from /api/teacher/results
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
+      const resultsRes = await fetch(`${serverUrl}/api/teacher/results`, {
+        credentials: "include",
+      });
+      const resultsData = await resultsRes.json();
+      if (resultsRes.ok && resultsData.success) {
+        setResultsList(resultsData.results || []);
+      }
+
       const now = new Date();
       setLastRefreshedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     } catch (err) {
@@ -234,6 +234,27 @@ export default function TeacherDashboardView() {
   useEffect(() => {
     fetchRealData();
   }, [teacherEmail]);
+
+  // Computed Exam Bar Chart Data from Real Results
+  const examBarData = React.useMemo(() => {
+    if (resultsList.length === 0) return [];
+    const map: Record<string, { totalPct: number; count: number; fullName: string }> = {};
+    resultsList.forEach((r) => {
+      const examName = r.exam || "General Exam";
+      const pct = (r.score / (r.total || 100)) * 100;
+      if (!map[examName]) {
+        map[examName] = { totalPct: 0, count: 0, fullName: examName };
+      }
+      map[examName].totalPct += pct;
+      map[examName].count += 1;
+    });
+    return Object.values(map).map((item) => ({
+      name: item.fullName.length > 14 ? item.fullName.slice(0, 14) + "…" : item.fullName,
+      fullName: item.fullName,
+      avgScore: Math.round(item.totalPct / item.count),
+      count: item.count,
+    }));
+  }, [resultsList]);
 
   // Task Helpers
   const toggleTask = (id: string) => {
@@ -271,7 +292,7 @@ export default function TeacherDashboardView() {
   });
 
   return (
-    <div className="space-y-6 pb-12 font-sans text-slate-900 dark:text-white max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6">
+    <div className="space-y-6 pb-12 font-sans text-slate-900 dark:text-white">
       {/* ===================================================== */}
       {/* EXECUTIVE HEADER BANNER */}
       {/* ===================================================== */}
@@ -388,9 +409,18 @@ export default function TeacherDashboardView() {
         <StatCard
           icon={Award}
           label="Avg Result Score"
-          value="87.4%"
-          detail="Analytics preview"
-          isIncomplete
+          value={
+            resultsList.length > 0
+              ? `${(
+                  resultsList.reduce(
+                    (sum, r) => sum + (r.score / (r.total || 100)) * 100,
+                    0
+                  ) / resultsList.length
+                ).toFixed(1)}%`
+              : "0.0%"
+          }
+          isLoading={isLoadingRealData}
+          detail={`${resultsList.length} total results recorded`}
           delay={0.2}
         />
       </div>
@@ -799,7 +829,7 @@ export default function TeacherDashboardView() {
       </motion.section>
 
       {/* ===================================================== */}
-      {/* SECTION 4: EXAMINATIONS & RESULTS ANALYTICS (DEMO DATA) */}
+      {/* SECTION 4: EXAMINATIONS & RESULTS ANALYTICS */}
       {/* ===================================================== */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
@@ -816,14 +846,14 @@ export default function TeacherDashboardView() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                  Examinations & Results Analytics
+                  Examinations & Results Activity
                 </h2>
-                <span className="rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
-                  <PieChart className="h-3 w-3" /> DEMO
+                <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
+                  <Database className="h-3 w-3" /> {resultsList.length} Records
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Academic progress metrics, grade distributions, and test logs
+                Live academic performance metrics, student grade distributions, and examination log records
               </p>
             </div>
           </div>
@@ -832,80 +862,242 @@ export default function TeacherDashboardView() {
             href="/dashboard/teacher/results"
             className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20 transition-all shrink-0"
           >
-            <span>Explore Results</span>
+            <span>Manage Results</span>
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {/* Results Content Grid */}
         <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
-          {/* Subject Performance Breakdown */}
+          {/* Grade Distribution & Performance Metrics */}
           <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-            <h3 className="text-xs font-black text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
-              <FileCheck className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> Subject Grade & Pass Rate Averages
-            </h3>
-            <p className="text-[10px] text-slate-500 mb-3.5">Calculated across term quizzes and examinations</p>
-
-            <div className="space-y-3">
-              {subjectResultsDemo.map((item) => (
-                <div key={item.subject} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900 dark:text-white">{item.subject}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40 px-1.5 py-0.5 text-[9px] font-bold">
-                        Grade {item.grade}
-                      </span>
-                      <span className="font-black text-slate-900 dark:text-white">{item.avgScore}%</span>
-                    </div>
-                  </div>
-
-                  <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400"
-                      style={{ width: `${item.avgScore}%` }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between text-[9px] text-slate-500">
-                    <span>Highest: {item.highest}%</span>
-                    <span>Pass Rate: {item.passRate}%</span>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center gap-2 mb-3.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40 shrink-0">
+                <FileCheck className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">
+                  Grade Breakdown & Class Pass Rate
+                </h3>
+                <p className="text-[10px] text-slate-500">
+                  Distribution across {resultsList.length} student result entries
+                </p>
+              </div>
             </div>
+
+            {isLoadingRealData ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-6 rounded-md bg-slate-200/80 dark:bg-slate-800 animate-pulse" />
+                ))}
+              </div>
+            ) : resultsList.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
+                <Award className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                <p>No student results recorded yet.</p>
+                <Link
+                  href="/dashboard/teacher/results"
+                  className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <Plus className="h-3 w-3" /> Enter First Result
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {["A+", "A", "B+", "B", "C", "D", "F"].map((gradeCategory) => {
+                  const count = resultsList.filter(
+                    (r) => r.grade?.toUpperCase() === gradeCategory
+                  ).length;
+                  const percentage =
+                    resultsList.length > 0
+                      ? Math.round((count / resultsList.length) * 100)
+                      : 0;
+
+                  return (
+                    <div key={gradeCategory} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`flex h-5 w-5 items-center justify-center rounded-md text-[9px] font-black ${
+                              gradeCategory === "A+"
+                                ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                                : gradeCategory === "A"
+                                  ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                                  : gradeCategory === "B+"
+                                    ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
+                                    : gradeCategory === "B"
+                                      ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                            }`}
+                          >
+                            {gradeCategory}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-white">
+                            Grade {gradeCategory}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {count} {count === 1 ? "student" : "students"}
+                          </span>
+                          <span className="font-black text-slate-900 dark:text-white">
+                            {percentage}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400 transition-all duration-500"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Published: <strong className="text-emerald-600 dark:text-emerald-400">{resultsList.filter((r) => r.status?.toUpperCase() === "PUBLISHED").length}</strong> / {resultsList.length}
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Drafts: <strong className="text-amber-600 dark:text-amber-400">{resultsList.filter((r) => r.status?.toUpperCase() === "DRAFT").length}</strong>
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Published Test Evaluation Logs */}
+          {/* Recent Result Activity Log */}
           <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-            <h3 className="text-xs font-black text-slate-900 dark:text-white mb-1 flex items-center gap-1.5">
-              <Award className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> Published Test Evaluations
-            </h3>
-            <p className="text-[10px] text-slate-500 mb-3.5">Recent exam results published to student portals</p>
-
-            <div className="space-y-3">
-              {recentTestResultsDemo.map((test) => (
-                <div key={test.title} className="rounded-xl border border-slate-200/90 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-950">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <FileText className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        {test.title}
-                      </h4>
-                      <p className="mt-0.5 text-[10px] text-slate-500">{test.className} • {test.date}</p>
-                    </div>
-                    <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-bold uppercase shrink-0">
-                      {test.status}
-                    </span>
-                  </div>
-
-                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px]">
-                    <span className="text-slate-500 dark:text-slate-400">Class Avg: <strong className="text-slate-900 dark:text-white">{test.avg}</strong></span>
-                    <span className="text-slate-500 dark:text-slate-400">Passed: <strong className="text-slate-900 dark:text-white">{test.passCount}</strong></span>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center gap-2 mb-3.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40 shrink-0">
+                <Award className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">
+                  Recent Result Records
+                </h3>
+                <p className="text-[10px] text-slate-500">
+                  Latest student marks submitted from results page
+                </p>
+              </div>
             </div>
+
+            {isLoadingRealData ? (
+              <div className="space-y-2.5">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-slate-200/80 dark:bg-slate-800 animate-pulse" />
+                ))}
+              </div>
+            ) : resultsList.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
+                <FileText className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                <p>No recent examination result submissions.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {resultsList.slice(0, 3).map((res) => (
+                  <div
+                    key={res.id}
+                    className="flex items-center gap-3 rounded-xl border border-slate-200/90 bg-white p-3 dark:border-slate-800 dark:bg-slate-950 transition-all hover:border-indigo-500/40"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40 font-black text-xs">
+                      <Award className="h-4 w-4" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
+                            <span className="truncate">{res.studentName}</span>
+                          </h4>
+                          <p className="mt-0.5 text-[10px] text-slate-500 truncate">
+                            {res.exam} • Class {res.studentClass}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
+                              res.grade?.toUpperCase() === "A+" || res.grade?.toUpperCase() === "A"
+                                ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40"
+                                : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                            }`}
+                          >
+                            Grade {res.grade}
+                          </span>
+                          <span
+                            className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
+                              res.status?.toUpperCase() === "PUBLISHED"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                            }`}
+                          >
+                            {res.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px]">
+                        <span className="text-slate-500 dark:text-slate-400">
+                          Score: <strong className="text-slate-900 dark:text-white">{res.score}/{res.total} ({Math.round((res.score / (res.total || 100)) * 100)}%)</strong>
+                        </span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {new Date(res.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Interactive Result Performance Bar Chart */}
+        <div className="mt-5 rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/40">
+          <div className="mb-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40 shrink-0">
+                <BarChart3 className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white">
+                  Examination Result Performance Bar Chart (%)
+                </h3>
+                <p className="text-[10px] text-slate-500">Average student score performance breakdown per examination</p>
+              </div>
+            </div>
+            <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
+              <BarChart3 className="h-3 w-3" /> RESULT BAR
+            </span>
+          </div>
+
+          {isLoadingRealData ? (
+            <div className="h-[180px] w-full rounded-xl bg-slate-200/60 dark:bg-slate-800/60 animate-pulse" />
+          ) : examBarData.length === 0 ? (
+            <div className="flex h-[140px] w-full items-center justify-center text-xs text-slate-400">
+              No examination result records available to plot bar chart.
+            </div>
+          ) : (
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={examBarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
+                  <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(val) => `${val}%`} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(99, 102, 241, 0.15)", rx: 6 }}
+                    contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }}
+                    formatter={(val: any) => [`${val}%`, "Average Score"]}
+                    labelFormatter={(label: any, items: any) => items[0]?.payload?.fullName || label}
+                  />
+                  <Bar dataKey="avgScore" fill="#4f46e5" radius={[6, 6, 0, 0]} maxBarSize={45} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </motion.section>
 
@@ -1098,13 +1290,13 @@ export default function TeacherDashboardView() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
-          <RouteShortcut href="/dashboard/teacher/my-classes" label="My Classes" badge="Live DB" icon={BookOpen} />
-          <RouteShortcut href="/dashboard/teacher/students" label="Students" badge="Live DB" icon={Users} />
-          <RouteShortcut href="/dashboard/teacher/assignments" label="Assignments" badge="Live DB" icon={FileText} />
-          <RouteShortcut href="/dashboard/teacher/examinations" label="Exams" badge="Live DB" icon={Clock} />
-          <RouteShortcut href="/dashboard/teacher/notices" label="Notices" badge="Live DB" icon={Megaphone} />
+          <RouteShortcut href="/dashboard/teacher/my-classes" label="My Classes" icon={BookOpen} />
+          <RouteShortcut href="/dashboard/teacher/students" label="Students" icon={Users} />
+          <RouteShortcut href="/dashboard/teacher/assignments" label="Assignments" icon={FileText} />
+          <RouteShortcut href="/dashboard/teacher/examinations" label="Exams" icon={Clock} />
+          <RouteShortcut href="/dashboard/teacher/notices" label="Notices" icon={Megaphone} />
           <RouteShortcut href="/dashboard/teacher/attendance" label="Attendance" badge="Demo Data" icon={CalendarCheck} isDemo />
-          <RouteShortcut href="/dashboard/teacher/results" label="Results" badge="Demo Data" icon={Award} isDemo />
+          <RouteShortcut href="/dashboard/teacher/results" label="Results" icon={Award} />
         </div>
       </motion.div>
     </div>
@@ -1178,7 +1370,7 @@ function RouteShortcut({
 }: {
   href: string;
   label: string;
-  badge: string;
+  badge?: string;
   icon: React.ElementType;
   isDemo?: boolean;
 }) {
@@ -1200,7 +1392,9 @@ function RouteShortcut({
         <p className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white truncate">{label}</p>
       </div>
 
-      <span className="mt-2 text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400">{badge}</span>
+      {badge && (
+        <span className="mt-2 text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400">{badge}</span>
+      )}
     </Link>
   );
 }
