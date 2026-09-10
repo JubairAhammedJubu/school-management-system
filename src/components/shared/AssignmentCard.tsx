@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-type Assignment = {
+export type Assignment = {
   id: string;
   title: string;
   description?: string | null;
@@ -41,7 +41,7 @@ type AssignmentCardProps = {
 export default function AssignmentCard({
   assignment,
   onEdit,
-  onDelete,
+  onDeleted,
 }: AssignmentCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");

@@ -156,13 +156,18 @@ export default function TeacherAssignmentsPage() {
   /**
    * Delete assignment trigger
    */
- const handleDelete = async (assignmentId: string) => {
+const handleDelete = async (assignmentId: string) => {
   try {
+    const token = getAuthToken();
+
     const response = await fetch(
-      `http://localhost:5000/api/teacher/assignments/${assignmentId}`,
+      `${SERVER_URL}/api/teacher/assignments/${assignmentId}`,
       {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       }
     );
 
@@ -183,6 +188,24 @@ export default function TeacherAssignmentsPage() {
     throw error;
   }
 };
+
+  // Open delete confirmation modal
+  const openDeleteModal = (assignmentId: string) => {
+    const assignment = assignments.find((a) => a.id === assignmentId) || null;
+    setAssignmentToDelete(assignment);
+  };
+
+  // Confirm delete assignment and trigger deletion
+  const confirmDeleteAssignment = async () => {
+    if (!assignmentToDelete) return;
+    try {
+      setIsDeleting(true);
+      await handleDelete(assignmentToDelete.id);
+    } finally {
+      setIsDeleting(false);
+      setAssignmentToDelete(null);
+    }
+  };
 
   /**
    * Filtered assignments list based on search and selected dropdown options.
@@ -362,7 +385,7 @@ export default function TeacherAssignmentsPage() {
                 key={assignment.id}
                 assignment={assignment}
                 onEdit={handleEdit}
-                onDeleted={handleDelete}
+                onDeleted={openDeleteModal}
               />
             ))}
           </div>
