@@ -35,6 +35,22 @@ export default function TeacherResultsPage() {
     useState(false);
     const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
     const [results, setResults] = useState<Result[]>([]);
+    const dynamicGradeDistribution = ["A+", "A", "B+", "B", "C", "D", "F"].map(
+  (grade) => {
+    const count = results.filter(
+      (result) => result.grade.toUpperCase() === grade
+    ).length;
+
+    const percentage =
+      results.length > 0 ? Math.round((count / results.length) * 100) : 0;
+
+    return {
+      grade,
+      count,
+      percentage,
+    };
+  }
+);
   return (
     <div className="space-y-6 pb-8">
       {/* ===================================================== */}
@@ -165,7 +181,7 @@ export default function TeacherResultsPage() {
           </div>
 
           <div className="mt-7 space-y-5">
-            {gradeDistribution.map((item, index) => {
+            {dynamicGradeDistribution.map((item, index) => {
               const percentage = Math.round((item.count / 67) * 100);
 
               return (
