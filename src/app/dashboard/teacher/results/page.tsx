@@ -70,7 +70,7 @@ const bPlusOrHigherPercentage =
 
   try {
     const response = await fetch(
-      `http://localhost:5000/api/teacher/results/${result.id}`,
+      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results/${result.id}`,
       {
         method: "DELETE",
       }
