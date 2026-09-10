@@ -57,7 +57,7 @@ export default function ResultDetailsModal({
         {/* Header */}
         <div className="flex shrink-0 items-start justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6 sm:py-5">
           <div className="min-w-0 pr-4">
-            <p className="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+            <p className="text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
               Result Details
             </p>
 
@@ -189,7 +189,7 @@ function InfoCard({
 }) {
   return (
     <div className="min-w-0 rounded-xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <div className="flex items-center gap-2 text-slate-400">
+      <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
         {icon}
 
         <p className="text-sm font-medium uppercase tracking-wider">
