@@ -101,21 +101,21 @@ export default function SubmitResultModal({
 
     const percentage = (numericScore / numericTotal) * 100;
 
-    if (percentage >= 90) {
-      setGrade("A+");
-    } else if (percentage >= 80) {
-      setGrade("A");
-    } else if (percentage >= 70) {
-      setGrade("B+");
-    } else if (percentage >= 60) {
-      setGrade("B");
-    } else if (percentage >= 50) {
-      setGrade("C");
-    } else if (percentage >= 40) {
-      setGrade("D");
-    } else {
-      setGrade("F");
-    }
+  if (percentage >= 80) {
+  setGrade("A+");
+} else if (percentage >= 70) {
+  setGrade("A");
+} else if (percentage >= 60) {
+  setGrade("B+");
+} else if (percentage >= 55) {
+  setGrade("B");
+} else if (percentage >= 50) {
+  setGrade("C");
+} else if (percentage >= 40) {
+  setGrade("D");
+} else {
+  setGrade("F");
+}
   }, [score, total]);
 
   if (!isOpen) {
