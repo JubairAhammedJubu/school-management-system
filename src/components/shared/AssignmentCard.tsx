@@ -1,16 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  BookOpen,
-  CalendarDays,
-  Edit3,
   FileText,
+  CalendarDays,
+  BookOpen,
+  Pencil,
   Trash2,
-  Users,
+  Clock3,
   Award,
+  Users,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export type Assignment = {
   id: string;
@@ -19,198 +23,385 @@ export type Assignment = {
   subject: string;
   grade: string;
   section: string;
-  dueDate: string | Date;
+  dueDate: string;
   totalMarks: number;
-  status: "ACTIVE" | "DRAFT" | "CLOSED" | string;
+  status: string;
   teacherEmail: string;
   teacherName?: string | null;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type AssignmentCardProps = {
   assignment: Assignment;
   onEdit: (assignment: Assignment) => void;
-  onDelete: (assignment: Assignment) => void;
+  onDeleted: (assignmentId: string) => void | Promise<void>;
 };
 
 export default function AssignmentCard({
   assignment,
   onEdit,
-  onDelete,
+  onDeleted,
 }: AssignmentCardProps) {
-  const formattedDueDate = formatDate(assignment.dueDate);
-  const isPastDue = new Date(assignment.dueDate).getTime() < Date.now();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
-  const handleDelete = () => {
-    onDelete(assignment);
+  const formatDate = (date: string) => {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "No due date";
+    }
+
+    return parsedDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (date: string) => {
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "";
+    }
+
+    return parsedDate.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const getStatusStyles = () => {
+    switch (assignment.status?.toUpperCase()) {
+      case "ACTIVE":
+        return {
+          badge:
+            "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+          icon: "text-emerald-600 dark:text-emerald-400",
+        };
+
+      case "DRAFT":
+        return {
+          badge:
+            "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+          icon: "text-amber-600 dark:text-amber-400",
+        };
+
+      case "CLOSED":
+        return {
+          badge:
+            "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+          icon: "text-slate-600 dark:text-slate-400",
+        };
+
+      default:
+        return {
+          badge:
+            "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+          icon: "text-slate-600 dark:text-slate-400",
+        };
+    }
+  };
+
+  const statusStyles = getStatusStyles();
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+
+    const result = await Swal.fire({
+      title: "Delete assignment?",
+      text: `"${assignment.title}" will be permanently deleted.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setDeleteError("");
+
+      await onDeleted(assignment.id);
+    } catch (error) {
+      console.error("Delete assignment error:", error);
+      setDeleteError("Failed to delete assignment. Please try again.");
+
+      await Swal.fire({
+        title: "Delete failed",
+        text: "The assignment could not be deleted. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-indigo-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-indigo-700/60"
-    >
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl group-hover:bg-indigo-500/20 transition-all duration-300" />
+    <>
+      {/* Desktop Card */}
+      <motion.article
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 md:block"
+      >
+        <div className="p-6">
+          <div className="flex items-start justify-between gap-5">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <FileText className="h-6 w-6" />
+              </div>
 
-      {/* Main Content Header */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-xs">
-              <FileText className="h-5 w-5" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statusStyles.badge}`}
+                  >
+                    {assignment.status}
+                  </span>
+
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {assignment.subject}
+                  </span>
+                </div>
+
+                <h2 className="mt-2 truncate text-xl font-extrabold text-slate-900 dark:text-white">
+                  {assignment.title}
+                </h2>
+
+                {assignment.description && (
+                  <p className="mt-1 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    {assignment.description}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="min-w-0">
-              <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 truncate block">
-                {assignment.subject}
-              </span>
-              <h3 className="line-clamp-1 text-sm font-extrabold text-slate-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                {assignment.title}
-              </h3>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onEdit(assignment)}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1.5">
-            <StatusBadge status={assignment.status} />
+          <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 dark:border-slate-800 lg:grid-cols-4">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-5 w-5 text-slate-400" />
 
-            {isPastDue && assignment.status === "ACTIVE" && (
-              <span className="rounded-lg bg-rose-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">
-                Past due
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Class
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {assignment.grade} - {assignment.section}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <CalendarDays className="h-5 w-5 text-slate-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Due Date
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {formatDate(assignment.dueDate)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Clock3 className="h-5 w-5 text-slate-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Time
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {formatTime(assignment.dueDate)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Award className="h-5 w-5 text-slate-400" />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Total Marks
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {assignment.totalMarks}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {deleteError && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {deleteError}
+            </div>
+          )}
+        </div>
+      </motion.article>
+
+      {/* Mobile Card */}
+      <motion.article
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 md:hidden"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+            <FileText className="h-5 w-5" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${statusStyles.badge}`}
+              >
+                {assignment.status}
               </span>
-            )}
+
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                {assignment.subject}
+              </span>
+            </div>
+
+            <h2 className="mt-2 text-lg font-extrabold leading-7 text-slate-900 dark:text-white">
+              {assignment.title}
+            </h2>
           </div>
         </div>
 
         {assignment.description && (
-          <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
             {assignment.description}
           </p>
         )}
-      </div>
 
-      {/* Grid Specs */}
-      <div className="mt-4 grid grid-cols-2 gap-2 text-xs min-w-0">
-        <div className="min-w-0">
-          <AssignmentDetail
-            icon={Users}
-            label="Class"
-            value={`${assignment.grade} · ${assignment.section}`}
-          />
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">
+                Class
+              </span>
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+              {assignment.grade} - {assignment.section}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">
+                Marks
+              </span>
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+              {assignment.totalMarks}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">
+                Due
+              </span>
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+              {formatDate(assignment.dueDate)}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+            <div className="flex items-center gap-2">
+              <Clock3 className="h-4 w-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">
+                Time
+              </span>
+            </div>
+
+            <p className="mt-1 text-sm font-bold text-slate-800 dark:text-slate-200">
+              {formatTime(assignment.dueDate)}
+            </p>
+          </div>
         </div>
 
-        <div className="min-w-0">
-          <AssignmentDetail
-            icon={Award}
-            label="Total Marks"
-            value={`${assignment.totalMarks} pts`}
-          />
+        <div className="mt-5 flex gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => onEdit(assignment)}
+            disabled={isDeleting}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+
+            {isDeleting ? "Deleting..." : "Delete"}
+          </button>
         </div>
 
-        <div className="col-span-2 min-w-0">
-          <AssignmentDetail
-            icon={CalendarDays}
-            label="Deadline Date"
-            value={formattedDueDate}
-            valueClassName={isPastDue ? "text-rose-600 dark:text-rose-400" : ""}
-          />
-        </div>
-      </div>
-
-      {/* Action Buttons Footer */}
-      <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100/90 pt-3.5 dark:border-slate-800/90">
-        <button
-          type="button"
-          onClick={() => onEdit(assignment)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 text-xs font-bold text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white cursor-pointer"
-        >
-          <Edit3 className="h-3.5 w-3.5" />
-          Edit
-        </button>
-
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-rose-50 px-3.5 text-xs font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white cursor-pointer"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Delete
-        </button>
-      </div>
-    </motion.article>
+        {deleteError && (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {deleteError}
+          </div>
+        )}
+      </motion.article>
+    </>
   );
-}
-
-function AssignmentDetail({
-  icon: Icon,
-  label,
-  value,
-  valueClassName = "",
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  valueClassName?: string;
-}) {
-  return (
-    <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-50/60 p-2.5 dark:border-slate-800/60 dark:bg-slate-950/40">
-      <div className="flex items-center gap-1.5 mb-0.5 min-w-0">
-        <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate">
-          {label}
-        </span>
-      </div>
-      <p
-        title={value}
-        className={`text-xs font-bold text-slate-900 dark:text-white truncate ${valueClassName}`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const normalizedStatus = status.toUpperCase();
-
-  if (normalizedStatus === "ACTIVE") {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-extrabold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        Active
-      </span>
-    );
-  }
-
-  if (normalizedStatus === "DRAFT") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-extrabold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
-        Draft
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
-      Closed
-    </span>
-  );
-}
-
-function formatDate(date: string | Date) {
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Invalid date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(parsedDate);
 }
