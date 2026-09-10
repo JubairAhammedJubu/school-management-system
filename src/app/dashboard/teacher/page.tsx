@@ -22,27 +22,27 @@ export default function TeacherDashboardPage() {
   // Loading skeleton while checking authentication & role
   if (isPending) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
         {/* Banner Skeleton */}
-        <div className="h-32 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-6 shadow-md dark:shadow-xl flex flex-col justify-between">
-          <div className="h-6 w-64 rounded-md skeleton-shimmer" />
-          <div className="h-4 w-96 rounded-md skeleton-shimmer-subtle" />
+        <div className="h-32 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 p-5 sm:p-6 shadow-md backdrop-blur-xl flex flex-col justify-between">
+          <div className="h-6 w-48 sm:w-64 rounded-md skeleton-shimmer" />
+          <div className="h-4 w-64 sm:w-96 rounded-md skeleton-shimmer-subtle" />
         </div>
 
         {/* Stats Grid Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-36 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-5 shadow-md dark:shadow-xl space-y-4"
+              className="h-32 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 p-4 shadow-sm space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="h-10 w-10 rounded-xl skeleton-shimmer" />
-                <div className="h-4 w-12 rounded-full skeleton-shimmer-subtle" />
+                <div className="h-9 w-9 rounded-xl skeleton-shimmer" />
+                <div className="h-4 w-10 rounded-md skeleton-shimmer-subtle" />
               </div>
               <div className="space-y-2">
-                <div className="h-7 w-24 rounded-md skeleton-shimmer" />
-                <div className="h-3.5 w-36 rounded-md skeleton-shimmer-subtle" />
+                <div className="h-6 w-16 rounded-md skeleton-shimmer" />
+                <div className="h-3 w-24 rounded-md skeleton-shimmer-subtle" />
               </div>
             </div>
           ))}
