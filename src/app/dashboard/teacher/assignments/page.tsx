@@ -469,9 +469,13 @@ function SummaryCard({
         {label}
       </p>
 
-      <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
-        {value}
-      </p>
+      {value === "..." ? (
+        <div className="mt-2 h-7 w-16 rounded-md bg-slate-200/90 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+      ) : (
+        <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+          {value}
+        </p>
+      )}
 
       <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
         {detail}
