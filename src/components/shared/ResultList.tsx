@@ -1,7 +1,14 @@
 "use client";
 
+import React from "react";
 import { useCallback, useEffect, useState } from "react";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { createPortal } from "react-dom";
+import {
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export type Result = {
@@ -23,15 +30,30 @@ export type Result = {
 type ResultListProps = {
   refreshKey?: number;
   onResultsChange?: (results: Result[]) => void;
+  onView?: (result: Result) => void;
+  onEdit?: (result: Result) => void;
+  onDelete?: (result: Result) => void;
+};
+
+type MenuPosition = {
+  top: number;
+  left: number;
 };
 
 export default function ResultList({
   refreshKey = 0,
   onResultsChange,
+  onView,
+  onEdit,
+  onDelete,
 }: ResultListProps) {
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] =
+    useState<MenuPosition | null>(null);
 
   const fetchResults = useCallback(async () => {
     try {
@@ -50,10 +72,10 @@ export default function ResultList({
         );
       }
 
-      const fetchedResults = data.results || [];
+      const fetchedResults: Result[] = data.results || [];
 
-setResults(fetchedResults);
-onResultsChange?.(fetchedResults);
+      setResults(fetchedResults);
+      onResultsChange?.(fetchedResults);
     } catch (error: any) {
       console.error("Error fetching results:", error);
 
@@ -63,134 +85,262 @@ onResultsChange?.(fetchedResults);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [onResultsChange]);
 
   useEffect(() => {
     fetchResults();
   }, [fetchResults, refreshKey]);
 
+  const closeMenu = () => {
+    setOpenMenuId(null);
+    setMenuPosition(null);
+  };
+
+  const handleMenuToggle = (
+    resultId: string,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (openMenuId === resultId) {
+      closeMenu();
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    const menuWidth = 168;
+    const menuHeight = 150;
+    const spacing = 8;
+
+    let left = rect.right - menuWidth;
+    let top = rect.bottom + spacing;
+
+    if (left < 12) {
+      left = 12;
+    }
+
+    if (left + menuWidth > window.innerWidth - 12) {
+      left = window.innerWidth - menuWidth - 12;
+    }
+
+    if (top + menuHeight > window.innerHeight - 12) {
+      top = rect.top - menuHeight - spacing;
+    }
+
+    if (top < 12) {
+      top = 12;
+    }
+
+    setOpenMenuId(resultId);
+    setMenuPosition({
+      top,
+      left,
+    });
+  };
+
+  const handleView = (result: Result) => {
+    closeMenu();
+    onView?.(result);
+  };
+
+  const handleEdit = (result: Result) => {
+    closeMenu();
+    onEdit?.(result);
+  };
+
+  const handleDelete = (result: Result) => {
+    closeMenu();
+    onDelete?.(result);
+  };
+
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    const handleScroll = () => {
+      closeMenu();
+    };
+
+    const handleResize = () => {
+      closeMenu();
+    };
+
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+        true
+      );
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+    };
+  }, [openMenuId]);
+
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-slate-800 sm:px-6">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            Recent Results
-          </h2>
+    <>
+      <section className="w-full rounded-xl border border-slate-200/90 bg-white shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-slate-800 sm:px-6">
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              Recent Results
+            </h2>
 
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Latest student examination records
-          </p>
-        </div>
-
-        <div className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          {results.length}{" "}
-          {results.length === 1 ? "Result" : "Results"}
-        </div>
-      </div>
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="flex min-h-[260px] items-center justify-center px-6">
-          <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
-            Loading results...
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
-      {!isLoading && error && (
-        <div className="p-6">
-          <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 dark:border-red-500/20 dark:bg-red-500/10">
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">
-              {error}
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Latest student examination records
             </p>
+          </div>
 
-            <button
-              type="button"
-              onClick={fetchResults}
-              className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-            >
-              Try Again
-            </button>
+          <div className="shrink-0 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            {results.length}{" "}
+            {results.length === 1
+              ? "Result"
+              : "Results"}
           </div>
         </div>
-      )}
 
-      {/* Empty */}
-      {!isLoading && !error && results.length === 0 && (
-        <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
-            <Eye className="h-6 w-6" />
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex min-h-[260px] items-center justify-center px-6">
+            <div className="flex items-center gap-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
+              Loading results...
+            </div>
           </div>
+        )}
 
-          <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-white">
-            No results yet
-          </h3>
+        {/* Error */}
+        {!isLoading && error && (
+          <div className="p-6">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4 dark:border-red-500/20 dark:bg-red-500/10">
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                {error}
+              </p>
 
-          <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Submitted student results will appear here.
-          </p>
-        </div>
-      )}
-
-      {/* Desktop Table */}
-      {!isLoading && !error && results.length > 0 && (
-        <>
-          <div className="hidden overflow-x-auto sm:block">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Student
-                  </th>
-
-                  <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Examination
-                  </th>
-
-                  <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Score
-                  </th>
-
-                  <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Grade
-                  </th>
-
-                  <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Status
-                  </th>
-
-                  <th className="w-12 px-4 py-4" />
-                </tr>
-              </thead>
-
-              <tbody>
-                {results.map((result, index) => (
-                  <ResultRow
-                    key={result.id}
-                    result={result}
-                    index={index}
-                  />
-                ))}
-              </tbody>
-            </table>
+              <button
+                type="button"
+                onClick={fetchResults}
+                className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
+        )}
 
-          {/* Mobile */}
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
-            {results.map((result, index) => (
-              <MobileResultCard
-                key={result.id}
-                result={result}
-                index={index}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </section>
+        {/* Empty */}
+        {!isLoading &&
+          !error &&
+          results.length === 0 && (
+            <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800">
+                <Eye className="h-6 w-6" />
+              </div>
+
+              <h3 className="mt-4 text-lg font-bold text-slate-800 dark:text-white">
+                No results yet
+              </h3>
+
+              <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+                Submitted student results will appear
+                here.
+              </p>
+            </div>
+          )}
+
+        {/* Results */}
+        {!isLoading &&
+          !error &&
+          results.length > 0 && (
+            <>
+              {/* Desktop */}
+              <div className="hidden w-full overflow-x-auto sm:block">
+                <table className="w-full min-w-[760px]">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-800">
+                      <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Student
+                      </th>
+
+                      <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Examination
+                      </th>
+
+                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Score
+                      </th>
+
+                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Grade
+                      </th>
+
+                      <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Status
+                      </th>
+
+                      <th className="w-16 px-4 py-4" />
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {results.map(
+                      (result, index) => (
+                        <ResultRow
+                          key={result.id}
+                          result={result}
+                          index={index}
+                          onMenuToggle={
+                            handleMenuToggle
+                          }
+                        />
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 sm:hidden">
+                {results.map(
+                  (result, index) => (
+                    <MobileResultCard
+                      key={result.id}
+                      result={result}
+                      index={index}
+                      onMenuToggle={
+                        handleMenuToggle
+                      }
+                      onView={handleView}
+                    />
+                  )
+                )}
+              </div>
+            </>
+          )}
+      </section>
+
+      {/* Floating Action Menu */}
+      {typeof document !== "undefined" &&
+        openMenuId &&
+        menuPosition &&
+        createPortal(
+          <ResultActionMenu
+            position={menuPosition}
+            result={
+              results.find(
+                (item) => item.id === openMenuId
+              )!
+            }
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />,
+          document.body
+        )}
+    </>
   );
 }
 
@@ -201,9 +351,14 @@ onResultsChange?.(fetchedResults);
 function ResultRow({
   result,
   index,
+  onMenuToggle,
 }: {
   result: Result;
   index: number;
+  onMenuToggle: (
+    resultId: string,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => void;
 }) {
   return (
     <motion.tr
@@ -258,13 +413,18 @@ function ResultRow({
       </td>
 
       <td className="px-4 py-4">
-        <button
-          type="button"
-          aria-label={`More options for ${result.studentName}`}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            aria-label={`More options for ${result.studentName}`}
+            onClick={(event) =>
+              onMenuToggle(result.id, event)
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
+        </div>
       </td>
     </motion.tr>
   );
@@ -277,9 +437,16 @@ function ResultRow({
 function MobileResultCard({
   result,
   index,
+  onMenuToggle,
+  onView,
 }: {
   result: Result;
   index: number;
+  onMenuToggle: (
+    resultId: string,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  onView: (result: Result) => void;
 }) {
   return (
     <motion.div
@@ -308,7 +475,20 @@ function MobileResultCard({
           </div>
         </div>
 
-        <StatusBadge status={result.status} />
+        <div className="flex shrink-0 items-center gap-2">
+          <StatusBadge status={result.status} />
+
+          <button
+            type="button"
+            aria-label={`More options for ${result.studentName}`}
+            onClick={(event) =>
+              onMenuToggle(result.id, event)
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <MoreHorizontal className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-2">
@@ -345,12 +525,68 @@ function MobileResultCard({
 
       <button
         type="button"
+        onClick={() => onView(result)}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
       >
         <Eye className="h-4 w-4" />
         View Result
       </button>
     </motion.div>
+  );
+}
+
+/* ========================================================= */
+/* FLOATING ACTION MENU */
+/* ========================================================= */
+
+function ResultActionMenu({
+  position,
+  result,
+  onView,
+  onEdit,
+  onDelete,
+}: {
+  position: MenuPosition;
+  result: Result;
+  onView: (result: Result) => void;
+  onEdit: (result: Result) => void;
+  onDelete: (result: Result) => void;
+}) {
+  return (
+    <div
+      className="fixed z-[9999] w-42 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => onView(result)}
+        className="flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <Eye className="mr-2.5 h-4 w-4 text-slate-400" />
+        View
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onEdit(result)}
+        className="flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <Pencil className="mr-2.5 h-4 w-4 text-slate-400" />
+        Edit
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onDelete(result)}
+        className="flex w-full items-center rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+      >
+        <Trash2 className="mr-2.5 h-4 w-4" />
+        Delete
+      </button>
+    </div>
   );
 }
 
@@ -403,7 +639,9 @@ function StatusBadge({ status }: { status: string }) {
     >
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          published ? "bg-emerald-500" : "bg-amber-500"
+          published
+            ? "bg-emerald-500"
+            : "bg-amber-500"
         }`}
       />
 
@@ -421,6 +659,8 @@ function getInitials(name: string) {
     .trim()
     .split(/\s+/)
     .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
+    .map((part) =>
+      part.charAt(0).toUpperCase()
+    )
     .join("");
 }
