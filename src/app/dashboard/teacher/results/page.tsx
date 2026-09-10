@@ -23,6 +23,8 @@ import ResultDetailsModal from "@/components/shared/ResultDetailsModal";
 export default function TeacherResultsPage() {
   const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] =
     useState(false);
+    const [editingResult, setEditingResult] =
+  useState<Result | null>(null);
     const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
     const [results, setResults] = useState<Result[]>([]);
     const dynamicGradeDistribution = ["A+", "A", "B+", "B", "C", "D", "F"].map(
@@ -216,6 +218,7 @@ const bPlusOrHigherPercentage =
   onResultsChange={setResults}
   onDelete={handleDeleteResult}
   onView={setSelectedResult}
+  onEdit={setEditingResult}
 />
 
         {/* Grade Distribution */}
@@ -317,6 +320,15 @@ const bPlusOrHigherPercentage =
   isOpen={isSubmitResultModalOpen}
   onClose={() => setIsSubmitResultModalOpen(false)}
   onSuccess={() => {
+    setResultsRefreshKey((current) => current + 1);
+  }}
+/>
+<SubmitResultModal
+  isOpen={!!editingResult}
+  result={editingResult}
+  onClose={() => setEditingResult(null)}
+  onSuccess={() => {
+    setEditingResult(null);
     setResultsRefreshKey((current) => current + 1);
   }}
 />
