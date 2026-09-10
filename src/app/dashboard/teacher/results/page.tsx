@@ -3,6 +3,7 @@
 import { useState } from "react";
 import EnterResultButton from "@/components/shared/EnterResultButton";
 import SubmitResultModal from "@/components/shared/SubmitResultModal";
+
 import ResultList, {
   type Result,
 } from "@/components/shared/ResultList";
@@ -15,20 +16,9 @@ import {
   TrendingUp,
   FileCheck2,
   Clock3,
-  MoreHorizontal,
-  Eye,
-  Send,
 } from "lucide-react";
-
-
-
-const gradeDistribution = [
-  { grade: "A+", count: 12 },
-  { grade: "A", count: 24 },
-  { grade: "B+", count: 18 },
-  { grade: "B", count: 9 },
-  { grade: "C", count: 4 },
-];
+import Swal from "sweetalert2";
+import ResultDetailsModal from "@/components/shared/ResultDetailsModal";
 
 export default function TeacherResultsPage() {
   const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] =
@@ -51,6 +41,69 @@ export default function TeacherResultsPage() {
     };
   }
 );
+const bPlusOrHigherCount = results.filter((result) =>
+  ["A+", "A", "B+"].includes(result.grade.toUpperCase())
+).length;
+
+const bPlusOrHigherPercentage =
+  results.length > 0
+    ? Math.round((bPlusOrHigherCount / results.length) * 100)
+    : 0;
+    const [selectedResult, setSelectedResult] =
+  useState<Result | null>(null);
+    const handleDeleteResult = async (result: Result) => {
+  const confirmation = await Swal.fire({
+    title: "Delete Result?",
+    text: `Are you sure you want to delete ${result.studentName}'s result for ${result.exam}?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Delete",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+  });
+
+  if (!confirmation.isConfirmed) {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/teacher/results/${result.id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.error || "Failed to delete result."
+      );
+    }
+
+    await Swal.fire({
+      title: "Deleted",
+      text: "The result has been deleted successfully.",
+      icon: "success",
+      timer: 1600,
+      showConfirmButton: false,
+    });
+
+    setResultsRefreshKey((current) => current + 1);
+  } catch (error: any) {
+    console.error("Error deleting result:", error);
+
+    Swal.fire({
+      title: "Delete Failed",
+      text:
+        error?.message ||
+        "Something went wrong while deleting the result.",
+      icon: "error",
+    });
+  }
+};
+
   return (
     <div className="space-y-6 pb-8">
       {/* ===================================================== */}
@@ -161,6 +214,8 @@ export default function TeacherResultsPage() {
        <ResultList
   refreshKey={resultsRefreshKey}
   onResultsChange={setResults}
+  onDelete={handleDeleteResult}
+  onView={setSelectedResult}
 />
 
         {/* Grade Distribution */}
@@ -182,7 +237,9 @@ export default function TeacherResultsPage() {
 
           <div className="mt-7 space-y-5">
             {dynamicGradeDistribution.map((item, index) => {
-              const percentage = Math.round((item.count / 67) * 100);
+              const percentage = results.length > 0
+    ? Math.round((item.count / results.length) * 100)
+    : 0;
 
               return (
                 <motion.div
@@ -249,45 +306,13 @@ export default function TeacherResultsPage() {
             </div>
 
             <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">
-              80.6% of your students achieved a B+ or higher this term.
+              {bPlusOrHigherPercentage}% of your students achieved a B+ or higher this term.
             </p>
           </div>
         </motion.section>
       </div>
 
-      {/* ===================================================== */}
-      {/* DRAFT RESULTS */}
-      {/* ===================================================== */}
 
-      <motion.section
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.3 }}
-        className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:p-6"
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-              <Clock3 className="h-4 w-4" />
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                9 results are waiting for review
-              </h3>
-
-              <p className="mt-1 text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">
-                Review your draft grades before publishing them to students.
-              </p>
-            </div>
-          </div>
-
-          <button className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-[10px] font-bold text-white transition-all hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-            <Send className="h-3.5 w-3.5" />
-            Review Drafts
-          </button>
-        </div>
-      </motion.section>
     <SubmitResultModal
   isOpen={isSubmitResultModalOpen}
   onClose={() => setIsSubmitResultModalOpen(false)}
@@ -295,8 +320,14 @@ export default function TeacherResultsPage() {
     setResultsRefreshKey((current) => current + 1);
   }}
 />
+<ResultDetailsModal
+  result={selectedResult}
+  isOpen={!!selectedResult}
+  onClose={() => setSelectedResult(null)}
+/>
     </div>
   );
+  
 }
 function SummaryCard({
   icon: Icon,
