@@ -22,7 +22,7 @@ export default function TeacherDashboardPage() {
   // Loading skeleton while checking authentication & role
   if (isPending) {
     return (
-      <div className="p-3 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6 pb-12">
         {/* Banner Skeleton */}
         <div className="h-32 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 p-5 sm:p-6 shadow-md backdrop-blur-xl flex flex-col justify-between">
           <div className="h-6 w-48 sm:w-64 rounded-md skeleton-shimmer" />
