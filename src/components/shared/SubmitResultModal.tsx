@@ -468,9 +468,9 @@ export default function SubmitResultModal({
                           text-sm text-slate-900
                           outline-none
                           transition
-                          focus:border-blue-500
+                          focus:border-indigo-600
                           focus:ring-2
-                          focus:ring-blue-500/10
+                          focus:ring-indigo-500/10
                           dark:border-slate-700
                           dark:bg-slate-900
                           dark:text-white
@@ -530,17 +530,18 @@ export default function SubmitResultModal({
               disabled={isSubmitting}
               className="
                 w-full rounded-xl
-                bg-blue-600
+                bg-indigo-600
                 px-5 py-3
                 text-sm font-semibold
                 text-white
                 shadow-sm
-                shadow-blue-600/20
+                shadow-indigo-600/20
                 transition
-                hover:bg-blue-700
+                hover:bg-indigo-700
                 disabled:cursor-not-allowed
                 disabled:opacity-60
                 sm:w-auto
+                cursor-pointer
               "
             >
               {isSubmitting
@@ -604,9 +605,9 @@ function InputField({
           outline-none
           transition
           placeholder:text-slate-400
-          focus:border-blue-500
+          focus:border-indigo-600
           focus:ring-2
-          focus:ring-blue-500/10
+          focus:ring-indigo-500/10
           disabled:cursor-not-allowed
           disabled:opacity-60
           dark:border-slate-700
