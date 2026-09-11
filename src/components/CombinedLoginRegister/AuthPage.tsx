@@ -15,7 +15,6 @@ import {
   KeyRound,
   UserPlus,
   ArrowLeft,
-  Sparkles,
   User,
   Mail,
   Lock,
@@ -845,30 +844,6 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 </p>
               )}
 
-              {isLogin && (
-                <motion.button
-                  type="button"
-                  disabled={
-                    email === "demostudent@gmail.com" &&
-                    password === "demostudent1234"
-                  }
-                  onClick={() => {
-                    setEmail("demostudent@gmail.com");
-                    setPassword("demostudent1234");
-                  }}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-1.5 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  <Sparkles size={13} className="text-amber-500 shrink-0" />
-                  <span>
-                    {email === "demostudent@gmail.com" &&
-                    password === "demostudent1234"
-                      ? "Demo Credentials Fulfilled"
-                      : "Fill Demo Student Credentials"}
-                  </span>
-                </motion.button>
-              )}
 
               <motion.button
                 type="submit"
