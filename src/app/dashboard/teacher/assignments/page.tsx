@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import AssignmentCard, { Assignment } from "@/components/shared/AssignmentCard";
 import AssignmentFormModal from "@/components/shared/AssignmentFormModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
+import SubmissionsModal from "@/components/shared/SubmissionsModal";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
@@ -50,6 +51,9 @@ export default function TeacherAssignmentsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+
+  // Submissions modal state
+  const [submissionsAssignment, setSubmissionsAssignment] = useState<Assignment | null>(null);
 
   // Delete modal state
   const [assignmentToDelete, setAssignmentToDelete] = useState<Assignment | null>(null);
@@ -385,6 +389,7 @@ const handleDelete = async (assignmentId: string) => {
                 key={assignment.id}
                 assignment={assignment}
                 onEdit={handleEdit}
+                onViewSubmissions={(a) => setSubmissionsAssignment(a)}
                 onDeleted={openDeleteModal}
               />
             ))}
@@ -423,6 +428,13 @@ const handleDelete = async (assignmentId: string) => {
         teacherEmail={teacherEmail}
         teacherName={teacherName || "Teacher"}
         onSuccess={handleAssignmentSuccess}
+      />
+
+      {/* Submissions Modal */}
+      <SubmissionsModal
+        isOpen={Boolean(submissionsAssignment)}
+        onClose={() => setSubmissionsAssignment(null)}
+        assignment={submissionsAssignment}
       />
 
       {/* Custom Delete Confirmation Modal */}
