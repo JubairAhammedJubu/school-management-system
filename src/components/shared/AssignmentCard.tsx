@@ -11,6 +11,8 @@ import {
   Award,
 } from "lucide-react";
 
+import { SubmissionItem } from "./SubmissionsModal";
+
 export type Assignment = {
   id: string;
   title: string;
@@ -23,6 +25,7 @@ export type Assignment = {
   status: string;
   teacherEmail: string;
   teacherName?: string | null;
+  submissions?: SubmissionItem[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -30,6 +33,7 @@ export type Assignment = {
 type AssignmentCardProps = {
   assignment: Assignment;
   onEdit: (assignment: Assignment) => void;
+  onViewSubmissions?: (assignment: Assignment) => void;
   onDeleted?: (assignmentId: string) => void | Promise<void>;
   onDelete?: (assignmentId: string) => void | Promise<void>;
 };
@@ -37,6 +41,7 @@ type AssignmentCardProps = {
 export default function AssignmentCard({
   assignment,
   onEdit,
+  onViewSubmissions,
   onDeleted,
   onDelete,
 }: AssignmentCardProps) {
@@ -129,24 +134,42 @@ export default function AssignmentCard({
       </div>
 
       {/* Action Buttons Footer */}
-      <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100/90 pt-3.5 dark:border-slate-800/90">
-        <button
-          type="button"
-          onClick={() => onEdit(assignment)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-indigo-50 px-3.5 text-xs font-bold text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white cursor-pointer"
-        >
-          <Edit3 className="h-3.5 w-3.5" />
-          Edit
-        </button>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100/90 pt-3.5 dark:border-slate-800/90">
+        <div className="w-full sm:w-auto">
+          {onViewSubmissions && (
+            <button
+              type="button"
+              onClick={() => onViewSubmissions(assignment)}
+              className="w-full sm:w-auto inline-flex h-8.5 items-center justify-center gap-1.5 rounded-xl bg-indigo-50/80 hover:bg-indigo-600 hover:text-white px-3 text-xs font-extrabold text-indigo-600 transition-all dark:bg-indigo-950/60 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white cursor-pointer border border-indigo-100 dark:border-indigo-900/40"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Submissions</span>
+              <span className="ml-0.5 rounded-md bg-indigo-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white group-hover:bg-white group-hover:text-indigo-600">
+                {assignment.submissions?.length || 0}
+              </span>
+            </button>
+          )}
+        </div>
 
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-rose-50 px-3.5 text-xs font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white cursor-pointer"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Delete
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            onClick={() => onEdit(assignment)}
+            className="flex-1 sm:flex-initial inline-flex h-8.5 items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 text-xs font-bold text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-600 dark:hover:text-white cursor-pointer"
+          >
+            <Edit3 className="h-3.5 w-3.5" />
+            Edit
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="flex-1 sm:flex-initial inline-flex h-8.5 items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-3 text-xs font-bold text-rose-600 transition-all hover:bg-rose-600 hover:text-white dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-600 dark:hover:text-white cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </button>
+        </div>
       </div>
     </motion.article>
   );
