@@ -31,7 +31,7 @@ interface FeeRecord {
   rawAmount: number;
   date: string;
   method: string;
-  status: "Paid" | "Pending" | "Overdue";
+  status: "Paid" | "Pending" | "Partially Paid" | "Overdue";
 }
 
 export default function AdminFeesPage() {
@@ -57,7 +57,7 @@ export default function AdminFeesPage() {
   const [feeType, setFeeType] = useState("Tuition Fee");
   const [amountVal, setAmountVal] = useState("350");
   const [paymentMethod, setPaymentMethod] = useState("Cash (Office)");
-  const [statusVal, setStatusVal] = useState<"Paid" | "Pending">("Paid");
+  const [statusVal, setStatusVal] = useState<"Paid" | "Pending" | "Partially Paid">("Paid");
 
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
 
