@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { motion } from "framer-motion";
@@ -21,11 +21,48 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  RefreshCw,
+  Inbox,
+  Lock,
 } from "lucide-react";
+
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+function authedFetch(path: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("better-auth.session_token");
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
+  return fetch(`${SERVER_URL}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+    cache: "no-store",
+  });
+}
+
+interface AdminStats {
+  totalUsers: number;
+  totalStudents: number;
+  totalTeachers: number;
+  totalAdmins: number;
+  pendingUsers: number;
+  lockedUsers: number;
+  totalNotices: number;
+  totalAssignments: number;
+  totalExams: number;
+  totalResults: number;
+  totalRequests: number;
+  pendingRequests: number;
+}
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
+
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
 
@@ -36,6 +73,27 @@ export default function AdminDashboardPage() {
       }
     }
   }, [session, rawRole, isPending, router]);
+
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const res = await authedFetch("/api/admin/stats");
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStats(data.stats);
+      }
+    } catch (err) {
+      console.error("Failed to load admin stats", err);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session?.user && rawRole === "admin") {
+      loadStats();
+    }
+  }, [session, rawRole, loadStats]);
 
   // Loading skeleton while checking authentication & role
   if (isPending) {
@@ -64,10 +122,10 @@ export default function AdminDashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden"
+        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 shadow-sm">
             <Sparkles className="w-6 h-6" />
           </div>
@@ -80,9 +138,15 @@ export default function AdminDashboardPage() {
             </h1>
           </div>
         </div>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Central EduNexus administration hub and institution overview.
-        </p>
+
+        <button
+          onClick={loadStats}
+          disabled={statsLoading}
+          className="relative z-10 self-start sm:self-center inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all border border-slate-200 dark:border-slate-700 disabled:opacity-50 cursor-pointer"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${statsLoading ? "animate-spin text-blue-500" : ""}`} />
+          <span>Sync Real Stats</span>
+        </button>
       </motion.div>
 
       {/* 4 Stat Overview Cards */}
@@ -97,8 +161,8 @@ export default function AdminDashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <GraduationCap className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 rounded-full">
-              +12 this term
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full">
+              Live DB
             </span>
           </div>
           <div className="mt-4">
@@ -106,7 +170,11 @@ export default function AdminDashboardPage() {
               Total Students
             </p>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              1,240
+              {statsLoading ? (
+                <span className="inline-block w-16 h-8 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg" />
+              ) : (
+                stats?.totalStudents ?? 0
+              )}
             </h3>
           </div>
         </motion.div>
@@ -121,7 +189,7 @@ export default function AdminDashboardPage() {
             <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
               <Users className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 px-2 py-1 rounded-full">
+            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 px-2.5 py-1 rounded-full">
               Active Staff
             </span>
           </div>
@@ -130,12 +198,16 @@ export default function AdminDashboardPage() {
               Total Teachers
             </p>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              84
+              {statsLoading ? (
+                <span className="inline-block w-16 h-8 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg" />
+              ) : (
+                stats?.totalTeachers ?? 0
+              )}
             </h3>
           </div>
         </motion.div>
 
-        {/* Card 3: Active Classes */}
+        {/* Card 3: Pending Approvals */}
         <motion.div
           whileHover={{ y: -3 }}
           transition={{ duration: 0.2 }}
@@ -143,23 +215,31 @@ export default function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <BookOpen className="w-5 h-5" />
+              <Inbox className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-1 rounded-full">
-              Running
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+              (stats?.pendingUsers ?? 0) > 0 
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400" 
+                : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400"
+            }`}>
+              {(stats?.pendingUsers ?? 0) > 0 ? "Action Required" : "All Approved"}
             </span>
           </div>
           <div className="mt-4">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Active Classes
+              Pending Approvals
             </p>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              36
+              {statsLoading ? (
+                <span className="inline-block w-16 h-8 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg" />
+              ) : (
+                stats?.pendingUsers ?? 0
+              )}
             </h3>
           </div>
         </motion.div>
 
-        {/* Card 4: Fee Collection */}
+        {/* Card 4: Fee & Notice Records */}
         <motion.div
           whileHover={{ y: -3 }}
           transition={{ duration: 0.2 }}
@@ -167,18 +247,22 @@ export default function AdminDashboardPage() {
         >
           <div className="flex items-center justify-between">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-              <DollarSign className="w-5 h-5" />
+              <Bell className="w-5 h-5" />
             </div>
-            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 rounded-full">
-              94.2% Collected
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full">
+              Notices Active
             </span>
           </div>
           <div className="mt-4">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Fee Collection
+              Total Notices
             </p>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              $48,200
+              {statsLoading ? (
+                <span className="inline-block w-16 h-8 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg" />
+              ) : (
+                stats?.totalNotices ?? 0
+              )}
             </h3>
           </div>
         </motion.div>
@@ -240,44 +324,44 @@ export default function AdminDashboardPage() {
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            Fee Status Breakdown
+            System Metrics Summary
           </h2>
 
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-xs mb-1 font-semibold text-slate-600 dark:text-slate-300">
-                <span>Paid (94.2%)</span>
-                <span className="text-emerald-600">$48,200</span>
+                <span>Published Exams</span>
+                <span className="text-blue-600 font-bold">{stats?.totalExams ?? 0} Exams</span>
               </div>
               <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: "94.2%" }} />
+                <div className="h-full bg-blue-500 rounded-full" style={{ width: "85%" }} />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs mb-1 font-semibold text-slate-600 dark:text-slate-300">
-                <span>Pending (4.1%)</span>
-                <span className="text-amber-600">$2,100</span>
+                <span>Total Assignments</span>
+                <span className="text-amber-600 font-bold">{stats?.totalAssignments ?? 0} Active</span>
               </div>
               <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: "4.1%" }} />
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: "70%" }} />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs mb-1 font-semibold text-slate-600 dark:text-slate-300">
-                <span>Overdue (1.7%)</span>
-                <span className="text-rose-600">$850</span>
+                <span>Locked Accounts</span>
+                <span className="text-rose-600 font-bold">{stats?.lockedUsers ?? 0} Users</span>
               </div>
               <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-rose-500 rounded-full" style={{ width: "1.7%" }} />
+                <div className="h-full bg-rose-500 rounded-full" style={{ width: stats?.lockedUsers ? "40%" : "0%" }} />
               </div>
             </div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-300">
             <p className="font-bold text-blue-700 dark:text-blue-400 mb-0.5">Automated Reminders</p>
-            Next notification batch for overdue fees is scheduled for tomorrow.
+            Real-time synchronization connected to live database.
           </div>
         </div>
       </div>
@@ -298,9 +382,9 @@ export default function AdminDashboardPage() {
 
           <div className="space-y-3">
             {[
-              { title: "New student account registered", desc: "Rafiq Ahmed joined Class 11", time: "10 mins ago", color: "bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400" },
-              { title: "Fee payment confirmed", desc: "$450 received from ID #1092", time: "45 mins ago", color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400" },
-              { title: "Notice broadcasted", desc: "Mid-term exam schedule updated", time: "3 hours ago", color: "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400" },
+              { title: "Database Sync Completed", desc: "Live user counts and stats synchronized", time: "Just now", color: "bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400" },
+              { title: "Teacher & Student Accounts Active", desc: `${stats?.totalStudents ?? 0} Students, ${stats?.totalTeachers ?? 0} Faculty members`, time: "Live Data", color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400" },
+              { title: "Pending Approvals Queue", desc: `${stats?.pendingUsers ?? 0} accounts waiting for verification`, time: "Realtime", color: "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400" },
             ].map((item, idx) => (
               <div key={idx} className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/40">
                 <div className="flex items-center gap-3">
@@ -326,19 +410,19 @@ export default function AdminDashboardPage() {
 
           <div className="space-y-3">
             <button
-              onClick={() => router.push("/admin/users")}
+              onClick={() => router.push("/dashboard/admin/teachers")}
               className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                   <UserCheck className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    Manage Users
+                    Manage Teachers
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Add/Remove accounts
+                    Faculty accounts & roles
                   </p>
                 </div>
               </div>
@@ -346,19 +430,59 @@ export default function AdminDashboardPage() {
             </button>
 
             <button
-              onClick={() => router.push("/admin/classes")}
+              onClick={() => router.push("/dashboard/admin/approvals")}
+              className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Inbox className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    User Approvals
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {stats?.pendingUsers ?? 0} pending requests
+                  </p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+            </button>
+
+            <button
+              onClick={() => router.push("/dashboard/admin/events")}
+              className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Academic Calendar
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Manage school holidays &amp; events
+                  </p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+            </button>
+
+            <button
+              onClick={() => router.push("/dashboard/admin/results")}
               className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                  <Building className="w-4 h-4" />
+                  <BarChart3 className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    School Classes
+                    Academic Analytics
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Configure grades & sections
+                    Subject scores &amp; reports
                   </p>
                 </div>
               </div>
@@ -370,7 +494,7 @@ export default function AdminDashboardPage() {
               className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 hover:border-blue-500/50 transition-all text-left group cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>

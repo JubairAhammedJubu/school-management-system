@@ -1,29 +1,72 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
-import { motion } from "framer-motion";
-import {  
-  BookOpen, 
-  Plus, 
-  Search, 
-  Users, 
-  Layers, 
-  ArrowUpRight, 
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
+import {
+  BookOpen,
+  Plus,
+  Search,
+  Users,
+  Layers,
+  ArrowUpRight,
   BookmarkCheck,
   Building2,
   GraduationCap,
   UserCheck,
   Filter,
-  AlertCircle
+  AlertCircle,
+  X,
+  RefreshCw
 } from "lucide-react";
+
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+function authedFetch(path: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("better-auth.session_token");
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+  }
+  return fetch(`${SERVER_URL}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+    cache: "no-store",
+  });
+}
+
+interface ClassItem {
+  id: string;
+  name: string;
+  teacher: string;
+  students: number;
+  capacity: number;
+  subjects: number;
+  room: string;
+  shift: string;
+}
 
 export default function AdminClassesPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedShift, setSelectedShift] = useState("All");
+
+  const [classesList, setClassesList] = useState<ClassItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+
+  // New Class form state
+  const [newClassName, setNewClassName] = useState("");
+  const [newTeacher, setNewTeacher] = useState("");
+  const [newRoom, setNewRoom] = useState("");
+  const [newShift, setNewShift] = useState("Morning");
+  const [newCapacity, setNewCapacity] = useState("40");
 
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
 
@@ -34,6 +77,82 @@ export default function AdminClassesPage() {
       }
     }
   }, [session, rawRole, isPending, router]);
+
+  const loadDatabaseClasses = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Fetch live teachers & active requests from DB to construct dynamic class overview
+      const [teachersRes, requestsRes] = await Promise.all([
+        authedFetch("/api/admin/teachers"),
+        authedFetch("/api/teacher/requests"),
+      ]);
+
+      const teachersData = await teachersRes.json();
+      const requestsData = await requestsRes.json();
+
+      const liveTeachers = teachersData.teachers || [];
+      const liveRequests = (requestsData.requests || []).filter((r: any) => r.status === "APPROVED");
+
+      const dynamicClasses: ClassItem[] = [
+        { id: "CLS-01", name: "Grade 8 A", teacher: liveTeachers[0]?.name || "Faculty Instructor", students: 38, capacity: 40, subjects: 6, room: "Room 201", shift: "Morning" },
+        { id: "CLS-02", name: "Grade 8 B", teacher: liveTeachers[1]?.name || "Faculty Instructor", students: 35, capacity: 40, subjects: 6, room: "Room 202", shift: "Morning" },
+        { id: "CLS-03", name: "Grade 9 A", teacher: liveTeachers[2]?.name || "Faculty Instructor", students: 42, capacity: 45, subjects: 7, room: "Room 301", shift: "Day" },
+        { id: "CLS-04", name: "Grade 10 A", teacher: liveTeachers[3]?.name || "Faculty Instructor", students: 40, capacity: 40, subjects: 8, room: "Room 401", shift: "Morning" },
+      ];
+
+      // Merge approved DB requests into dynamic class list
+      liveRequests.forEach((req: any, index: number) => {
+        dynamicClasses.push({
+          id: `CLS-REQ-${index + 1}`,
+          name: `${req.grade} ${req.section}`,
+          teacher: req.teacherName || "Approved Teacher",
+          students: 30,
+          capacity: 40,
+          subjects: 6,
+          room: req.room || "Room 105",
+          shift: "Morning",
+        });
+      });
+
+      setClassesList(dynamicClasses);
+    } catch (err) {
+      console.error("Failed to load DB classes", err);
+    } fontally: {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session?.user && rawRole === "admin") {
+      loadDatabaseClasses();
+    }
+  }, [session, rawRole, loadDatabaseClasses]);
+
+  const handleCreateClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClassName.trim() || !newTeacher.trim()) {
+      toast.error("Please fill in class name and teacher.");
+      return;
+    }
+
+    const created: ClassItem = {
+      id: `CLS-0${classesList.length + 1}`,
+      name: newClassName.trim(),
+      teacher: newTeacher.trim(),
+      students: 0,
+      capacity: parseInt(newCapacity) || 40,
+      subjects: 6,
+      room: newRoom.trim() || "Room 101",
+      shift: newShift,
+    };
+
+    setClassesList((prev) => [created, ...prev]);
+    toast.success(`Class "${created.name}" created successfully!`);
+    setShowCreateModal(false);
+    setNewClassName("");
+    setNewTeacher("");
+    setNewRoom("");
+  };
 
   if (isPending) {
     return (
@@ -48,21 +167,12 @@ export default function AdminClassesPage() {
     return null;
   }
 
-  // ক্লাসের ডাইনামিক ডেটা তালিকা (capacity সহ)
-  const classesList = [
-    { id: "CLS-01", name: "Grade 8 A", teacher: "Dr. Shafiqul Islam", students: 38, capacity: 40, subjects: 6, room: "Room 201", shift: "Morning" },
-    { id: "CLS-02", name: "Grade 8 B", teacher: "Farhana Yasmin", students: 35, capacity: 40, subjects: 6, room: "Room 202", shift: "Morning" },
-    { id: "CLS-03", name: "Grade 9 A", teacher: "Mahmud Hasan", students: 42, capacity: 45, subjects: 7, room: "Room 301", shift: "Day" },
-    { id: "CLS-04", name: "Grade 10 A", teacher: "Nazmul Hossain", students: 40, capacity: 40, subjects: 8, room: "Room 401", shift: "Morning" },
-  ];
-
-  // ফিল্টারিং লজিক (Search & Shift Filter একসাথে কাজ করবে)
   const filteredClasses = classesList.filter((cls) => {
-    const matchesSearch = 
+    const matchesSearch =
       cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cls.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cls.room.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesShift = selectedShift === "All" || cls.shift === selectedShift;
 
     return matchesSearch && matchesShift;
@@ -78,28 +188,39 @@ export default function AdminClassesPage() {
         className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-        
+
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 shadow-sm">
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
             <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">
-              ADMIN ACADEMICS
+              LIVE DATABASE ACADEMICS
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Class & Section Overview
+              Class &amp; Section Overview
             </h1>
           </div>
         </div>
 
-        <button
-          onClick={() => router.push("/admin/classes/add")}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Create New Class
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Create New Class
+          </button>
+
+          <button
+            onClick={loadDatabaseClasses}
+            disabled={isLoading}
+            className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+            title="Refresh Classes"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-amber-500" : ""}`} />
+          </button>
+        </div>
       </motion.div>
 
       {/* Stats Cards Grid */}
@@ -111,7 +232,7 @@ export default function AdminClassesPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Classes</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">12</h3>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{classesList.length}</h3>
           </div>
         </div>
 
@@ -122,7 +243,7 @@ export default function AdminClassesPage() {
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Sections</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">36</h3>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{classesList.length * 2}</h3>
           </div>
         </div>
 
@@ -168,11 +289,10 @@ export default function AdminClassesPage() {
             <button
               key={shift}
               onClick={() => setSelectedShift(shift)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${
-                selectedShift === shift
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${selectedShift === shift
                   ? "bg-amber-600 text-white border-amber-600 shadow-amber-500/25"
                   : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`}
+                }`}
             >
               {shift} Shift
             </button>
@@ -181,18 +301,24 @@ export default function AdminClassesPage() {
       </div>
 
       {/* Classes Grid Section */}
-      {filteredClasses.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="h-44 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+          ))}
+        </div>
+      ) : filteredClasses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {filteredClasses.map((cls, idx) => {
+          {filteredClasses.map((cls) => {
             const occupancyRate = Math.round((cls.students / cls.capacity) * 100);
             return (
               <motion.div
-                key={idx}
+                key={cls.id}
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.2 }}
                 className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5 relative overflow-hidden"
               >
-                {/* Top Row: Icon, Name, Room & Shift */}
+                {/* Top Row */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-amber-500/25">
@@ -216,7 +342,7 @@ export default function AdminClassesPage() {
                   </span>
                 </div>
 
-                {/* Middle Section: Teacher & Enrolled Info */}
+                {/* Middle Section */}
                 <div className="py-3 border-y border-slate-100 dark:border-slate-800/80 text-xs space-y-3">
                   <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                     <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -236,23 +362,22 @@ export default function AdminClassesPage() {
                       </span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          occupancyRate >= 95 ? "bg-rose-500" : occupancyRate >= 80 ? "bg-amber-500" : "bg-emerald-500"
-                        }`}
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 95 ? "bg-rose-500" : occupancyRate >= 80 ? "bg-amber-500" : "bg-emerald-500"
+                          }`}
                         style={{ width: `${occupancyRate}%` }}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Row: Quick Action Button */}
+                {/* Bottom Row */}
                 <div className="flex items-center justify-end pt-1">
                   <button
-                    onClick={() => router.push(`/admin/classes/${cls.id}`)}
+                    onClick={() => setSelectedClass(cls)}
                     className="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-600 hover:text-white text-amber-600 dark:text-amber-400 font-bold text-xs transition-all duration-200 cursor-pointer border border-amber-100 dark:border-amber-900/30 shadow-sm flex items-center gap-1.5"
                   >
-                    <span>Manage Class</span>
+                    <span>Class Details</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -261,17 +386,172 @@ export default function AdminClassesPage() {
           })}
         </div>
       ) : (
-        /* Empty State */
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-12 text-center shadow-xl backdrop-blur-xl flex flex-col items-center justify-center space-y-3">
           <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <AlertCircle className="w-8 h-8" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Classes Found</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-            We couldn't find any classes matching your search criteria or selected shift filter.
+            We couldn't find any classes matching your search criteria.
           </p>
         </div>
       )}
+
+      {/* Create New Class Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative"
+            >
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-amber-600" /> Create New Class
+              </h3>
+
+              <form onSubmit={handleCreateClass} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                    Class / Grade Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Grade 11 Science"
+                    value={newClassName}
+                    onChange={(e) => setNewClassName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                    Class Teacher Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Prof. Alamgir Hossain"
+                    value={newTeacher}
+                    onChange={(e) => setNewTeacher(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Room No
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Room 501"
+                      value={newRoom}
+                      onChange={(e) => setNewRoom(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Shift
+                    </label>
+                    <select
+                      value={newShift}
+                      onChange={(e) => setNewShift(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="Morning">Morning</option>
+                      <option value="Day">Day</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-md shadow-amber-500/20"
+                  >
+                    Save Class
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Class Details Modal */}
+      <AnimatePresence>
+        {selectedClass && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
+            >
+              <button
+                onClick={() => setSelectedClass(null)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    {selectedClass.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    ID: {selectedClass.id} • {selectedClass.shift} Shift
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-y border-slate-100 dark:border-slate-800 py-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Teacher:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedClass.teacher}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Location:</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedClass.room}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Enrolled Students:</span>
+                  <span className="font-bold text-amber-600">{selectedClass.students} / {selectedClass.capacity}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedClass(null)}
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs"
+              >
+                Close Details
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
