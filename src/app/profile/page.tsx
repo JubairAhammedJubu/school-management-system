@@ -21,27 +21,170 @@ import {
   Save,
   Sparkles,
   ArrowLeft,
-  ShieldCheck,
   Clock,
   ChevronDown,
+  Award,
+  Users,
+  Droplet,
+  Home,
+  School,
+  Briefcase,
+  GraduationCap,
+  Check,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { updateUserProfileAction } from "@/lib/actions/user-actions";
 
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+const SECTION_OPTIONS = ["Section A", "Section B"];
+const GROUP_OPTIONS = ["Science", "Business Studies", "Humanities"];
+const TEACHER_DEPARTMENT_OPTIONS = [
+  "Science",
+  "Commerce",
+  "Arts",
+  "Computer Science & ICT",
+  "Mathematics",
+  "English",
+  "Bangla",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Social Science",
+  "Accounting",
+  "Islamic Studies",
+  "Physical Education",
+];
+const QUALIFICATION_OPTIONS = [
+  "B.Sc",
+  "M.Sc",
+  "B.A",
+  "M.A",
+  "B.Ed",
+  "M.Ed",
+  "B.Com",
+  "M.Com",
+  "Ph.D",
+  "Diploma in Education",
+];
+
+interface ProfileCustomSelectProps {
+  label: string;
+  icon: React.ElementType;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder?: string;
+}
+
+function ProfileCustomSelect({
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  options,
+  placeholder = "Select option",
+}: ProfileCustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="space-y-1.5 relative" ref={containerRef}>
+      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+        {label}
+      </label>
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 shadow-xs flex items-center justify-between text-left cursor-pointer"
+        >
+          <span className={value ? "font-medium" : "text-slate-400 dark:text-slate-500"}>
+            {value || placeholder}
+          </span>
+          <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">
+            <Icon size={16} className="text-slate-400 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+            <ChevronDown
+              size={16}
+              className={`transition-transform duration-200 ${
+                isOpen ? "rotate-180 text-indigo-500 dark:text-indigo-400" : ""
+              }`}
+            />
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute z-50 left-0 right-0 mt-1.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl dark:shadow-2xl dark:shadow-black/70 max-h-52 overflow-y-auto"
+            >
+              {options.map((opt) => {
+                const isSelected = opt === value;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold"
+                        : "text-slate-700 dark:text-slate-200"
+                    }`}
+                  >
+                    <span>{opt}</span>
+                    {isSelected && (
+                      <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
+
   // Profile Form States
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("+1 (555) 234-5678");
-  const [location, setLocation] = useState("New York, NY");
-  const [department, setDepartment] = useState("Science & Technology");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState(""); // Present Address
+  const [address, setAddress] = useState(""); // Permanent Address
+  const [department, setDepartment] = useState("");
   const [studentClass, setStudentClass] = useState("");
   const [studentSection, setStudentSection] = useState("");
-  const [bio, setBio] = useState(
-    "Dedicated educator passionate about interactive learning and STEM education.",
-  );
+  const [schoolName, setSchoolName] = useState("");
+  const [fatherName, setFatherName] = useState("");
+  const [motherName, setMotherName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [qualification, setQualification] = useState("");
+  const [bio, setBio] = useState("");
+
+  // Profile Image States (UNTOUCHED as requested)
   const [profileImage, setProfileImage] = useState("");
   const [profileImagePreview, setProfileImagePreview] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -49,7 +192,7 @@ export default function ProfilePage() {
 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Sync user details on session load
+  // Sync all user details on session load
   useEffect(() => {
     if (session?.user) {
       const u = session.user as Record<string, any>;
@@ -62,10 +205,23 @@ export default function ProfilePage() {
       if (u.studentSection || u.section) {
         setStudentSection(u.studentSection || u.section);
       }
+      if (u.schoolName) setSchoolName(u.schoolName);
+      if (u.fatherName) setFatherName(u.fatherName);
+      if (u.motherName) setMotherName(u.motherName);
+      if (u.dateOfBirth) {
+        const dobDate = new Date(u.dateOfBirth);
+        if (!isNaN(dobDate.getTime())) {
+          setDateOfBirth(dobDate.toISOString().split("T")[0]);
+        }
+      }
+      if (u.address) setAddress(u.address);
+      if (u.bloodGroup) setBloodGroup(u.bloodGroup);
+      if (u.qualification) setQualification(u.qualification);
       if (u.bio) setBio(u.bio);
     }
   }, [session]);
 
+  // Profile Image Upload Handlers (EXACTLY UNTOUCHED)
   const handleProfileImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -170,6 +326,14 @@ export default function ProfilePage() {
       return;
     }
 
+    if (
+      phone.trim() &&
+      (!phone.trim().startsWith("01") || phone.trim().length !== 11)
+    ) {
+      toast.error("Phone number must be exactly 11 digits and start with 01.");
+      return;
+    }
+
     setIsSavingProfile(true);
     try {
       const res = await updateUserProfileAction({
@@ -178,10 +342,17 @@ export default function ProfilePage() {
         name: name.trim(),
         phone: phone.trim(),
         location: location.trim(),
+        address: address.trim(),
         department: department.trim(),
         studentClass: studentClass.trim(),
         studentSection: studentSection.trim(),
         section: studentSection.trim(),
+        schoolName: schoolName.trim(),
+        fatherName: fatherName.trim(),
+        motherName: motherName.trim(),
+        dateOfBirth: dateOfBirth,
+        bloodGroup: bloodGroup,
+        qualification: qualification.trim(),
         bio: bio.trim(),
       });
       if (res.success) {
@@ -197,29 +368,113 @@ export default function ProfilePage() {
     }
   };
 
-  // Render Skeleton Loader while loading session
+  // Skeleton Loader while checking session
   if (isPending) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-black px-4 py-20 flex items-center justify-center">
-        <div className="w-full max-w-4xl space-y-6">
-          <div className="h-48 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-          <div className="h-20 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-          <div className="h-96 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans py-12 sm:py-16 lg:py-24 flex flex-col justify-center items-center">
+        {/* Background Mesh Glows */}
+        <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
+        <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
+
+        <div className="relative mx-auto max-w-6xl w-full px-4 sm:px-6 lg:px-8 space-y-6">
+          {/* Breadcrumb Skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
+            <div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
+          </div>
+
+          {/* Header Cover Card Skeleton */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-8 shadow-xl dark:shadow-2xl dark:shadow-black/70 animate-pulse">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
+                {/* Avatar Skeleton */}
+                <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                <div className="space-y-3 text-center sm:text-left">
+                  <div className="flex items-center gap-2 justify-center sm:justify-start">
+                    <div className="h-8 w-48 sm:w-64 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                  </div>
+                  <div className="h-4 w-40 sm:w-56 rounded-md bg-slate-200 dark:bg-slate-800 mx-auto sm:mx-0" />
+                </div>
+              </div>
+              <div className="h-10 w-32 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+            </div>
+          </div>
+
+          {/* Main Grid Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Form Container Skeleton */}
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-8 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-6 animate-pulse">
+              <div className="border-b border-slate-200 dark:border-slate-800 pb-5 space-y-2">
+                <div className="h-6 w-56 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                <div className="h-4 w-full max-w-sm rounded-md bg-slate-200 dark:bg-slate-800" />
+              </div>
+
+              {/* Form Section 1 */}
+              <div className="space-y-4 pt-2">
+                <div className="h-4 w-36 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                </div>
+              </div>
+
+              {/* Form Section 2 */}
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="h-4 w-44 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                </div>
+                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+              </div>
+
+              {/* Form Section 3 (Bio) */}
+              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="h-28 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+              </div>
+            </div>
+
+            {/* Right Sidebar Skeleton */}
+            <div className="space-y-6">
+              {/* System Details Card Skeleton */}
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-4 animate-pulse">
+                <div className="h-5 w-44 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="space-y-3 pt-2">
+                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                </div>
+              </div>
+
+              {/* Tip Card Skeleton */}
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-2 animate-pulse">
+                <div className="h-4 w-3/4 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="h-3 w-full rounded-md bg-slate-200 dark:bg-slate-800/60" />
+                <div className="h-3 w-5/6 rounded-md bg-slate-200 dark:bg-slate-800/60" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // If not logged in, show access prompt
+  // Login prompt if unauthenticated
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-black px-4 py-24 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-24 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-8 text-center shadow-xl backdrop-blur-xl"
+          className="w-full max-w-md rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-950 p-8 text-center shadow-xl backdrop-blur-xl dark:shadow-2xl dark:shadow-black/70"
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
             <Lock className="h-7 w-7" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
@@ -240,10 +495,15 @@ export default function ProfilePage() {
     );
   }
 
-  const userRole = (
-    (session?.user as { role?: string } | undefined)?.role || "Student"
-  ).toUpperCase();
-  const isStudent = userRole === "STUDENT";
+  // Role calculations
+  const rawRole = (
+    (session?.user as { role?: string } | undefined)?.role || "student"
+  ).toLowerCase();
+  const userRole = rawRole.toUpperCase();
+  const isTeacher = rawRole === "teacher";
+  const isStudent = rawRole === "student";
+  const isAdmin = rawRole === "admin";
+
   const userEmail = session?.user?.email || "user@edunexus.com";
   const userCreatedAt = session?.user?.createdAt
     ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
@@ -268,12 +528,12 @@ export default function ProfilePage() {
     true;
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans pb-20 pt-20 sm:pt-24">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans py-12 sm:py-16 lg:py-24 flex flex-col justify-center items-center">
       {/* Background Mesh Glows */}
       <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
       <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
 
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-6xl w-full px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumb */}
         <div className="mb-6 flex items-center justify-between">
           <button
@@ -285,7 +545,11 @@ export default function ProfilePage() {
           </button>
 
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Profile &amp; Settings
+            {isTeacher
+              ? "Teacher Profile"
+              : isStudent
+                ? "Student Profile"
+                : "Admin Profile"}
           </span>
         </div>
 
@@ -296,15 +560,14 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-xl backdrop-blur-xl"
+          className="relative overflow-hidden rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl dark:shadow-2xl dark:shadow-black/70 backdrop-blur-xl"
         >
-          {/* User Info Header Row */}
           <div className="relative p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               {/* Avatar & Basic Details */}
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-3xl border-4 border-white dark:border-slate-900 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-2xl flex items-center justify-center text-4xl font-extrabold shrink-0 overflow-hidden group">
+                  <div className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-2xl border-4 border-white dark:border-slate-900 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-2xl flex items-center justify-center text-4xl font-extrabold shrink-0 overflow-hidden group">
                     {profileImagePreview ? (
                       <img
                         src={profileImagePreview}
@@ -340,7 +603,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={openProfileImagePicker}
                     disabled={isUploadingImage}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-indigo-600 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-indigo-400 dark:hover:text-indigo-400"
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-indigo-600 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-400 dark:hover:text-indigo-400"
                   >
                     <Camera className="h-3.5 w-3.5" />
                     {isUploadingImage ? "Uploading..." : "Choose photo"}
@@ -356,17 +619,55 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="mb-1">
-                  <div className="flex items-center justify-center sm:justify-start gap-2.5">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                     <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                       {name || "EduNexus Member"}
                     </h1>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 dark:bg-indigo-950/80 px-3 py-1 text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                      <ShieldCheck className="h-3.5 w-3.5" />
+
+                    {/* Role Badge */}
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${
+                        isTeacher
+                          ? "bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20"
+                          : isStudent
+                            ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20"
+                            : "bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20"
+                      }`}
+                    >
+                      {isTeacher ? (
+                        <Briefcase className="h-3.5 w-3.5" />
+                      ) : isStudent ? (
+                        <GraduationCap className="h-3.5 w-3.5" />
+                      ) : (
+                        <Shield className="h-3.5 w-3.5" />
+                      )}
                       {userRole}
                     </span>
+
+                    {/* Dynamic Extra Badges */}
+                    {isTeacher && qualification && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 dark:bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20">
+                        <Award className="h-3.5 w-3.5" />
+                        {qualification}
+                      </span>
+                    )}
+
+                    {isTeacher && department && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+                        <Building className="h-3.5 w-3.5" />
+                        {department}
+                      </span>
+                    )}
+
+                    {isStudent && (studentClass || studentSection) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+                        <School className="h-3.5 w-3.5" />
+                        {[studentClass, studentSection].filter(Boolean).join(" - ")}
+                      </span>
+                    )}
                   </div>
 
-                  <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 flex items-center justify-center sm:justify-start gap-2">
+                  <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 flex items-center justify-center sm:justify-start gap-2">
                     <Mail className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                     <span>{userEmail}</span>
                   </p>
@@ -376,8 +677,9 @@ export default function ProfilePage() {
               {/* Action Buttons */}
               <div className="flex items-center justify-center sm:justify-end gap-3 pt-2">
                 <button
+                  type="button"
                   onClick={() => setIsEditing(!isEditing)}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-600 dark:hover:border-indigo-400 transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-600 dark:hover:border-indigo-400 transition-all shadow-xs cursor-pointer"
                 >
                   <Edit3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <span>{isEditing ? "Cancel Edit" : "Edit Profile"}</span>
@@ -388,7 +690,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* ========================================================= */}
-        {/* PERSONAL INFORMATION CONTENT */}
+        {/* DYNAMIC ROLE-BASED PROFILE FORM CONTENT */}
         {/* ========================================================= */}
         <div className="mt-8">
           <motion.div
@@ -397,170 +699,455 @@ export default function ProfilePage() {
             transition={{ duration: 0.3 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            {/* Main Details Form / Card */}
-            <div className="lg:col-span-2 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+            {/* Main Form Box */}
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-8 shadow-md dark:shadow-2xl dark:shadow-black/70 backdrop-blur-xl">
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-5 mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                    Personal Details
+                    {isTeacher
+                      ? "Teacher Profile Information"
+                      : isStudent
+                        ? "Student Academic Profile"
+                        : "Administrator Account Profile"}
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400">
-                    Manage your account information and public profile details.
+                    {isTeacher
+                      ? "Your official teacher credentials, department, and contact information."
+                      : isStudent
+                        ? "Your student enrollment, class allocation, and parent details."
+                        : "System control permissions and administrator profile details."}
                   </p>
                 </div>
                 {isEditing && (
-                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
+                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/20">
                     Editing Mode
                   </span>
                 )}
               </div>
 
-              <form onSubmit={handleSaveProfile} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        disabled={!isEditing}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-80"
-                      />
-                      <User className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
+              <form onSubmit={handleSaveProfile} className="space-y-6">
+
+                {/* ── 1. ROLE-SPECIFIC SPECIAL SECTION ───────────────── */}
+
+                {/* TEACHER SPECIFIC: Professional Info */}
+                {isTeacher && (
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Briefcase className="h-4 w-4" />
+                      <span>Professional &amp; Teaching Details</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Department *"
+                          icon={Building}
+                          value={department}
+                          onChange={setDepartment}
+                          options={TEACHER_DEPARTMENT_OPTIONS}
+                          placeholder="Select Department"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Department *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={department || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                            <Building className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      )}
+
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Education Qualification *"
+                          icon={Award}
+                          value={qualification}
+                          onChange={setQualification}
+                          options={QUALIFICATION_OPTIONS}
+                          placeholder="Select Qualification"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Education Qualification *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={qualification || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                            <Award className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        disabled
-                        value={userEmail}
-                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                      />
-                      <Mail className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        disabled={!isEditing}
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-80"
-                      />
-                      <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Location / Campus
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        disabled={!isEditing}
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-80"
-                      />
-                      <MapPin className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Department / Faculty
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      disabled={!isEditing}
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-80"
-                    />
-                    <Building className="absolute right-3.5 top-3 h-4 w-4 text-slate-400" />
-                  </div>
-                </div>
-
+                {/* STUDENT SPECIFIC: Academic Details */}
                 {isStudent && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Student Class
-                      </label>
-                      <div className="relative">
-                        <select
-                          disabled={!isEditing}
-                          value={studentClass}
-                          onChange={(e) => setStudentClass(e.target.value)}
-                          className="profile-select w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 pr-10 text-sm font-medium text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          <option value="">Select class</option>
-                          {Array.from(
-                            { length: 12 },
-                            (_, index) => `Class ${index + 1}`,
-                          ).map((className) => (
-                            <option key={className} value={className}>
-                              {className}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-500 dark:text-indigo-400" />
-                      </div>
-                    </div>
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <GraduationCap className="h-4 w-4" />
+                      <span>Academic Enrollment</span>
+                    </h4>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Student Section
-                      </label>
-                      <div className="relative">
-                        <select
-                          disabled={!isEditing}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          School Name
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            disabled={!isEditing}
+                            value={schoolName}
+                            onChange={(e) => setSchoolName(e.target.value)}
+                            placeholder="e.g. EduNexus High School"
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                          />
+                          <School className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Class"
+                          icon={School}
+                          value={studentClass}
+                          onChange={(val) => {
+                            setStudentClass(val);
+                            if (val !== "Class 9" && val !== "Class 10") {
+                              setDepartment("");
+                            }
+                          }}
+                          options={CLASS_OPTIONS}
+                          placeholder="Select Class"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Class
+                          </label>
+                          <input
+                            type="text"
+                            disabled
+                            value={studentClass || "Not assigned"}
+                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                          />
+                        </div>
+                      )}
+
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Section"
+                          icon={Users}
                           value={studentSection}
-                          onChange={(e) => setStudentSection(e.target.value)}
-                          className="profile-select w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 pr-10 text-sm font-medium text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          <option value="">Select section</option>
-                          {["A", "B", "C", "D"].map((section) => (
-                            <option key={section} value={`Section ${section}`}>
-                              Section {section}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-500 dark:text-indigo-400" />
+                          onChange={setStudentSection}
+                          options={SECTION_OPTIONS}
+                          placeholder="Select Section"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Section
+                          </label>
+                          <input
+                            type="text"
+                            disabled
+                            value={studentSection || "Not assigned"}
+                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                          />
+                        </div>
+                      )}
+
+                      {(studentClass === "Class 9" || studentClass === "Class 10") && (
+                        isEditing ? (
+                          <ProfileCustomSelect
+                            label="Group"
+                            icon={Building}
+                            value={department}
+                            onChange={setDepartment}
+                            options={GROUP_OPTIONS}
+                            placeholder="Select Group"
+                          />
+                        ) : (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                              Group
+                            </label>
+                            <input
+                              type="text"
+                              disabled
+                              value={department || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ADMIN SPECIFIC: System Administration */}
+                {isAdmin && (
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Shield className="h-4 w-4" />
+                      <span>System Governance &amp; Administration</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Privilege Level
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          value="Super Administrator"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          System Access
+                        </label>
+                        <input
+                          type="text"
+                          disabled
+                          value="Full Authorization &amp; Moderation"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                        />
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Bio / Summary
+                {/* ── 2. PERSONAL & FAMILY DETAILS (Teacher & Student) ─── */}
+                {!isAdmin && (
+                  <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Users className="h-4 w-4" />
+                      <span>Personal &amp; Family Details</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Father&apos;s Name {isTeacher && "*"}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            disabled={!isEditing}
+                            value={fatherName}
+                            onChange={(e) => setFatherName(e.target.value)}
+                            placeholder="e.g. Abdul Karim"
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                          />
+                          <User className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Mother&apos;s Name {isTeacher && "*"}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            disabled={!isEditing}
+                            value={motherName}
+                            onChange={(e) => setMotherName(e.target.value)}
+                            placeholder="e.g. Rahima Begum"
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                          />
+                          <User className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Date of Birth {isTeacher && "*"}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="date"
+                            disabled={!isEditing}
+                            max={new Date().toISOString().split("T")[0]}
+                            value={dateOfBirth}
+                            onChange={(e) => setDateOfBirth(e.target.value)}
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                          />
+                          <Calendar className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label={isTeacher ? "Blood Group *" : "Blood Group"}
+                          icon={Droplet}
+                          value={bloodGroup}
+                          onChange={setBloodGroup}
+                          options={BLOOD_GROUPS}
+                          placeholder="Select Blood Group"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Blood Group {isTeacher && "*"}
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={bloodGroup || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                            <Droplet className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── 3. CONTACT & ADDRESS DETAILS ───────────────────── */}
+                <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    <span>Contact &amp; Address Information</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          disabled={!isEditing}
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                        />
+                        <User className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Email Address (Account ID)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          disabled
+                          value={userEmail}
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/80 px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                        />
+                        <Mail className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Phone Number {isTeacher && "*"}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          disabled={!isEditing}
+                          maxLength={11}
+                          value={phone}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                            if (val.length > 0) {
+                              if (val[0] !== "0") val = "0" + val.slice(1);
+                              if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                            }
+                            setPhone(val);
+                          }}
+                          placeholder="01712345678"
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                        />
+                        <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Present Address {isTeacher && "*"}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          disabled={!isEditing}
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder="Present address e.g. Dhaka, Bangladesh"
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                        />
+                        <MapPin className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {!isAdmin && (
+                    <div className="mt-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Permanent Address {isTeacher && "*"}
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          rows={2}
+                          disabled={!isEditing}
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder="Permanent address: Village/House, Post Office, District"
+                          className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80 resize-none"
+                        />
+                        <Home className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── 4. BIO / SUMMARY ───────────────────────────────── */}
+                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {isTeacher
+                      ? "Short Bio (Teaching Experience & Background) *"
+                      : isStudent
+                        ? "Short Bio (About Yourself)"
+                        : "Administrative Bio"}
                   </label>
                   <textarea
                     rows={3}
                     disabled={!isEditing}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-80 resize-none"
+                    placeholder={
+                      isTeacher
+                        ? "A brief summary of your teaching background & experience"
+                        : "A line or two about yourself"
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80 resize-none"
                   />
                 </div>
 
+                {/* Save Button in Editing Mode */}
                 {isEditing && (
                   <div className="pt-2 flex justify-end">
                     <button
@@ -573,7 +1160,7 @@ export default function ProfilePage() {
                       ) : (
                         <>
                           <Save className="h-4 w-4" />
-                          <span>Save Changes</span>
+                          <span>Save Profile Changes</span>
                         </>
                       )}
                     </button>
@@ -584,18 +1171,18 @@ export default function ProfilePage() {
 
             {/* Side Status & Identity Card */}
             <div className="space-y-6">
-              {/* Account Metadata Card */}
-              <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-xl backdrop-blur-xl">
+              {/* System Details Card */}
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 shadow-md dark:shadow-2xl dark:shadow-black/70 backdrop-blur-xl">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>System Identity &amp; Details</span>
+                    <span>System Identity &amp; Status</span>
                   </span>
                 </h4>
 
                 <div className="space-y-3 text-xs">
                   {/* Account Status */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100/60 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
                       Account Status
                     </span>
@@ -605,13 +1192,17 @@ export default function ProfilePage() {
                     </span>
                   </div>
 
-                  {/* Email Status */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                  {/* Email Verification */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100/60 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
-                      Email Status
+                      Email Verification
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 font-bold ${isEmailVerified ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}
+                      className={`inline-flex items-center gap-1 font-bold ${
+                        isEmailVerified
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {isEmailVerified ? "Verified" : "Pending"}
@@ -619,9 +1210,9 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Role Privilege */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100/60 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
-                      Role Privilege
+                      Role Access
                     </span>
                     <span className="font-bold text-indigo-600 dark:text-indigo-400 capitalize">
                       {userRole}
@@ -629,39 +1220,41 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Registration Date */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100/60 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
                       Member Since
                     </span>
                     <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <Calendar className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       {userCreatedAt}
                     </span>
                   </div>
 
                   {/* Last Profile Update */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100/60 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
-                      Last Profile Update
+                      Last Updated
                     </span>
                     <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-slate-400" />
+                      <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-400" />
                       {userUpdatedAt}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* System Tip Box */}
-              <div className="rounded-3xl border border-indigo-200/80 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/80 to-purple-50/60 dark:from-indigo-950/40 dark:to-slate-900 p-6 shadow-lg">
+              {/* EduNexus Tip Box */}
+              <div className="rounded-2xl border border-indigo-200/80 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-50/80 to-purple-50/60 dark:from-indigo-950/40 dark:to-slate-950 p-6 shadow-lg">
                 <div className="flex items-center gap-3 text-indigo-600 dark:text-indigo-400 mb-2">
                   <Sparkles className="h-5 w-5" />
                   <h4 className="text-sm font-bold">EduNexus Identity</h4>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Your EduNexus profile ID links your digital attendance, course
-                  materials, grade submissions, and school notices automatically
-                  across the system.
+                  {isTeacher
+                    ? "Your teacher profile details link your assigned classes, subject evaluations, student marksheets, and school notices across EduNexus."
+                    : isStudent
+                      ? "Your student profile links your enrollment, class schedule, transcript results, and school announcements automatically."
+                      : "Your administrative profile grants full management and authorization access across EduNexus."}
                 </p>
               </div>
             </div>
