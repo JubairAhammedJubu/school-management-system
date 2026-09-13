@@ -925,27 +925,27 @@ export default function TeacherAttendancePage() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.32 }}
-        className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 sm:p-6 space-y-5"
+        className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-6 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/60 space-y-3.5 sm:space-y-5"
       >
         {/* Table Header & Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 dark:border-slate-800/80">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400">
-              <FileSpreadsheet className="h-5 w-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-100 pb-3 sm:pb-4 dark:border-slate-800/80">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex h-8.5 w-8.5 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400">
+              <FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
                   Daily Attendance Records
                 </h2>
                 {atRiskCount > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40">
-                    <AlertTriangle className="h-3 w-3" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40">
+                    <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     {atRiskCount} At-Risk (&lt;75%)
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                 Filter, inspect, and export student attendance logs by class, section (A/B), group, status, and date range.
               </p>
             </div>
@@ -956,7 +956,7 @@ export default function TeacherAttendancePage() {
             <button
               type="button"
               onClick={handleExportPDF}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-600 dark:hover:text-white font-bold text-xs border border-rose-200 dark:border-rose-900/40 transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-600 dark:hover:text-white font-bold text-[11px] sm:text-xs border border-rose-200 dark:border-rose-900/40 transition-all cursor-pointer shadow-xs"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" />
               Export PDF
@@ -966,7 +966,7 @@ export default function TeacherAttendancePage() {
             <button
               type="button"
               onClick={() => setIsMarkModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer hover:scale-[1.02]"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] sm:text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer hover:scale-[1.02]"
             >
               <Edit3 className="w-3.5 h-3.5" />
               Mark / Edit Register
@@ -975,7 +975,7 @@ export default function TeacherAttendancePage() {
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-3.5 p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 dark:bg-slate-900/60 dark:border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-2.5 sm:gap-3.5 p-2.5 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 dark:bg-slate-900/60 dark:border-slate-800">
           {/* Class Filter */}
           <NiceSelectDropdown
             label="Class"
@@ -1035,7 +1035,7 @@ export default function TeacherAttendancePage() {
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-indigo-200 bg-white px-3 text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-indigo-900/50 dark:bg-slate-950 dark:text-slate-100 cursor-pointer shadow-xs"
+                  className="h-9 sm:h-10 w-full rounded-xl border border-indigo-200 bg-white px-3 text-[11px] sm:text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-indigo-900/50 dark:bg-slate-950 dark:text-slate-100 cursor-pointer shadow-xs"
                 />
               </div>
 
@@ -1048,7 +1048,7 @@ export default function TeacherAttendancePage() {
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-indigo-200 bg-white px-3 text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-indigo-900/50 dark:bg-slate-950 dark:text-slate-100 cursor-pointer shadow-xs"
+                  className="h-9 sm:h-10 w-full rounded-xl border border-indigo-200 bg-white px-3 text-[11px] sm:text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-indigo-900/50 dark:bg-slate-950 dark:text-slate-100 cursor-pointer shadow-xs"
                 />
               </div>
             </>
@@ -1061,42 +1061,42 @@ export default function TeacherAttendancePage() {
                 type="date"
                 value={tableDate}
                 onChange={(e) => setTableDate(e.target.value)}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 cursor-pointer"
+                className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[11px] sm:text-xs font-bold text-slate-800 outline-none transition-all hover:border-indigo-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 cursor-pointer"
               />
             </div>
           )}
         </div>
 
         {/* Search Input Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
           <div className="relative w-full sm:max-w-md">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={tableSearch}
               onChange={(e) => setTableSearch(e.target.value)}
               placeholder="Search by student name, email, or class..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-xs font-medium text-slate-800 outline-none transition-all hover:border-indigo-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 sm:pl-10 pr-3.5 sm:pr-4 text-[11px] sm:text-xs font-medium text-slate-800 outline-none transition-all hover:border-indigo-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
             />
           </div>
 
-          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold self-end sm:self-center flex items-center gap-2">
+          <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-semibold self-end sm:self-center flex items-center gap-1.5">
             <span>Showing <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{filteredTableRecords.length}</span> records</span>
           </div>
         </div>
 
         {/* Table View */}
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/80 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 custom-scrollbar">
+          <table className="w-full text-left text-[11px] sm:text-xs min-w-[640px]">
+            <thead className="bg-slate-100/80 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:bg-slate-900/80 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3.5 px-4">Student Info</th>
-                <th className="py-3.5 px-4">Class & Section</th>
-                <th className="py-3.5 px-4">Group / Stream</th>
-                <th className="py-3.5 px-4">Overall Attendance Rate</th>
-                <th className="py-3.5 px-4">Date</th>
-                <th className="py-3.5 px-4">Status (Click to toggle)</th>
-                <th className="py-3.5 px-4 text-right">Action</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Student Info</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Class & Section</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Group / Stream</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Overall Attendance Rate</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Date</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4">Status (Click to toggle)</th>
+                <th className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-right">Action</th>
               </tr>
             </thead>
 
@@ -1105,58 +1105,58 @@ export default function TeacherAttendancePage() {
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="animate-pulse">
                     {/* Student Info Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 shrink-0 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        <div className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-xl bg-slate-200 dark:bg-slate-800" />
                         <div className="space-y-1.5">
-                          <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
-                          <div className="h-3 w-36 rounded bg-slate-200/70 dark:bg-slate-800/70" />
+                          <div className="h-3 w-24 sm:h-3.5 sm:w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-32 sm:h-3 sm:w-36 rounded bg-slate-200/70 dark:bg-slate-800/70" />
                         </div>
                       </div>
                     </td>
 
                     {/* Class & Section Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="h-6 w-24 rounded-md bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="h-5 w-20 sm:h-6 sm:w-24 rounded-md bg-slate-200 dark:bg-slate-800" />
                     </td>
 
                     {/* Group Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="h-3.5 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="h-3 w-14 sm:h-3.5 sm:w-16 rounded bg-slate-200 dark:bg-slate-800" />
                     </td>
 
                     {/* Overall Rate Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="w-32 space-y-1.5">
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="w-24 sm:w-32 space-y-1.5">
                         <div className="flex justify-between">
-                          <div className="h-3 w-10 rounded bg-slate-200 dark:bg-slate-800" />
-                          <div className="h-3 w-12 rounded bg-slate-200/70 dark:bg-slate-800/70" />
+                          <div className="h-2.5 w-8 sm:h-3 sm:w-10 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-2.5 w-10 sm:h-3 sm:w-12 rounded bg-slate-200/70 dark:bg-slate-800/70" />
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800" />
                       </div>
                     </td>
 
                     {/* Date Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="h-3 w-20 sm:h-3.5 sm:w-24 rounded bg-slate-200 dark:bg-slate-800" />
                     </td>
 
                     {/* Status Badge Skeleton */}
-                    <td className="py-3.5 px-4">
-                      <div className="h-6 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                      <div className="h-5 w-16 sm:h-6 sm:w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
                     </td>
 
                     {/* Action Button Skeleton */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="ml-auto h-7 w-24 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-right">
+                      <div className="ml-auto h-6 w-20 sm:h-7 sm:w-24 rounded-lg bg-slate-200 dark:bg-slate-800" />
                     </td>
                   </tr>
                 ))
               ) : filteredTableRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={7} className="py-10 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <FileSpreadsheet className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                      <FileSpreadsheet className="h-7 w-7 sm:h-8 sm:w-8 text-slate-300 dark:text-slate-600" />
                       <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
                         No attendance records found
                       </p>
@@ -1186,21 +1186,21 @@ export default function TeacherAttendancePage() {
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition-colors"
                     >
                       {/* Student Info */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 font-extrabold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs shadow-2xs">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                        <div className="flex items-center gap-2.5 sm:gap-3">
+                          <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 font-extrabold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-[10px] sm:text-xs shadow-2xs">
                             {initials}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs">
                               <span>{record.name}</span>
                               {isAtRisk && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-900/40">
-                                  <AlertTriangle className="h-3 w-3" /> At Risk
+                                <span className="inline-flex items-center gap-0.5 text-[9px] sm:text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-900/40">
+                                  <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> At Risk
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 dark:text-slate-400">
+                            <div className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400">
                               {record.email}
                             </div>
                           </div>
@@ -1208,27 +1208,27 @@ export default function TeacherAttendancePage() {
                       </td>
 
                       {/* Class & Section */}
-                      <td className="py-3.5 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-extrabold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-extrabold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                           {record.studentClass || "N/A"} - {record.studentSection || "Section A"}
                         </span>
                       </td>
 
                       {/* Group */}
-                      <td className="py-3.5 px-4">
-                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                        <span className="text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-300">
                           {record.department || "General"}
                         </span>
                       </td>
 
                       {/* Overall Attendance Rate Column */}
-                      <td className="py-3.5 px-4">
-                        <div className="w-32 space-y-1">
-                          <div className="flex items-center justify-between text-[11px] font-extrabold">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                        <div className="w-24 sm:w-32 space-y-1">
+                          <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-extrabold">
                             <span className={rate >= 85 ? "text-emerald-600 dark:text-emerald-400" : rate >= 75 ? "text-amber-600 dark:text-amber-400" : "text-rose-600 dark:text-rose-400"}>
                               {rate}%
                             </span>
-                            <span className="text-[9px] text-slate-400 font-normal">
+                            <span className="text-[8.5px] sm:text-[9px] text-slate-400 font-normal">
                               ({record.totalClassesRecorded || 0} sessions)
                             </span>
                           </div>
@@ -1247,9 +1247,9 @@ export default function TeacherAttendancePage() {
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
+                        <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300">
+                          <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
                           <span>
                             {datePreset === "Custom Date Range"
                               ? `${customStartDate} → ${customEndDate}`
@@ -1259,7 +1259,7 @@ export default function TeacherAttendancePage() {
                       </td>
 
                       {/* Interactive Inline Status Toggle */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4">
                         <InlineStatusDropdown
                           studentId={record.id}
                           studentName={record.name}
@@ -1274,11 +1274,11 @@ export default function TeacherAttendancePage() {
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-right">
                         <button
                           type="button"
                           onClick={() => setIsMarkModalOpen(true)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/70 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white transition-all cursor-pointer border border-indigo-100 dark:border-indigo-900/40"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/70 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white transition-all cursor-pointer border border-indigo-100 dark:border-indigo-900/40"
                         >
                           <Edit3 className="h-3 w-3" />
                           Mark Status
@@ -1443,30 +1443,30 @@ function StatusBadge({ status }: { status: "PRESENT" | "LATE" | "ABSENT" | "NOT_
   switch (status) {
     case "PRESENT":
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/40">
+          <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-600 dark:text-emerald-400" />
           Present
         </span>
       );
     case "LATE":
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
-          <Clock3 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-extrabold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+          <Clock3 className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-amber-600 dark:text-amber-400" />
           Late
         </span>
       );
     case "ABSENT":
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40">
-          <XCircle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-extrabold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40">
+          <XCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-rose-600 dark:text-rose-400" />
           Absent
         </span>
       );
     case "NOT_MARKED":
     default:
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-          <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+        <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-extrabold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+          <HelpCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400" />
           Not Marked
         </span>
       );
