@@ -420,7 +420,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         if (reSignInError) {
           throw new Error(
             reSignInError.message ??
-              "Session ferano gelo na. Doya kore abar login korun.",
+            "Session ferano gelo na. Doya kore abar login korun.",
           );
         }
 
@@ -563,6 +563,27 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     if (isSubmitting) return;
 
     setError("");
+
+    if (detectedRole === "teacher") {
+      if (
+        !fatherName.trim() ||
+        !motherName.trim() ||
+        !dateOfBirth ||
+        !bloodGroup ||
+        !address.trim() ||
+        !phone.trim() ||
+        !location.trim() ||
+        !department.trim() ||
+        !qualification.trim() ||
+        !bio.trim()
+      ) {
+        const msg =
+          "All profile fields (including Short Bio) are required for Teacher registration.";
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
 
     if (phone.trim() && (!phone.trim().startsWith("01") || phone.trim().length !== 11)) {
       const msg = "Phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
@@ -707,9 +728,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         >
           {/* --- FORM CONTAINER --- */}
           <div
-            className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${
-              isLogin ? "md:translate-x-0" : "md:translate-x-full"
-            }`}
+            className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
+              }`}
           >
             <div className="mb-3">
               <div className="flex justify-center md:justify-start items-center gap-2 mb-1.5">
@@ -883,11 +903,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 disabled={isSubmitting || (isLogin && approvalStatus === "pending")}
                 whileHover={isLogin && approvalStatus === "pending" ? {} : { y: -1 }}
                 whileTap={isLogin && approvalStatus === "pending" ? {} : { scale: 0.98 }}
-                className={`w-full font-bold text-sm py-2 rounded-lg transition-all mt-2 flex items-center justify-center gap-2 ${
-                  isLogin && approvalStatus === "pending"
+                className={`w-full font-bold text-sm py-2 rounded-lg transition-all mt-2 flex items-center justify-center gap-2 ${isLogin && approvalStatus === "pending"
                     ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
                     : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed"
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -919,9 +938,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
           {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND (unchanged) --- */}
           <div
-            className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${
-              isLogin ? "translate-x-full" : "translate-x-0"
-            }`}
+            className={`hidden md:flex absolute top-0 left-0 w-1/2 h-full transition-transform duration-700 ease-in-out z-20 flex-col items-start justify-end text-white px-8 pb-10 text-left ${isLogin ? "translate-x-full" : "translate-x-0"
+              }`}
           >
             <AnimatePresence initial={false}>
               <motion.div
@@ -1030,11 +1048,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             initial={{ opacity: 0, scale: 0.7 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.08 }}
-                            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${
-                              step.active
+                            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
                                 ? "bg-emerald-400/20 border-emerald-300/40"
                                 : "bg-white/[0.06] border-white/15"
-                            }`}
+                              }`}
                           >
                             <step.icon
                               size={11}
@@ -1045,11 +1062,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                               }
                             />
                             <span
-                              className={`text-[8px] font-bold uppercase tracking-wide ${
-                                step.active
+                              className={`text-[8px] font-bold uppercase tracking-wide ${step.active
                                   ? "text-emerald-200"
                                   : "text-white/50"
-                              }`}
+                                }`}
                             >
                               {step.label}
                             </span>
@@ -1079,9 +1095,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                   onClick={toggleAuthMode}
                   whileHover={{ gap: "10px" }}
                   whileTap={{ scale: 0.97 }}
-                  className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${
-                    isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
-                  }`}
+                  className={`inline-flex items-center gap-2 rounded-full bg-white text-slate-900 text-[11px] font-bold py-1.5 ${isLogin ? "pl-1.5 pr-4" : "pl-4 pr-1.5"
+                    }`}
                 >
                   {isLogin ? (
                     <>
@@ -1521,6 +1536,34 @@ interface ProfileCompletionStepProps {
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const GROUP_OPTIONS = ["Science", "Business Studies", "Humanities"];
+const TEACHER_DEPARTMENT_OPTIONS = [
+  "Science",
+  "Commerce",
+  "Arts",
+  "Computer Science & ICT",
+  "Mathematics",
+  "English",
+  "Bangla",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Social Science",
+  "Accounting",
+  "Islamic Studies",
+  "Physical Education",
+];
+const QUALIFICATION_OPTIONS = [
+  "B.Sc",
+  "M.Sc",
+  "B.A",
+  "M.A",
+  "B.Ed",
+  "M.Ed",
+  "B.Com",
+  "M.Com",
+  "Ph.D",
+  "Diploma in Education",
+];
 
 interface CustomSelectProps {
   label: string;
@@ -1571,9 +1614,8 @@ function CustomSelect({
           </span>
           <ChevronDown
             size={14}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
-              isOpen ? "rotate-180 text-indigo-500" : ""
-            }`}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOpen ? "rotate-180 text-indigo-500" : ""
+              }`}
           />
         </button>
 
@@ -1596,11 +1638,10 @@ function CustomSelect({
                       onChange(opt);
                       setIsOpen(false);
                     }}
-                    className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
-                      isSelected
+                    className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${isSelected
                         ? "bg-indigo-50/80 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
                         : "text-slate-700 dark:text-slate-200"
-                    }`}
+                      }`}
                   >
                     <span>{opt}</span>
                     {isSelected && (
@@ -1728,13 +1769,16 @@ function ProfileCompletionStep({
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <label className={labelClass}>Father&apos;s Name</label>
+                    <label className={labelClass}>
+                      {isTeacher ? "Father's Name *" : "Father's Name"}
+                    </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
                         <Users size={14} />
                       </div>
                       <input
                         type="text"
+                        required={isTeacher}
                         value={fatherName}
                         onChange={(e) => setFatherName(e.target.value)}
                         placeholder="e.g. Abdul Karim"
@@ -1744,13 +1788,16 @@ function ProfileCompletionStep({
                   </div>
 
                   <div className="space-y-1">
-                    <label className={labelClass}>Mother&apos;s Name</label>
+                    <label className={labelClass}>
+                      {isTeacher ? "Mother's Name *" : "Mother's Name"}
+                    </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
                         <Users size={14} />
                       </div>
                       <input
                         type="text"
+                        required={isTeacher}
                         value={motherName}
                         onChange={(e) => setMotherName(e.target.value)}
                         placeholder="e.g. Rahima Begum"
@@ -1760,13 +1807,16 @@ function ProfileCompletionStep({
                   </div>
 
                   <div className="space-y-1">
-                    <label className={labelClass}>Date of Birth</label>
+                    <label className={labelClass}>
+                      {isTeacher ? "Date of Birth *" : "Date of Birth"}
+                    </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
                         <Calendar size={14} />
                       </div>
                       <input
                         type="date"
+                        required={isTeacher}
                         max={new Date().toISOString().split("T")[0]}
                         value={dateOfBirth}
                         onChange={(e) => setDateOfBirth(e.target.value)}
@@ -1776,7 +1826,7 @@ function ProfileCompletionStep({
                   </div>
 
                   <CustomSelect
-                    label="Blood Group"
+                    label={isTeacher ? "Blood Group *" : "Blood Group"}
                     icon={Droplet}
                     value={bloodGroup}
                     onChange={setBloodGroup}
@@ -1786,12 +1836,15 @@ function ProfileCompletionStep({
                 </div>
 
                 <div className="space-y-1 mt-2">
-                  <label className={labelClass}>Permanent Address</label>
+                  <label className={labelClass}>
+                    {isTeacher ? "Permanent Address *" : "Permanent Address"}
+                  </label>
                   <div className="relative group">
                     <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
                       <Home size={14} />
                     </div>
                     <textarea
+                      required={isTeacher}
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Permanent address: Village/House, Post Office, District"
@@ -1803,13 +1856,16 @@ function ProfileCompletionStep({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                   <div className="space-y-1">
-                    <label className={labelClass}>Phone Number</label>
+                    <label className={labelClass}>
+                      {isTeacher ? "Phone Number *" : "Phone Number"}
+                    </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
                         <Phone size={14} />
                       </div>
                       <input
                         type="tel"
+                        required={isTeacher}
                         inputMode="numeric"
                         maxLength={11}
                         value={phone}
@@ -1828,13 +1884,16 @@ function ProfileCompletionStep({
                   </div>
 
                   <div className="space-y-1">
-                    <label className={labelClass}>Present Address</label>
+                    <label className={labelClass}>
+                      {isTeacher ? "Present Address *" : "Present Address"}
+                    </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
                         <MapPin size={14} />
                       </div>
                       <input
                         type="text"
+                        required={isTeacher}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="Present address: e.g. Dhaka, Bangladesh"
@@ -1851,39 +1910,23 @@ function ProfileCompletionStep({
                 </p>
                 {isTeacher ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className={labelClass}>Department</label>
-                      <div className="relative group">
-                        <div className={iconWrapClass}>
-                          <Building2 size={14} />
-                        </div>
-                        <input
-                          type="text"
-                          value={department}
-                          onChange={(e) => setDepartment(e.target.value)}
-                          placeholder="e.g. Computer Science"
-                          className={inputClass}
-                        />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="Department"
+                      icon={Building2}
+                      value={department}
+                      onChange={setDepartment}
+                      options={TEACHER_DEPARTMENT_OPTIONS}
+                      placeholder="Select Department"
+                    />
 
-                    <div className="space-y-1">
-                      <label className={labelClass}>
-                        Education Qualification
-                      </label>
-                      <div className="relative group">
-                        <div className={iconWrapClass}>
-                          <Award size={14} />
-                        </div>
-                        <input
-                          type="text"
-                          value={qualification}
-                          onChange={(e) => setQualification(e.target.value)}
-                          placeholder="e.g. M.Sc in Physics"
-                          className={inputClass}
-                        />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="Education Qualification"
+                      icon={Award}
+                      value={qualification}
+                      onChange={setQualification}
+                      options={QUALIFICATION_OPTIONS}
+                      placeholder="Select Qualification"
+                    />
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
@@ -1941,15 +1984,22 @@ function ProfileCompletionStep({
               </div>
 
               <div className="space-y-1">
-                <label className={labelClass}>Short Bio (Optional)</label>
+                <label className={labelClass}>
+                  {isTeacher ? "Short Bio *" : "Short Bio (Optional)"}
+                </label>
                 <div className="relative group">
                   <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
                     <FileText size={14} />
                   </div>
                   <textarea
+                    required={isTeacher}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="A line or two about yourself (optional)"
+                    placeholder={
+                      isTeacher
+                        ? "A brief summary of your teaching background & experience *"
+                        : "A line or two about yourself (optional)"
+                    }
                     rows={2}
                     className={`${inputClass} resize-none`}
                   />
@@ -2001,9 +2051,8 @@ function ProfileCompletionStep({
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url('${
-                isTeacher ? TEACHER_PROFILE_IMAGE : STUDENT_PROFILE_IMAGE
-              }')`,
+              backgroundImage: `url('${isTeacher ? TEACHER_PROFILE_IMAGE : STUDENT_PROFILE_IMAGE
+                }')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
