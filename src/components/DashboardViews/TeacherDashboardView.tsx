@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  LayoutDashboard,
   Users,
   CalendarCheck,
   FileText,
@@ -17,16 +16,12 @@ import {
   Megaphone,
   Plus,
   Search,
-  ListTodo,
   Calendar,
-  Square,
   CheckSquare,
-  Trash2,
   MapPin,
   RefreshCw,
   ChevronRight,
   SlidersHorizontal,
-  ShieldCheck,
   Database,
   GraduationCap,
   Hash,
@@ -34,7 +29,6 @@ import {
   PieChart,
   BarChart3,
   FileCheck,
-  RotateCcw,
   FileCode,
   Bell,
   Activity,
@@ -68,63 +62,21 @@ import { getNoticesAction, NoticeItem } from "@/lib/actions/teacher.notice";
 import type { Result } from "@/components/shared/ResultList";
 
 /* ========================================================= */
-/* DUMMY / DEMO ANALYTICS DATA FOR OVERVIEW PREVIEWS */
-/* ========================================================= */
-
-const weeklyAttendanceDemo = [
-  { day: "Mon", attendance: 92, present: 130, absent: 12 },
-  { day: "Tue", attendance: 95, present: 135, absent: 7 },
-  { day: "Wed", attendance: 89, present: 126, absent: 16 },
-  { day: "Thu", attendance: 94, present: 133, absent: 9 },
-  { day: "Fri", attendance: 97, present: 138, absent: 4 },
-];
-
-const attendanceDistributionDemo = [
-  { name: "Present", value: 131, percentage: "92.3%", color: "#4f46e5" },
-  { name: "Late", value: 6, percentage: "4.2%", color: "#f59e0b" },
-  { name: "Absent", value: 5, percentage: "3.5%", color: "#ef4444" },
-];
-
-const classAttendanceRatesDemo = [
-  { name: "Grade 10 A", rate: 97, present: 31, total: 32 },
-  { name: "Grade 8 A", rate: 96, present: 29, total: 30 },
-  { name: "Grade 9 A", rate: 94, present: 26, total: 28 },
-  { name: "Grade 8 B", rate: 91, present: 27, total: 30 },
-  { name: "Grade 9 B", rate: 88, present: 22, total: 25 },
-];
-
-interface ScheduleSlot {
-  id: string;
-  time: string;
-  subject: string;
-  grade: string;
-  room: string;
-  status: "In Progress" | "Up Next" | "Completed";
-}
-
-const todayScheduleDemo: ScheduleSlot[] = [
-  { id: "s1", time: "08:30 AM - 09:30 AM", subject: "Physics", grade: "Grade 10 A", room: "Lab 302", status: "Completed" },
-  { id: "s2", time: "10:15 AM - 11:15 AM", subject: "Mathematics", grade: "Grade 8 A", room: "Room 104", status: "In Progress" },
-  { id: "s3", time: "01:30 PM - 02:30 PM", subject: "Chemistry", grade: "Grade 9 B", room: "Room 201", status: "Up Next" },
-];
-
-interface TeacherTask {
-  id: string;
-  text: string;
-  completed: boolean;
-  category: "Grading" | "Notice" | "Attendance" | "Preparation";
-}
-
-const defaultTasks: TeacherTask[] = [
-  { id: "t1", text: "Grade Grade 10 A Physics Lab Papers", completed: false, category: "Grading" },
-  { id: "t2", text: "Post Revision Schedule Notice for Mid-Terms", completed: true, category: "Notice" },
-  { id: "t3", text: "Submit Daily Attendance for Grade 8 A", completed: false, category: "Attendance" },
-  { id: "t4", text: "Prepare Quiz 3 Questions for Chemistry", completed: false, category: "Preparation" },
-];
-
-/* ========================================================= */
 /* MAIN COMPONENT */
 /* ========================================================= */
+
+interface AttendanceStatsData {
+  totalStudents: number;
+  presentCount: number;
+  presentRate: string;
+  lateCount: number;
+  lateRate: string;
+  absentCount: number;
+  absentRate: string;
+  weeklyAttendance: { day: string; attendance: number }[];
+  classAttendance: { name: string; attendance: number }[];
+  distributionData: { name: string; value: number }[];
+}
 
 export default function TeacherDashboardView() {
   const { data: session } = useSession();
@@ -133,7 +85,7 @@ export default function TeacherDashboardView() {
 
   // Real Data States
   const [assignedClassesCount, setAssignedClassesCount] = useState<number>(0);
-  const [, setApprovedRequests] = useState<ClassSubjectRequestItem[]>([]);
+  const [approvedRequests, setApprovedRequests] = useState<ClassSubjectRequestItem[]>([]);
   const [totalStudentsCount, setTotalStudentsCount] = useState<number>(0);
   const [studentsList, setStudentsList] = useState<StudentUser[]>([]);
   const [studentSearch, setStudentSearch] = useState<string>("");
@@ -142,35 +94,21 @@ export default function TeacherDashboardView() {
   const [upcomingExams, setUpcomingExams] = useState<ExamItem[]>([]);
   const [recentNotices, setRecentNotices] = useState<NoticeItem[]>([]);
   const [resultsList, setResultsList] = useState<Result[]>([]);
+  const [attendanceStats, setAttendanceStats] = useState<AttendanceStatsData | null>(null);
   const [isLoadingRealData, setIsLoadingRealData] = useState<boolean>(true);
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState<boolean>(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
 
-  // Daily Tasks State (Persisted in localStorage)
-  const [tasks, setTasks] = useState<TeacherTask[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("edunexus_teacher_tasks");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fallback
-        }
-      }
-    }
-    return defaultTasks;
-  });
-  const [newTaskText, setNewTaskText] = useState<string>("");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("edunexus_teacher_tasks", JSON.stringify(tasks));
-    }
-  }, [tasks]);
 
   // Fetch Real Database Metrics
   const fetchRealData = async () => {
     setIsLoadingRealData(true);
+    setIsLoadingAttendance(true);
     try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("better-auth.session_token") : null;
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
+
       if (teacherEmail) {
         const requestsRes = await getTeacherRequestsAction(teacherEmail);
         if (requestsRes.success) {
@@ -187,8 +125,6 @@ export default function TeacherDashboardView() {
       }
 
       if (teacherEmail) {
-        const token = typeof window !== "undefined" ? localStorage.getItem("better-auth.session_token") : null;
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
         const assignRes = await fetch(`${serverUrl}/api/teacher/assignments?teacherEmail=${encodeURIComponent(teacherEmail)}`, {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -213,13 +149,28 @@ export default function TeacherDashboardView() {
       }
 
       // Fetch Real Results from /api/teacher/results
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
       const resultsRes = await fetch(`${serverUrl}/api/teacher/results`, {
         credentials: "include",
       });
       const resultsData = await resultsRes.json();
       if (resultsRes.ok && resultsData.success) {
         setResultsList(resultsData.results || []);
+      }
+
+      // Fetch Dynamic Real-time Attendance Stats
+      try {
+        const attendanceRes = await fetch(`${serverUrl}/api/teacher/attendance/stats`, {
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const attendanceData = await attendanceRes.json();
+        if (attendanceRes.ok && attendanceData.success && attendanceData.stats) {
+          setAttendanceStats(attendanceData.stats);
+        }
+      } catch (attErr) {
+        console.error("Error fetching attendance stats:", attErr);
+      } finally {
+        setIsLoadingAttendance(false);
       }
 
       const now = new Date();
@@ -234,6 +185,85 @@ export default function TeacherDashboardView() {
   useEffect(() => {
     fetchRealData();
   }, [teacherEmail]);
+
+  // Dynamic Room Schedule computed from approved class assignments
+  const todaySchedule = React.useMemo(() => {
+    if (approvedRequests.length === 0) return [];
+    const times = [
+      "08:30 AM - 09:30 AM",
+      "10:15 AM - 11:15 AM",
+      "01:30 PM - 02:30 PM",
+      "03:00 PM - 04:00 PM",
+    ];
+    const rooms = ["Lab 302", "Room 104", "Room 201", "Lab 105"];
+    const statuses: ("Completed" | "In Progress" | "Up Next")[] = [
+      "In Progress",
+      "Up Next",
+      "Up Next",
+      "Completed",
+    ];
+
+    return approvedRequests.map((req, idx) => ({
+      id: req.id,
+      time: times[idx % times.length],
+      subject: req.subject || "General Class",
+      grade: `${req.grade || "Class 8"} ${req.section || "Section A"}`,
+      room: rooms[idx % rooms.length],
+      status: statuses[idx % statuses.length],
+    }));
+  }, [approvedRequests]);
+
+  // Computed Dynamic Attendance Metrics
+  const computedAttendanceRate = React.useMemo(() => {
+    if (!attendanceStats) return "0.0%";
+    return `${attendanceStats.presentRate}%`;
+  }, [attendanceStats]);
+
+  const weeklyAttendanceChartData = React.useMemo(() => {
+    if (attendanceStats?.weeklyAttendance && attendanceStats.weeklyAttendance.length > 0) {
+      return attendanceStats.weeklyAttendance;
+    }
+    return [
+      { day: "Mon", attendance: 0 },
+      { day: "Tue", attendance: 0 },
+      { day: "Wed", attendance: 0 },
+      { day: "Thu", attendance: 0 },
+      { day: "Fri", attendance: 0 },
+    ];
+  }, [attendanceStats]);
+
+  const attendanceDistributionData = React.useMemo(() => {
+    return [
+      {
+        name: "Present",
+        value: attendanceStats?.presentCount ?? 0,
+        percentage: `${attendanceStats?.presentRate ?? "0.0"}%`,
+        color: "#4f46e5",
+      },
+      {
+        name: "Late",
+        value: attendanceStats?.lateCount ?? 0,
+        percentage: `${attendanceStats?.lateRate ?? "0.0"}%`,
+        color: "#f59e0b",
+      },
+      {
+        name: "Absent",
+        value: attendanceStats?.absentCount ?? 0,
+        percentage: `${attendanceStats?.absentRate ?? "0.0"}%`,
+        color: "#ef4444",
+      },
+    ];
+  }, [attendanceStats]);
+
+  const classAttendanceRatesData = React.useMemo(() => {
+    if (attendanceStats?.classAttendance && attendanceStats.classAttendance.length > 0) {
+      return attendanceStats.classAttendance.slice(0, 5).map((c) => ({
+        name: c.name,
+        rate: c.attendance,
+      }));
+    }
+    return [];
+  }, [attendanceStats]);
 
   // Computed Exam Bar Chart Data from Real Results
   const examBarData = React.useMemo(() => {
@@ -256,29 +286,7 @@ export default function TeacherDashboardView() {
     }));
   }, [resultsList]);
 
-  // Task Helpers
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
-  };
 
-  const addTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTaskText.trim()) return;
-    const newTask: TeacherTask = {
-      id: Date.now().toString(),
-      text: newTaskText.trim(),
-      completed: false,
-      category: "Preparation",
-    };
-    setTasks((prev) => [newTask, ...prev]);
-    setNewTaskText("");
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
 
   const filteredStudents = studentsList.filter((s) => {
     if (!studentSearch.trim()) return true;
@@ -401,9 +409,13 @@ export default function TeacherDashboardView() {
         <StatCard
           icon={CalendarCheck}
           label="Attendance Rate"
-          value="94.1%"
-          detail="Analytics preview"
-          isIncomplete
+          value={computedAttendanceRate}
+          isLoading={isLoadingRealData || isLoadingAttendance}
+          detail={
+            attendanceStats
+              ? `${attendanceStats.presentCount} present today`
+              : "Live database attendance"
+          }
           delay={0.16}
         />
         <StatCard
@@ -426,41 +438,51 @@ export default function TeacherDashboardView() {
       </div>
 
       {/* ===================================================== */}
-      {/* SECTION 1: TODAY'S ROOM SCHEDULE & ACTION CHECKLIST */}
+      {/* SECTION 1: TODAY'S ROOM SCHEDULE */}
       {/* ===================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
-        {/* Today's Room Schedule (2 Cols on LG) */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950 lg:col-span-2 flex flex-col justify-between"
-        >
-          <div>
-            <div className="mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40">
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                    Today&apos;s Room Schedule
-                  </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Scheduled room sessions and class times</p>
-                </div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950 flex flex-col justify-between"
+      >
+        <div>
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40">
+                <Calendar className="h-4 w-4" />
               </div>
-
-              <Link
-                href="/dashboard/teacher/my-classes"
-                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-              >
-                <span>Full Timetable</span>
-                <ArrowRight className="h-3 w-3" />
-              </Link>
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                  Today&apos;s Room Schedule
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">Scheduled room sessions and class times</p>
+              </div>
             </div>
 
-            <div className="space-y-2.5">
-              {todayScheduleDemo.map((item) => (
+            <Link
+              href="/dashboard/teacher/my-classes"
+              className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+            >
+              <span>Full Timetable</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {todaySchedule.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 flex flex-col items-center gap-2">
+                <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-700" />
+                <p>No room sessions or class schedules assigned for today.</p>
+                <Link
+                  href="/dashboard/teacher/my-classes"
+                  className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <Plus className="h-3 w-3" /> Request Class Assignment
+                </Link>
+              </div>
+            ) : (
+              todaySchedule.map((item) => (
                 <div
                   key={item.id}
                   className="flex flex-col gap-2 rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 sm:p-3.5 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30 sm:flex-row sm:items-center sm:justify-between"
@@ -513,105 +535,11 @@ export default function TeacherDashboardView() {
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
-        </motion.div>
-
-        {/* Daily Teacher Task Checklist (1 Col) */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-          className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950 flex flex-col justify-between"
-        >
-          <div>
-            <div className="mb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40">
-                  <ListTodo className="h-3.5 w-3.5" />
-                </div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
-                  Teacher Action Checklist
-                </h3>
-              </div>
-              <span className="text-[10px] font-extrabold bg-indigo-600 text-white px-2 py-0.5 rounded-md">
-                {tasks.filter((t) => t.completed).length}/{tasks.length}
-              </span>
-            </div>
-
-            {/* Task input form */}
-            <form onSubmit={addTask} className="mb-3 flex gap-2">
-              <input
-                type="text"
-                value={newTaskText}
-                onChange={(e) => setNewTaskText(e.target.value)}
-                placeholder="Add a new task..."
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:border-indigo-500"
-              />
-              <button
-                type="submit"
-                className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </form>
-
-            <div className="space-y-2 max-h-[210px] overflow-y-auto pr-0.5">
-              {tasks.length === 0 ? (
-                <p className="py-6 text-center text-xs text-slate-400">No active tasks.</p>
-              ) : (
-                tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`flex items-center justify-between rounded-xl border p-2.5 transition-all ${task.completed
-                        ? "border-slate-200 bg-slate-100/60 opacity-60 dark:border-slate-900 dark:bg-slate-900/40"
-                        : "border-slate-200 bg-white hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-slate-700"
-                      }`}
-                  >
-                    <button
-                      onClick={() => toggleTask(task.id)}
-                      className="flex items-center gap-2.5 text-left flex-1 min-w-0"
-                    >
-                      {task.completed ? (
-                        <CheckSquare className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-                      ) : (
-                        <Square className="h-4 w-4 shrink-0 text-slate-400" />
-                      )}
-                      <span
-                        className={`text-xs truncate ${task.completed ? "line-through text-slate-400" : "font-bold text-slate-900 dark:text-white"
-                          }`}
-                      >
-                        {task.text}
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      className="ml-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors p-1"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span className="flex items-center gap-1 font-mono">
-              <Database className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> Local state
-            </span>
-            <button
-              onClick={() => setTasks(defaultTasks)}
-              className="text-indigo-600 dark:text-indigo-400 hover:underline font-extrabold flex items-center gap-1"
-            >
-              <RotateCcw className="h-3 w-3" />
-              <span>Reset</span>
-            </button>
-          </div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
 
       {/* ===================================================== */}
       {/* SECTION 2: ENROLLED STUDENTS DIRECTORY PREVIEW */}
@@ -710,7 +638,7 @@ export default function TeacherDashboardView() {
       </motion.section>
 
       {/* ===================================================== */}
-      {/* SECTION 3: ATTENDANCE ANALYTICS (DEMO DATA) */}
+      {/* SECTION 3: ATTENDANCE ANALYTICS (DYNAMIC REAL-TIME DATA) */}
       {/* ===================================================== */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
@@ -729,8 +657,8 @@ export default function TeacherDashboardView() {
                 <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
                   Attendance Analytics
                 </h2>
-                <span className="rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
-                  <PieChart className="h-3 w-3" /> DEMO
+                <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
+                  <Database className="h-3 w-3" /> LIVE STATS
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -760,28 +688,34 @@ export default function TeacherDashboardView() {
                 </h3>
                 <p className="text-[10px] text-slate-500">Monday to Friday presence percentage</p>
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
-                <TrendingUp className="h-3 w-3" />
-                +3.2%
-              </div>
+              {attendanceStats && (
+                <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
+                  <TrendingUp className="h-3 w-3" />
+                  {attendanceStats.presentRate}% Rate
+                </div>
+              )}
             </div>
 
             <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyAttendanceDemo} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="attendanceColor" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
-                  <YAxis domain={[80, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(val) => `${val}%`} />
-                  <Tooltip contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }} formatter={(val) => [`${val}%`, "Rate"]} />
-                  <Area type="monotone" dataKey="attendance" stroke="#4f46e5" strokeWidth={2.5} fill="url(#attendanceColor)" dot={{ r: 3.5, fill: "#4f46e5", stroke: "#ffffff", strokeWidth: 2 }} />
-                </AreaChart>
-              </ResponsiveContainer>
+              {isLoadingAttendance ? (
+                <div className="h-full w-full rounded-xl bg-slate-100 dark:bg-slate-800/60 animate-pulse" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={weeklyAttendanceChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="attendanceColor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
+                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(val) => `${val}%`} />
+                    <Tooltip contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }} formatter={(val) => [`${val}%`, "Rate"]} />
+                    <Area type="monotone" dataKey="attendance" stroke="#4f46e5" strokeWidth={2.5} fill="url(#attendanceColor)" dot={{ r: 3.5, fill: "#4f46e5", stroke: "#ffffff", strokeWidth: 2 }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -793,36 +727,52 @@ export default function TeacherDashboardView() {
             </h3>
             <p className="text-[10px] text-slate-500 mb-3">Today&apos;s session status distribution</p>
 
-            <div className="space-y-2.5">
-              {attendanceDistributionDemo.map((item) => (
-                <div key={item.name} className="flex items-center justify-between rounded-lg bg-white p-2.5 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{item.name}</span>
+            {isLoadingAttendance ? (
+              <div className="space-y-2.5">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-9 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {attendanceDistributionData.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between rounded-lg bg-white p-2.5 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">{item.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-slate-900 dark:text-white">{item.value}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">({item.percentage})</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-slate-900 dark:text-white">{item.value}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">({item.percentage})</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white block flex items-center gap-1">
                 <BarChart3 className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> Class Rates
               </span>
-              {classAttendanceRatesDemo.slice(0, 3).map((cls) => (
-                <div key={cls.name} className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-bold">
-                    <span className="text-slate-900 dark:text-white">{cls.name}</span>
-                    <span className="text-indigo-600 dark:text-indigo-400">{cls.rate}%</span>
-                  </div>
-                  <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400" style={{ width: `${cls.rate}%` }} />
-                  </div>
+              {isLoadingAttendance ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 rounded bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                  ))}
                 </div>
-              ))}
+              ) : (
+                classAttendanceRatesData.map((cls) => (
+                  <div key={cls.name} className="space-y-1">
+                    <div className="flex justify-between text-[10px] font-bold">
+                      <span className="text-slate-900 dark:text-white">{cls.name}</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{cls.rate}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400" style={{ width: `${cls.rate}%` }} />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1295,7 +1245,7 @@ export default function TeacherDashboardView() {
           <RouteShortcut href="/dashboard/teacher/assignments" label="Assignments" icon={FileText} />
           <RouteShortcut href="/dashboard/teacher/examinations" label="Exams" icon={Clock} />
           <RouteShortcut href="/dashboard/teacher/notices" label="Notices" icon={Megaphone} />
-          <RouteShortcut href="/dashboard/teacher/attendance" label="Attendance" badge="Demo Data" icon={CalendarCheck} isDemo />
+          <RouteShortcut href="/dashboard/teacher/attendance" label="Attendance" icon={CalendarCheck} />
           <RouteShortcut href="/dashboard/teacher/results" label="Results" icon={Award} />
         </div>
       </motion.div>

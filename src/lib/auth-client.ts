@@ -84,8 +84,19 @@ export const authClient = createAuthClient({
     inferAdditionalFields({
       user: {
         role: { type: "string", input: false },
-        studentClass: { type: "string", input: false },
-        studentSection: { type: "string", input: false },
+        phone: { type: "string", required: false },
+        location: { type: "string", required: false },
+        department: { type: "string", required: false },
+        bio: { type: "string", required: false },
+        fatherName: { type: "string", required: false },
+        motherName: { type: "string", required: false },
+        dateOfBirth: { type: "string", required: false },
+        address: { type: "string", required: false },
+        bloodGroup: { type: "string", required: false },
+        schoolName: { type: "string", required: false },
+        studentClass: { type: "string", required: false },
+        studentSection: { type: "string", required: false },
+        qualification: { type: "string", required: false },
       },
     }),
     // Authenticator-app (TOTP) 2FA. No `onTwoFactorRedirect`/`twoFactorPage`
