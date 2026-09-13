@@ -1,225 +1,391 @@
-# EduNexus — Codebase Summary
+# EduNexus — Complete Codebase Summary
 
-This document summarizes **this repository**: the Next.js frontend for EduNexus (School Management System). It describes what is actually in the code, not the product vision in `README.md`.
+This document provides a comprehensive technical reference for **this repository**: the Next.js frontend for **EduNexus** (School Management System). It reflects the actual implementation across all pages, components, server actions, authentication workflows, and API integrations.
 
-**Status:** Active development. Marketing/docs describe a full stack (Express + Prisma + PostgreSQL). **This repo is the client only.** The API lives in a separate backend (`NEXT_PUBLIC_SERVER_URL`, typically `http://localhost:5000`).
-
----
-
-## What this app is
-
-EduNexus is a role-based school portal with three roles: **admin**, **teacher**, and **student**. Public pages market the product. After login, users land in a dashboard with a role-specific sidebar.
-
-The frontend:
-
-- Authenticates against Better Auth on the Express API
-- Enforces role routes in the dashboard layout (client-side redirects)
-- Talks to the API via `fetch` and Next.js server actions
-- Still uses **hardcoded demo data** on many academic/admin screens (attendance, results, fees, class lists, etc.)
+> **Architecture Context:**  
+> This repository is the **client-only Next.js application**. The REST API and database (Better Auth, Express, Prisma, PostgreSQL) run in a separate backend service specified by the environment variable `NEXT_PUBLIC_SERVER_URL` (typically `http://localhost:5000`).
 
 ---
 
-## Tech stack (this repo)
+## Table of Contents
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Next.js 16 (App Router), React 19, TypeScript |
-| Styling | Tailwind CSS 4, Google fonts (Sora, Inter) |
-| Animation | Framer Motion / `motion` |
-| Charts | Recharts |
-| Toasts | `react-toastify`, SweetAlert2 (dependency present) |
-| Auth client | `better-auth` React client + TOTP 2FA plugin |
-| Images | Next Image; Cloudflare R2 host allowed for profile photos |
-| Compiler | React Compiler enabled in `next.config.ts` |
-
-There is **no Prisma, Express, or PostgreSQL** in this tree.
+1. [Tech Stack & Dependencies](#tech-stack--dependencies)
+2. [High-Level Architecture](#high-level-architecture)
+3. [Authentication, 2FA & Authorization](#authentication-2fa--authorization)
+4. [Directory & File Structure](#directory--file-structure)
+5. [Public & Shared Routes](#public--shared-routes)
+6. [Role-Based Dashboards & Pages](#role-based-dashboards--pages)
+   - [Admin Dashboard](#admin-dashboard-dashboardadmin)
+   - [Teacher Dashboard](#teacher-dashboard-dashboardteacher)
+   - [Student Dashboard](#student-dashboard-dashboardstudent)
+7. [Server Actions Reference](#server-actions-reference-srclibactions)
+8. [Direct Client-Side API Integrations](#direct-client-side-api-integrations)
+9. [Component Catalog](#component-catalog)
+10. [Environment Variables & Setup](#environment-variables--setup)
 
 ---
 
-## High-level architecture
+## Tech Stack & Dependencies
+
+| Category | Technology | Notes |
+|---|---|---|
+| **Framework** | Next.js 16 (App Router) | React Compiler enabled in `next.config.ts` |
+| **UI Library** | React 19 + TypeScript | Full type safety across props, actions, and API payloads |
+| **Styling** | Tailwind CSS 4 + Vanilla CSS | Custom animations, Sora & Inter Google fonts |
+| **Animation** | Framer Motion (`framer-motion`) | Modal transitions, layout animations, page reveals |
+| **Data Visualization**| Recharts | Responsive AreaCharts & BarCharts for analytics |
+| **Icons** | Lucide React | Modern vector icon set |
+| **Notifications** | `react-toastify` | Interactive toast notifications across client & actions |
+| **Authentication** | `better-auth` (React client) | Client-side session management + TOTP 2FA plugin |
+| **QR Code** | `qrcode` | QR generation for two-factor authentication setup |
+| **Asset Storage** | Next.js Image + Cloudflare R2 | Allowed remote image pattern for user avatars |
+
+---
+
+## High-Level Architecture
 
 ```
-Browser (Next.js)
-  ├── Public marketing pages
-  ├── Auth UI (Better Auth → Express /api/auth)
-  └── Dashboard (role-gated)
-        └── Server actions / client fetch
-              └── Express API (separate project)
-                    └── Database (not in this repo)
+Browser Client (Next.js App Router)
+  │
+  ├── 1. Public Pages (Landing, About, Contact, Notices, Terms, Privacy)
+  │
+  ├── 2. Auth Flow (Combined Login/Register, 2FA verification, Approval poll)
+  │
+  ├── 3. Dashboard Shell (`/dashboard/layout.tsx` role-gated sidebar & navbar)
+  │     ├── Admin Portal (`/dashboard/admin/*`)
+  │     ├── Teacher Portal (`/dashboard/teacher/*`)
+  │     └── Student Portal (`/dashboard/student/*`)
+  │
+  └── Communication Channels to Backend:
+        ├── Server Actions (`src/lib/actions/*.ts` via Next.js server runtime)
+        └── Client Fetch (`authedFetch()` / `getAuthToken()` with Bearer token)
+              │
+              ▼
+        Express REST API (`NEXT_PUBLIC_SERVER_URL` - separate repo)
+              │
+              ▼
+        PostgreSQL via Prisma ORM
 ```
 
-Session token is stored in **localStorage** (`better-auth.session_token`) and mirrored to a **same-origin cookie** so server actions can send it. The Express domain's httpOnly cookie is not visible to Next.js when apps run on different origins.
-
-Environment:
-
-- `NEXT_PUBLIC_SERVER_URL` — API base URL
+### Cross-Origin Auth Token Synchronization
+Because the Next.js frontend and Express backend typically operate on distinct domains or ports in production and development:
+1. `better-auth` stores the session token in browser **`localStorage`** under the key `better-auth.session_token`.
+2. The auth client mirrors this token into a **same-origin cookie** (`better-auth.session_token`).
+3. **Server Actions** read this cookie via `next/headers` and forward it as `Authorization: Bearer <token>` and `Cookie: better-auth.session_token=<token>` to the Express backend.
+4. **Client Components** retrieve the token from `localStorage` and supply `Authorization: Bearer <token>` on direct fetch requests.
 
 ---
 
-## Folder map
+## Authentication, 2FA & Authorization
+
+Source files: `src/components/CombinedLoginRegister/AuthPage.tsx`, `src/lib/auth-client.ts`, `src/lib/actions/approval-actions.ts`, `src/lib/actions/password-reset-actions.ts`.
+
+### 1. Registration Flow
+- Supports registration for **Teacher** and **Student** accounts.
+- **Student Extra Fields:** Class (`Class 6` to `Class 10`), Section (`Section A`, `Section B`), Department/Group (`Science`, `Business Studies`, `Humanities` for Class 9/10), Date of Birth, Guardian Name, Guardian Phone, Address.
+- **Teacher Extra Fields:** Designation, Department, Academic Qualification, Phone Number, Joining Date.
+- Profile extras are saved to the backend via `updateUserProfileAction` (`PUT /api/user/profile`).
+
+### 2. Admin Approval Gate
+- Newly registered accounts default to an **unapproved** status.
+- Upon login, `checkApprovalStatusAction` (`GET /api/approval-status`) is polled.
+- Unapproved users see a persistent "Approval Pending" modal that can re-check approval status on-demand without reloading the page.
+
+### 3. Two-Factor Authentication (TOTP 2FA)
+- Configured via Better Auth TOTP plugin.
+- First-time setup renders a QR code generated by the `qrcode` library.
+- Returning users with 2FA enabled must submit their 6-digit authenticator code before access is granted.
+- Admin can reset a locked/lost 2FA token from the Admin Security dashboard (`POST /api/admin/reset-2fa`).
+
+### 4. Password Reset
+- Flow: User enters email + 6-digit TOTP code.
+- Backend verifies code via `verifyPasswordResetCodeAction` (`POST /api/password-reset/verify-code`).
+- User inputs new password via `setNewPasswordAction` (`POST /api/password-reset/set-password`).
+
+### 5. Role-Based Route Protection
+- Implemented in `src/app/dashboard/layout.tsx`.
+- Client-side verification reads the current session role:
+  - Role `admin` ➔ Allowed `/dashboard/admin/*`
+  - Role `teacher` ➔ Allowed `/dashboard/teacher/*`
+  - Role `student` ➔ Allowed `/dashboard/student/*`
+- Unauthorized attempts trigger redirection to `/unauthorized` or `/login`.
+
+---
+
+## Directory & File Structure
 
 ```
-src/
-  app/                 # App Router pages
-  components/          # Marketing + shared UI + dashboard views
-  lib/
-    auth-client.ts     # Better Auth client, cookie/localStorage token
-    actions/           # Server actions wrapping Express REST
-public/                # Logos, SVGs
+d:/javascript-practice/school-management-system/
+├── public/                                # Public assets, logos, illustration SVGs
+├── src/
+│   ├── app/                               # Next.js App Router
+│   │   ├── about/page.tsx                 # About institutional page
+│   │   ├── contact/page.tsx               # Contact & support page
+│   │   ├── dashboard/
+│   │   │   ├── layout.tsx                 # Role-gated dashboard layout, sidebar, theme toggle
+│   │   │   ├── page.tsx                   # Redirects to role-specific dashboard
+│   │   │   ├── admin/                     # Admin Portal
+│   │   │   │   ├── page.tsx               # Admin overview & live platform statistics
+│   │   │   │   ├── approvals/page.tsx     # Pending user approval queue
+│   │   │   │   ├── classes/page.tsx       # Class, section & subject manager
+│   │   │   │   ├── events/page.tsx        # Academic event & holiday calendar scheduler
+│   │   │   │   ├── fees/page.tsx          # Invoicing, fee collections & PDF receipts
+│   │   │   │   ├── notices/page.tsx       # Admin institutional notices authoring
+│   │   │   │   ├── results/page.tsx       # School-wide exam performance & publishing
+│   │   │   │   ├── security/page.tsx      # User 2FA status lookup & reset
+│   │   │   │   ├── students/page.tsx      # Student directory & profile manager
+│   │   │   │   └── teachers/page.tsx      # Teacher directory & credential manager
+│   │   │   ├── teacher/                   # Teacher Portal
+│   │   │   │   ├── page.tsx               # Teacher overview dashboard
+│   │   │   │   ├── assignments/page.tsx   # Assignment CRUD & student submissions viewer
+│   │   │   │   ├── attendance/page.tsx    # Interactive attendance tracker & analytics
+│   │   │   │   ├── examinations/page.tsx  # Exam routines, schedules & room allocations
+│   │   │   │   ├── my-classes/page.tsx    # Class/subject assignment requests
+│   │   │   │   ├── notices/page.tsx       # Teacher notice board management
+│   │   │   │   ├── results/page.tsx       # Grade entry, automated grading & results
+│   │   │   │   └── students/page.tsx      # Enrolled student directory
+│   │   │   └── student/                   # Student Portal
+│   │   │       ├── page.tsx               # Student overview & academic progress
+│   │   │       ├── assignment/page.tsx    # Assignment submissions & file attachments
+│   │   │       ├── attendance/page.tsx    # Student personal attendance logs
+│   │   │       ├── examinations/page.tsx  # Student exam timetable
+│   │   │       ├── fee/page.tsx           # Fee invoices & payment receipts
+│   │   │       ├── notices/page.tsx       # Student notice board viewer
+│   │   │       └── result/page.tsx        # Published grades & report cards
+│   │   ├── login/page.tsx                 # Combined auth page (sign-in/sign-up)
+│   │   ├── notices/page.tsx               # Public notices board
+│   │   ├── privacy/page.tsx               # Privacy policy
+│   │   ├── profile/page.tsx               # User profile editor & avatar uploader
+│   │   ├── terms/page.tsx                 # Terms of service
+│   │   ├── unauthorized/page.tsx          # Access denied view
+│   │   ├── globals.css                    # Tailwind CSS 4 theme tokens & styles
+│   │   ├── layout.tsx                     # Root HTML layout (Navbar, Footer, Toasts)
+│   │   └── page.tsx                       # Landing page
+│   ├── components/
+│   │   ├── CombinedLoginRegister/         # Auth modal, forms, 2FA QR code
+│   │   ├── DashboardViews/                # Role dashboard overview cards & widgets
+│   │   ├── NoticeBoard/                   # Notice list, filter, pin-to-top component
+│   │   ├── shared/                        # Shared reusable dialogs and widgets
+│   │   │   ├── AssignmentCard.tsx         # Assignment display card with actions
+│   │   │   ├── AssignmentFormModal.tsx    # Assignment create/edit modal
+│   │   │   ├── DeleteConfirmationModal.tsx# Generic delete prompt
+│   │   │   ├── EnterResultButton.tsx      # Action button trigger for result entry
+│   │   │   ├── MarkAttendanceModal.tsx    # Interactive class attendance marker
+│   │   │   ├── ResultDetailsModal.tsx     # Result viewer modal
+│   │   │   ├── ResultList.tsx             # Paginated/filterable results table
+│   │   │   ├── SubmissionsModal.tsx       # Student assignment submissions inspector
+│   │   │   └── SubmitResultModal.tsx      # Grade entry & edit modal with auto-calculation
+│   │   ├── Navbar/                        # Global public header
+│   │   └── Footer/                        # Global public footer
+│   └── lib/
+│       ├── auth-client.ts                 # Better Auth client & session helpers
+│       └── actions/                       # Next.js Server Actions
+│           ├── approval-actions.ts        # Approval status check
+│           ├── password-reset-actions.ts  # TOTP password reset verification
+│           ├── teacher-students.ts        # Paginated teacher student directory
+│           ├── teacher.exam.ts            # Exam routines CRUD
+│           ├── teacher.notice.ts          # Notice board CRUD
+│           ├── teacher.request.ts         # Teacher class/subject requests
+│           └── user-actions.ts            # Client-side user profile updater
+├── CODE_SUMMARY.md                        # Architecture and codebase reference
+├── package.json                           # Dependencies & scripts
+├── tsconfig.json                          # TypeScript configuration
+└── next.config.ts                         # Next.js configuration (React Compiler, images)
 ```
 
-Path alias: `@/*` → `src/*`.
+---
+
+## Public & Shared Routes
+
+| Route | File Path | Description |
+|---|---|---|
+| `/` | `src/app/page.tsx` | Main marketing landing page: Hero, Solution Cards, Features, Live Marquee, Step-by-Step guide, Testimonials, FAQ, and CTA. |
+| `/about` | `src/app/about/page.tsx` | Mission, vision, core values, institutional background, and leadership team overview. |
+| `/contact` | `src/app/contact/page.tsx` | Interactive inquiry form, support channels, campus map, and contact information. |
+| `/notices` | `src/app/notices/page.tsx` | Public school bulletin board displaying institution-wide announcements. |
+| `/login` | `src/app/login/page.tsx` | Unified login, student/teacher registration, TOTP 2FA verification, and approval status gateway. |
+| `/profile` | `src/app/profile/page.tsx` | Authenticated user profile view with live editing and avatar upload to Cloudflare R2 / Express API (`/api/user/profile/image`). |
+| `/unauthorized` | `src/app/unauthorized/page.tsx` | Access-denied feedback screen for forbidden role access or missing permissions. |
+| `/privacy` | `src/app/privacy/page.tsx` | Comprehensive institutional privacy policy and student data compliance standards. |
+| `/terms` | `src/app/terms/page.tsx` | Terms of service and platform acceptable use guidelines. |
 
 ---
 
-## Public routes
+## Role-Based Dashboards & Pages
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Landing: hero, solutions, success, showcase, steps, FAQ, CTA |
-| `/about` | About content |
-| `/contact` | Contact / "Talk to us" |
-| `/notices` | Public notice board (`NoticeBoard`) |
-| `/login` | Combined login/register (`AuthPage`) |
-| `/profile` | Edit profile + image upload (authenticated) |
-| `/unauthorized` | Role/session denied |
-| `/dashboard` | Redirects to `/dashboard/{role}` or unauthorized |
+### Admin Dashboard (`/dashboard/admin`)
 
-Root layout: Navbar + Footer + ToastContainer, light/dark theme bootstrap from `localStorage` / system preference.
+The Admin area provides school administrators full operational control over academic records, personnel, finances, and system settings.
 
----
-
-## Authentication and security (frontend)
-
-Implemented in `src/components/CombinedLoginRegister/AuthPage.tsx` and `src/lib/auth-client.ts`.
-
-- **Sign up / sign in** via Better Auth (`signUp`, `signIn`, `signOut`, `useSession`)
-- **Admin approval gate:** login polls `checkApprovalStatusAction` (`GET /api/approval-status`). Unapproved emails show a disabled "Pending approval" state and re-check without a full refresh
-- **TOTP 2FA:** verify existing authenticator code, or first-login QR setup (`qrcode` package). No backup-code path in the UI
-- **Forgot password:** email + authenticator code → `verifyPasswordResetCodeAction` → `setNewPasswordAction` (no email OTP)
-- **Client lockout:** failed passwords tracked per email in localStorage (comments describe 3 failures → 5-hour lock)
-- **Post-register profile:** extra student/teacher fields saved with `updateUserProfileAction`
-
-Admin-only API UI:
-
-- **Approvals** — `GET /api/admin/pending-users`, `POST /api/admin/approve-user`
-- **Security** — look up 2FA status, `POST /api/admin/reset-2fa`
-
-Dashboard layout (`src/app/dashboard/layout.tsx`):
-
-- Sidebar nav by role
-- Redirects if session missing or role does not match `/dashboard/admin|teacher|student`
-- Theme toggle, logout confirmation modal
-- **Client-side only** — not Next.js middleware; URLs can still be requested before JS runs
+* **Overview (`/dashboard/admin/page.tsx`)**:
+  * Real-time metrics fetched directly from `GET /api/admin/stats`.
+  * Displays total users, students, teachers, admins, pending approvals, locked accounts, total notices, assignments, exams, results, and class assignment requests.
+* **Teachers (`/dashboard/admin/teachers/page.tsx` — FR-02)**:
+  * Complete faculty management: Add new teachers, edit profiles, toggle active/leave availability, modify roles, and revoke credentials.
+* **Students (`/dashboard/admin/students/page.tsx` — FR-01)**:
+  * Student enrollment: Add students, update biographical and guardian records, assign class and section, search and filter by grade.
+* **Classes & Sections (`/dashboard/admin/classes/page.tsx` — FR-03)**:
+  * Structure management: Create classes (Class 6–10), assign sections (A & B), map academic subjects, and review/approve teacher class assignment requests.
+* **Results Management (`/dashboard/admin/results/page.tsx` — FR-05)**:
+  * Institute-wide grade tracking, exam performance analysis, pass/fail ratios, and grade sheet publishing.
+* **Fees & Finance (`/dashboard/admin/fees/page.tsx` — FR-06)**:
+  * Invoice generation, payment status tracking (Paid / Partial / Unpaid), payment receipts, and printable PDF invoice generation.
+* **Notices (`/dashboard/admin/notices/page.tsx` — FR-07)**:
+  * Author institutional notices, pin urgent announcements to the top, and target specific audiences (`All`, `Teachers`, `Students`).
+* **Events Calendar (`/dashboard/admin/events/page.tsx` — FR-10)**:
+  * Academic calendar scheduling for Holidays, Exams, Sports events, Faculty meetings, and Academic milestones with audience filtering.
+* **Approvals (`/dashboard/admin/approvals/page.tsx`)**:
+  * Live approval queue calling `GET /api/admin/pending-users` and `POST /api/admin/approve-user` to activate new accounts.
+* **Security (`/dashboard/admin/security/page.tsx`)**:
+  * Inspect 2FA enrollment status and perform emergency two-factor resets via `POST /api/admin/reset-2fa`.
 
 ---
 
-## Dashboard navigation
+### Teacher Dashboard (`/dashboard/teacher`)
 
-**Admin:** Overview, Teachers, Students, Classes, Results, Fees, Notices, Approvals, Security
+Designed for educators to manage classes, attendance, exams, grades, and student assignments.
 
-**Teacher:** Overview, Attendance, Examinations, Results, Assignments, Class & Subject Requests, Students, Notices
-
-**Student:** Overview, Attendance, Results, Assignments, Fees, Notices
-
----
-
-## Server actions (`src/lib/actions`)
-
-All server actions share the same auth pattern: forward the `cookie` header from `next/headers` **and** extract `better-auth.session_token` from the cookie to set an explicit `Authorization: Bearer` header. This covers cross-origin sessions.
-
-| File | Role | Endpoints |
-| --- | --- | --- |
-| `user-actions.ts` | Profile update | `PUT /api/user/profile` (token from localStorage; **not** `"use server"`) |
-| `approval-actions.ts` | Public approval check | `GET /api/approval-status` |
-| `password-reset-actions.ts` | Reset via TOTP | `POST /api/password-reset/verify-code`, `.../set-password` |
-| `teacher.notice.ts` | Notices CRUD | `GET/POST /api/notices`, `PUT/DELETE /api/notices/:id` |
-| `teacher.request.ts` | Class/subject requests | `GET/POST/DELETE /api/teacher/requests`, `PATCH /api/admin/requests/:id` |
-| `teacher-students.ts` | Teacher student list | `GET /api/teacher/students` (pagination, search, class filter) |
-| `teacher.exam.ts` | Exam schedule CRUD | `GET/POST /api/exams`, `PATCH /api/exams/:id/cancel` |
-
-### `teacher.exam.ts` — detail
-
-Exports three server actions for the teacher examinations page:
-
-- **`getTeacherExamsAction()`** — Fetches all exams; maps raw API data onto the `ExamItem` interface with safe defaults (`section`, `startTime`, `endTime`, `roomNo`, `totalMarks`, `passingMarks`, `invigilator`, `status`).
-- **`createTeacherExamAction(payload: CreateExamPayload)`** — `POST /api/exams`; maps the created record back to `ExamItem`.
-- **`cancelTeacherExamAction(examId: string)`** — `PATCH /api/exams/:id/cancel`; marks an exam as Cancelled.
-
-Key types exported: `ExamItem`, `CreateExamPayload`, `GetExamsResponse`, `ActionExamResponse`.
-
----
-
-## Features wired to the API vs UI-only
-
-### Wired to Express (live)
-
-- Auth, 2FA, password reset, approval status
-- Profile + profile image (`/api/user/profile`, `/api/user/profile/image`)
-- Notices (public + teacher create/edit/delete via `NoticeBoard`)
-- Teacher class/subject requests (`/dashboard/teacher/my-classes`)
-- Teacher student directory (`/dashboard/teacher/students`)
-- Teacher assignment CRUD (`/api/teacher/assignments`) — create, edit, delete, list
-- Teacher exam schedule CRUD (`/api/exams`) — list, create, cancel
-- Student assignment list, file upload, submit (`/api/student/assignments...`)
-- Admin pending users, approve, 2FA lookup/reset
-
-### UI with local/demo data (not persisted here)
-
-- Admin overview stats, teachers, students, classes, results, fees
-- Teacher overview charts, attendance, results
-- Student overview stats, attendance, results, fees
-- README items such as AI at-risk prediction, academic calendar, and report generation are **not implemented** in this frontend
+* **Overview (`/dashboard/teacher/page.tsx`)**:
+  * Displays teacher profile summary, active courses, schedule highlights, and quick access shortcuts.
+* **Attendance Tracker (`/dashboard/teacher/attendance/page.tsx`)**:
+  * **Live Endpoints:**
+    * `GET /api/teacher/attendance/stats` — Overall statistics: Total students, Present count/rate, Late count/rate, Absent count/rate, weekly attendance trends, class attendance distribution.
+    * `GET /api/teacher/attendance/students?grade=...&section=...&group=...&date=...` — Loads class roster with existing attendance status.
+    * `POST /api/teacher/attendance/mark` — Bulk submits marked attendance records.
+  * **UI Features:** AreaChart and BarChart visualizations, preset date filters (`Single Day`, `This Week`, `This Month`, `Custom Date Range`), Class (6–10), Section (A, B), Group (Science, Business Studies, Humanities), and attendance status filters.
+  * **Modal:** `MarkAttendanceModal.tsx` supports search, bulk "All Present" / "All Absent" shortcuts, and individual toggle buttons.
+* **Examinations (`/dashboard/teacher/examinations/page.tsx`)**:
+  * Powered by server actions in `src/lib/actions/teacher.exam.ts`.
+  * Features: Create exam schedules, assign room numbers, set start/end times, total marks, and passing criteria. Supports cancelling exams.
+* **Results Management (`/dashboard/teacher/results/page.tsx`)**:
+  * **Live Endpoints:** `GET /api/teacher/results`, `POST /api/teacher/results`, `PATCH /api/teacher/results/:id`, `DELETE /api/teacher/results/:id`.
+  * **Automated Grading:** Automatic grade assignment (`A+`, `A`, `B+`, `B`, `C`, `D`, `F`) calculated from percentage (`score / total * 100`).
+  * **SubmitResultModal:** Integrates with `getTeacherStudentsAction()` to auto-select students from the teacher's active roster.
+  * **Analytics:** Visual grade distribution pills and high-achiever (`B+` or higher) percentage calculator.
+* **Assignments (`/dashboard/teacher/assignments/page.tsx`)**:
+  * **Live Endpoint:** `GET /api/teacher/assignments?teacherEmail=...`.
+  * **AssignmentFormModal:** Create and edit assignments with title, description, class, section, subject, total marks, and due date.
+  * **SubmissionsModal (`src/components/shared/SubmissionsModal.tsx`):** View all student submissions for a given assignment, including submission timestamps, status (`SUBMITTED`, `LATE`, `GRADED`), attempts used, written content, and download links for uploaded files.
+  * **DeleteConfirmationModal:** Safe confirmation before removing assignments.
+* **Class & Subject Requests (`/dashboard/teacher/my-classes/page.tsx`)**:
+  * Request new class, section, and subject teaching assignments; monitor status (`PENDING`, `APPROVED`, `REJECTED`); withdraw requests via `teacher.request.ts`.
+* **Students Directory (`/dashboard/teacher/students/page.tsx`)**:
+  * Paginated roster of students enrolled in the teacher's assigned classes using `teacher-students.ts`.
+* **Notices (`/dashboard/teacher/notices/page.tsx`)**:
+  * View, create, update, and delete institutional notices via `teacher.notice.ts`.
 
 ---
 
-## Shared components (notable)
+### Student Dashboard (`/dashboard/student`)
 
-- `NoticeBoard` — list/filter/pin; teachers can create/update/delete
-- `AssignmentFormModal` — animated modal (Framer Motion) for create/edit; class-dependent subject list; custom `ModalSelectDropdown` and `SingleFieldDateTimePicker` sub-components; supports both `onSubmit` (external handler) and direct `fetch` paths
-- `AssignmentCard`, `DeleteConfirmationModal`
-- `TeacherDashboardView` / `StudentDashboardView` — overview widgets (demo numbers)
-- Marketing: Hero, FAQ, About, Footer, Navbar, RoleBasedAccess (homepage explainer; not used as a route guard)
+The student portal provides learners access to their schedules, submissions, grades, and administrative updates.
 
----
-
-## Teacher Assignments page (`/dashboard/teacher/assignments`)
-
-`src/app/dashboard/teacher/assignments/page.tsx`
-
-- Client component; fetches assignments via direct `fetch` (not a server action) on mount using `teacherEmail` from session
-- Summary cards: Total, Active, Closed counts
-- Toolbar: text search, Status dropdown (All / ACTIVE / DRAFT / CLOSED), Class dropdown (All / Class 6–10)
-- Assignment grid with skeleton loading state (6 placeholder cards)
-- `AssignmentFormModal` for create/edit; `DeleteConfirmationModal` for delete confirmation
-- Live state update on save: inserts new assignment at front (sorted by due date) or replaces in-place; falls back to re-fetch if no saved record returned
-- Auth: `localStorage` `better-auth.session_token` forwarded as `Authorization: Bearer` header
+* **Overview (`/dashboard/student/page.tsx`)**:
+  * Overall academic progress, GPA tracker, upcoming assignment deadlines, and attendance summary.
+* **Assignments (`/dashboard/student/assignment/page.tsx`)**:
+  * Live integration with `GET /api/student/assignments`.
+  * File upload integration, submission attempts tracking, deadline countdowns, and teacher grading feedback.
+* **Attendance (`/dashboard/student/attendance/page.tsx`)**:
+  * Personal attendance percentage, monthly calendar breakdown, present/late/absent records.
+* **Examinations (`/dashboard/student/examinations/page.tsx`)**:
+  * Personal examination schedule, dates, timings, subject codes, and assigned examination rooms.
+* **Results (`/dashboard/student/result/page.tsx`)**:
+  * Published examination report cards, subject-wise marks, grades, and academic remarks.
+* **Fees (`/dashboard/student/fee/page.tsx`)**:
+  * Student tuition fee invoices, outstanding dues, payment history, and downloadable payment receipts.
+* **Notices (`/dashboard/student/notices/page.tsx`)**:
+  * School announcements and academic notices targeted to students.
 
 ---
 
-## Conventions and caveats
+## Server Actions Reference (`src/lib/actions`)
 
-1. **Split frontend/backend** — keep `role` in `auth-client.ts` aligned with server `additionalFields`.
-2. **`"use client"`** is used widely on dashboard pages because session and role checks run in the browser.
-3. **`user-actions.ts`** uses `localStorage` and is not a server action despite the name.
-4. Admin teachers page includes Bengali comments; rest of the app is English.
-5. `tsconfig.json` include list has a leftover `"src/app/dashboard/notices"` entry.
-6. `teacher.exam.ts` uses a hard-coded fallback URL (`http://localhost:5000`) while other action files default to `undefined` when `NEXT_PUBLIC_SERVER_URL` is missing.
+All server actions forward the `better-auth.session_token` cookie and an explicit `Authorization: Bearer <token>` header to maintain seamless cross-origin authentication with the Express API.
+
+| File | Exported Actions | HTTP Method & Path | Description |
+|---|---|---|---|
+| `approval-actions.ts` | `checkApprovalStatusAction(email)` | `GET /api/approval-status?email=...` | Checks whether a registered user is approved by an administrator |
+| `password-reset-actions.ts` | `verifyPasswordResetCodeAction(email, code)`<br>`setNewPasswordAction(email, newPassword)` | `POST /api/password-reset/verify-code`<br>`POST /api/password-reset/set-password` | Verifies 6-digit TOTP code and updates password |
+| `teacher-students.ts` | `getTeacherStudentsAction(params)` | `GET /api/teacher/students?...` | Returns paginated student roster with search and class filtering |
+| `teacher.exam.ts` | `getTeacherExamsAction()`<br>`createTeacherExamAction(payload)`<br>`cancelTeacherExamAction(examId)` | `GET /api/exams`<br>`POST /api/exams`<br>`PATCH /api/exams/:id/cancel` | Exam routine listing, creation, and cancellation |
+| `teacher.notice.ts` | `getTeacherNoticesAction()`<br>`createTeacherNoticeAction(payload)`<br>`updateTeacherNoticeAction(id, payload)`<br>`deleteTeacherNoticeAction(id)` | `GET /api/notices`<br>`POST /api/notices`<br>`PUT /api/notices/:id`<br>`DELETE /api/notices/:id` | Full CRUD operations for teacher notice board management |
+| `teacher.request.ts` | `getTeacherRequestsAction()`<br>`createTeacherRequestAction(payload)`<br>`deleteTeacherRequestAction(id)`<br>`updateAdminTeacherRequestStatusAction(id, status)` | `GET /api/teacher/requests`<br>`POST /api/teacher/requests`<br>`DELETE /api/teacher/requests/:id`<br>`PATCH /api/admin/requests/:id` | Teacher class assignment requests and admin approval flow |
+| `user-actions.ts` | `updateUserProfileAction(payload)` | `PUT /api/user/profile` | Client action using `localStorage` token to update profile details |
 
 ---
 
-## How to run this frontend
+## Direct Client-Side API Integrations
+
+In addition to Server Actions, several components communicate with the backend using direct `fetch()` calls with bearer tokens retrieved from `localStorage`:
+
+| Feature Area | Endpoint | HTTP Method | Invoking Component / Page |
+|---|---|---|---|
+| **Admin Stats** | `/api/admin/stats` | `GET` | `src/app/dashboard/admin/page.tsx` |
+| **Admin Approvals** | `/api/admin/pending-users`<br>`/api/admin/approve-user` | `GET`<br>`POST` | `src/app/dashboard/admin/approvals/page.tsx` |
+| **Admin Security** | `/api/admin/reset-2fa` | `POST` | `src/app/dashboard/admin/security/page.tsx` |
+| **Teacher Attendance** | `/api/teacher/attendance/stats`<br>`/api/teacher/attendance/students`<br>`/api/teacher/attendance/mark` | `GET`<br>`GET`<br>`POST` | `src/app/dashboard/teacher/attendance/page.tsx`<br>`src/components/shared/MarkAttendanceModal.tsx` |
+| **Teacher Results** | `/api/teacher/results`<br>`/api/teacher/results/:id` | `GET`, `POST`<br>`PATCH`, `DELETE` | `src/components/shared/ResultList.tsx`<br>`src/components/shared/SubmitResultModal.tsx` |
+| **Teacher Assignments** | `/api/teacher/assignments` | `GET`, `POST`, `PUT`, `DELETE` | `src/app/dashboard/teacher/assignments/page.tsx`<br>`src/components/shared/AssignmentFormModal.tsx` |
+| **Student Assignments** | `/api/student/assignments` | `GET`, `POST` | `src/app/dashboard/student/assignment/page.tsx` |
+| **User Profile Picture** | `/api/user/profile/image` | `POST` (multipart/form-data) | `src/app/profile/page.tsx` |
+
+---
+
+## Component Catalog
+
+### Shared Modals & Widgets (`src/components/shared`)
+
+* **`AssignmentCard.tsx`**: Renders assignment card with subject, title, due date, status badge (`ACTIVE`, `DRAFT`, `CLOSED`), past-due pill, and action menu (Edit, View Submissions, Delete).
+* **`AssignmentFormModal.tsx`**: Framer Motion animated modal for creating and updating assignments. Features class-dependent subject dropdowns, total marks input, custom date-time picker, and validation.
+* **`SubmissionsModal.tsx`**: Modal allowing teachers to review all student submissions for an assignment. Shows student profile, class/section, submission date, status badge, attempt counter, text response, and download buttons for file attachments.
+* **`MarkAttendanceModal.tsx`**: Interactive roster modal allowing teachers to mark attendance for a specific class, section, and date. Includes search bar, quick "All Present" / "All Absent" buttons, and individual status toggles.
+* **`SubmitResultModal.tsx`**: Results entry modal featuring automatic student roster lookup via `getTeacherStudentsAction()`, automated percentage-to-grade calculation (`A+` to `F`), exam presets, and draft/published toggles.
+* **`ResultList.tsx`**: Rich data table displaying student grades, exams, scores, and status with text search, class filter, status filter, and floating portal action menu.
+* **`ResultDetailsModal.tsx`**: Inspection modal displaying grade badge, calculated percentage bar, student metadata, and examination details.
+* **`DeleteConfirmationModal.tsx`**: Polished confirmation modal with alert styling, danger buttons, and busy spinner state.
+
+### Dashboard & Layout Components
+
+* **`src/app/dashboard/layout.tsx`**: Core shell for all dashboard views. Includes collapsible sidebar navigation tailored to current user role (`admin`, `teacher`, `student`), top bar with breadcrumbs, theme toggle (`light` / `dark`), and logout confirmation modal.
+* **`src/components/DashboardViews/TeacherDashboardView.tsx`**: Overview dashboard cards and metric widgets for teachers.
+* **`src/components/DashboardViews/StudentDashboardView.tsx`**: Summary dashboard cards and academic progress tracking for students.
+* **`src/components/NoticeBoard/NoticeBoard.tsx`**: Interactive notice list with search, category filtering, and pin-to-top highlights.
+
+---
+
+## Environment Variables & Setup
+
+### Environment Configuration (`.env.local`)
 
 ```bash
-npm install
-# .env.local: NEXT_PUBLIC_SERVER_URL=http://localhost:5000
-npm run dev
+# URL of the Express + Better Auth backend API
+NEXT_PUBLIC_SERVER_URL=http://localhost:5000
 ```
 
-Requires the separate Express/Better Auth API. This repo alone cannot authenticate or persist school data.
+### Local Development Setup
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Run Development Server:**
+   ```bash
+   npm run dev
+   ```
+   The application will start on `http://localhost:3000`.
+
+3. **Build for Production:**
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+4. **Linting:**
+   ```bash
+   npm run lint
+   ```
 
 ---
 
-## Team / product context
-
-Product name: **EduNexus**. Team of six (see `README.md`). Live site and GitHub are linked there. This file is a **code map of the Next.js app** as of the last review of `src/`.
+*Summary updated to reflect all recent commits, newly implemented features (Teacher Attendance tracking, Result auto-grading, Submissions Modal, Admin Events scheduler, and expanded registration flow).*
