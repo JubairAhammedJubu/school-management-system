@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -12,30 +13,78 @@ import {
   Users,
   ShieldCheck,
   Sparkles,
+  Lock,
 } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
-const navigation = [
-  { name: "Home", href: "/" },
-  { name: "About Us", href: "/#about" },
-  { name: "Students", href: "/students" },
-  { name: "Teachers", href: "/teachers" },
-  { name: "Notices", href: "/notices" },
-  { name: "Contact Us", href: "/contact" },
-];
+type Role = "admin" | "teacher" | "student";
 
-const portals = [
-  { name: "Admin Portal", href: "/login" },
-  { name: "Teacher Portal", href: "/teachers" },
-  { name: "Student Portal", href: "/students" },
+const DASHBOARD_HREF: Record<Role, string> = {
+  admin: "/dashboard/admin",
+  teacher: "/dashboard/teacher",
+  student: "/dashboard/student",
+};
+
+const PORTALS: { name: string; role: Role }[] = [
+  { name: "Admin Portal", role: "admin" },
+  { name: "Teacher Portal", role: "teacher" },
+  { name: "Student Portal", role: "student" },
 ];
 
 export default function Footer() {
   const pathname = usePathname();
+  const { data: session, isPending } = useSession();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Don't show the public footer inside dashboard pages.
   if (pathname?.startsWith("/dashboard")) {
     return null;
   }
+
+  // Treat "not yet resolved" the same as "logged out" until the session
+  // settles, so the server-rendered footer and the first client render
+  // match (no hydration mismatch) and no link briefly flashes disabled.
+  const isReady = mounted && !isPending;
+  const userRole = isReady
+    ? ((session?.user as { role?: string } | undefined)?.role?.toLowerCase() as
+        | Role
+        | undefined)
+    : undefined;
+  const isLoggedIn = isReady && Boolean(userRole);
+
+  // "Students" / "Teachers" go to that role's own dashboard once the
+  // visitor is logged in as that role; otherwise they stay pointed at
+  // the public info page.
+  const navigation = [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/about" },
+    {
+      name: "Students",
+      href: userRole === "student" ? DASHBOARD_HREF.student : "/students",
+    },
+    {
+      // Teacher's own dashboard if logged in as a teacher; a student is
+      // explicitly not allowed to browse the Teachers area, so send them
+      // to the unauthorized page instead of the public info page; anyone
+      // else (logged out, or another role) goes to login.
+      name: "Teachers",
+      href:
+        userRole === "teacher"
+          ? DASHBOARD_HREF.teacher
+          : userRole === "student"
+            ? "/unauthorized"
+            : "/login",
+    },
+    { name: "Notices", href: "/notices" },
+    { name: "Contact Us", href: "/contact" },
+  ];
+
+  const ctaHref = isLoggedIn ? DASHBOARD_HREF[userRole as Role] : "/login";
+  const ctaLabel = isLoggedIn ? "Go to Dashboard" : "Get Started";
 
   return (
     <footer className="relative w-full overflow-hidden bg-slate-50 dark:bg-black text-slate-600 dark:text-slate-400 border-t border-slate-200/80 dark:border-slate-800/80 transition-colors duration-300">
@@ -167,26 +216,62 @@ export default function Footer() {
                 </h3>
 
                 <ul className="space-y-2.5">
-                  {portals.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all duration-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:translate-x-1"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-400 transition-colors" />
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
+                  {PORTALS.map((portal) => {
+                    // Not logged in: every portal just goes to login.
+                    if (!isLoggedIn) {
+                      return (
+                        <li key={portal.name}>
+                          <Link
+                            href="/login"
+                            className="group inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all duration-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:translate-x-1"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-400 transition-colors" />
+                            {portal.name}
+                          </Link>
+                        </li>
+                      );
+                    }
+
+                    // Logged in as this portal's own role: go straight to
+                    // that dashboard.
+                    if (userRole === portal.role) {
+                      return (
+                        <li key={portal.name}>
+                          <Link
+                            href={DASHBOARD_HREF[portal.role]}
+                            className="group inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 transition-all duration-200 hover:translate-x-1"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                            {portal.name}
+                          </Link>
+                        </li>
+                      );
+                    }
+
+                    // Logged in as a different role: this portal is locked.
+                    return (
+                      <li key={portal.name}>
+                        <span
+                          aria-disabled="true"
+                          title="Not accessible with your current account role"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                          {portal.name}
+                          <Lock className="h-3 w-3" />
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 {/* CTA Button Inside Portals Box */}
                 <div className="pt-2">
                   <Link
-                    href="/login"
+                    href={ctaHref}
                     className="group inline-flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-indigo-500/40 active:translate-y-0"
                   >
-                    <span>Get Started</span>
+                    <span>{ctaLabel}</span>
                     <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
