@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
@@ -31,6 +31,9 @@ import {
   Home,
   Award,
   Briefcase,
+  ChevronDown,
+  Check,
+  Clock,
 } from "lucide-react";
 import { authClient, signIn, signOut, signUp } from "@/lib/auth-client";
 import { checkApprovalStatusAction } from "@/lib/actions/approval-actions";
@@ -182,6 +185,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [bloodGroup, setBloodGroup] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [studentClass, setStudentClass] = useState("");
+  const [studentSection, setStudentSection] = useState("");
   const [qualification, setQualification] = useState("");
 
   // The institution email decides the role server-side (see auth.ts), so we
@@ -249,6 +253,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     setBloodGroup("");
     setSchoolName("");
     setStudentClass("");
+    setStudentSection("");
     setQualification("");
   };
 
@@ -269,7 +274,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || isLockedOut) return;
-    if (isLogin && approvalStatus === "pending") return;
+    if (isLogin && approvalStatus === "pending") {
+      const msg =
+        "Your account is pending admin approval. Please try again after an admin approves your account.";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
 
     if (!isLogin) {
       // Step 1 of registration: just validate the basics and move on to the
@@ -311,8 +322,17 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         // Ekhono frontend approval-poll miss korle o (e.g. user submit
         // korlo thik shei shomoy-e), backend-i sheshmesh block kore dey —
         // shei state-take button-e reflect kori.
-        if (signInError.code === "ACCOUNT_PENDING_APPROVAL") {
+        if (
+          signInError.code === "ACCOUNT_PENDING_APPROVAL" ||
+          signInError.message?.toLowerCase().includes("pending admin approval") ||
+          signInError.message?.toLowerCase().includes("pending approval")
+        ) {
           setApprovalStatus("pending");
+          const pendingMsg =
+            "Your account is pending admin approval. Please try again after an admin approves your account.";
+          setError(pendingMsg);
+          toast.error(pendingMsg);
+          throw new Error(pendingMsg);
         }
         throw new Error(signInError.message ?? "Invalid email or password.");
       }
@@ -543,23 +563,20 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     if (isSubmitting) return;
 
     setError("");
+
+    if (phone.trim() && (!phone.trim().startsWith("01") || phone.trim().length !== 11)) {
+      const msg = "Phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const { error: signUpError } = await signUp.email({
         email,
         password,
-        name,
-      });
-      if (signUpError) {
-        throw new Error(
-          signUpError.message ?? "Could not create your account.",
-        );
-      }
-
-      // Account created — now attach the extra info collected in this step.
-      const profileResult = await updateUserProfileAction({
-        email,
         name,
         phone: phone.trim() || undefined,
         location: location.trim() || undefined,
@@ -578,15 +595,18 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           detectedRole === "student"
             ? studentClass.trim() || undefined
             : undefined,
+        studentSection:
+          detectedRole === "student"
+            ? studentSection.trim() || undefined
+            : undefined,
         qualification:
           detectedRole === "teacher"
             ? qualification.trim() || undefined
             : undefined,
-      });
-      if (!profileResult.success) {
-        toast.error(
-          profileResult.error ??
-            "Account created, but saving your extra info failed. You can update it later from your profile.",
+      } as any);
+      if (signUpError) {
+        throw new Error(
+          signUpError.message ?? "Could not create your account.",
         );
       }
 
@@ -641,6 +661,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           setSchoolName={setSchoolName}
           studentClass={studentClass}
           setStudentClass={setStudentClass}
+          studentSection={studentSection}
+          setStudentSection={setStudentSection}
           qualification={qualification}
           setQualification={setQualification}
           bio={bio}
@@ -838,22 +860,42 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 )}
               </AnimatePresence>
 
+              {isLogin && approvalStatus === "pending" && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-xl text-amber-800 dark:text-amber-200 text-xs flex items-start gap-2.5 my-1">
+                  <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+                  <div>
+                    <p className="font-bold text-amber-900 dark:text-amber-100">Account Pending Approval</p>
+                    <p className="text-[11px] opacity-90 mt-0.5 leading-relaxed">
+                      Your account is pending admin approval. You will be able to log in once an administrator approves your account.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
                   {error}
                 </p>
               )}
 
-
               <motion.button
                 type="submit"
-                disabled={isSubmitting}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={isSubmitting || (isLogin && approvalStatus === "pending")}
+                whileHover={isLogin && approvalStatus === "pending" ? {} : { y: -1 }}
+                whileTap={isLogin && approvalStatus === "pending" ? {} : { scale: 0.98 }}
+                className={`w-full font-bold text-sm py-2 rounded-lg transition-all mt-2 flex items-center justify-center gap-2 ${
+                  isLogin && approvalStatus === "pending"
+                    ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                }`}
               >
                 {isSubmitting ? (
                   <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                ) : isLogin && approvalStatus === "pending" ? (
+                  <>
+                    <Clock size={14} />
+                    <span>Pending Admin Approval</span>
+                  </>
                 ) : (
                   <>
                     {isLogin ? "Sign In" : "Continue"}
@@ -1468,6 +1510,8 @@ interface ProfileCompletionStepProps {
   setSchoolName: (v: string) => void;
   studentClass: string;
   setStudentClass: (v: string) => void;
+  studentSection: string;
+  setStudentSection: (v: string) => void;
   qualification: string;
   setQualification: (v: string) => void;
   bio: string;
@@ -1475,6 +1519,103 @@ interface ProfileCompletionStepProps {
 }
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+const GROUP_OPTIONS = ["Science", "Business Studies", "Humanities"];
+
+interface CustomSelectProps {
+  label: string;
+  icon: React.ElementType;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder?: string;
+}
+
+function CustomSelect({
+  label,
+  icon: Icon,
+  value,
+  onChange,
+  options,
+  placeholder = "Select option",
+}: CustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="space-y-1 relative" ref={containerRef}>
+      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+        {label}
+      </label>
+      <div className="relative group">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 shadow-sm flex items-center justify-between text-left cursor-pointer"
+        >
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+            <Icon size={14} />
+          </div>
+          <span className={value ? "font-medium" : "text-slate-400 dark:text-slate-500"}>
+            {value || placeholder}
+          </span>
+          <ChevronDown
+            size={14}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
+              isOpen ? "rotate-180 text-indigo-500" : ""
+            }`}
+          />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute z-50 left-0 right-0 mt-1.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl shadow-slate-300/30 dark:shadow-black/50 max-h-48 overflow-y-auto"
+            >
+              {options.map((opt) => {
+                const isSelected = opt === value;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${
+                      isSelected
+                        ? "bg-indigo-50/80 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
+                        : "text-slate-700 dark:text-slate-200"
+                    }`}
+                  >
+                    <span>{opt}</span>
+                    {isSelected && (
+                      <Check size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
 
 function ProfileCompletionStep({
   detectedRole,
@@ -1502,6 +1643,8 @@ function ProfileCompletionStep({
   setSchoolName,
   studentClass,
   setStudentClass,
+  studentSection,
+  setStudentSection,
   qualification,
   setQualification,
   bio,
@@ -1510,11 +1653,11 @@ function ProfileCompletionStep({
   const isTeacher = detectedRole === "teacher";
 
   const inputClass =
-    "w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200 shadow-sm";
+    "w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 shadow-sm";
   const labelClass =
     "text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider";
   const iconWrapClass =
-    "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-violet-500 transition-colors pointer-events-none";
+    "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none";
 
   return (
     <motion.div
@@ -1533,9 +1676,9 @@ function ProfileCompletionStep({
             Account
           </span>
         </div>
-        <div className="flex-1 h-px bg-gradient-to-r from-emerald-400 to-violet-400" />
-        <div className="flex items-center gap-1.5 text-violet-600 dark:text-violet-400">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-white text-[9px] font-bold">
+        <div className="flex-1 h-px bg-gradient-to-r from-emerald-400 to-indigo-500" />
+        <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white text-[9px] font-bold">
             2
           </span>
           <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wide">
@@ -1554,277 +1697,297 @@ function ProfileCompletionStep({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12">
-        {/* --- FORM --- */}
-        <div className="lg:col-span-7 px-5 sm:px-10 py-6 max-h-[75vh] overflow-y-auto">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/25">
-              {isTeacher ? (
-                <Briefcase size={18} />
-              ) : (
-                <GraduationCap size={18} />
-              )}
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Complete your profile
-              </h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {isTeacher
-                  ? "A few professional details to finish setting up your Teacher account."
-                  : "A few academic details to finish setting up your Student account."}
-              </p>
-            </div>
-          </div>
+        {/* --- FORM CONTAINER --- */}
+        <div className="lg:col-span-7 flex flex-col justify-between">
+          <form onSubmit={onSubmit} className="flex flex-col justify-between h-full">
+            {/* Scrollable Fields Box */}
+            <div className="px-5 sm:px-10 py-6 max-h-[60vh] sm:max-h-[65vh] overflow-y-auto space-y-4">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-500/25">
+                  {isTeacher ? (
+                    <Briefcase size={18} />
+                  ) : (
+                    <GraduationCap size={18} />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Complete your profile
+                  </h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {isTeacher
+                      ? "A few professional details to finish setting up your Teacher account."
+                      : "A few academic details to finish setting up your Student account."}
+                  </p>
+                </div>
+              </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-2">
-                Personal &amp; Family
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className={labelClass}>Father&apos;s Name</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <Users size={14} />
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
+                  Personal &amp; Family
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className={labelClass}>Father&apos;s Name</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <Users size={14} />
+                      </div>
+                      <input
+                        type="text"
+                        value={fatherName}
+                        onChange={(e) => setFatherName(e.target.value)}
+                        placeholder="e.g. Abdul Karim"
+                        className={inputClass}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      value={fatherName}
-                      onChange={(e) => setFatherName(e.target.value)}
-                      placeholder="e.g. Abdul Karim"
-                      className={inputClass}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className={labelClass}>Mother&apos;s Name</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <Users size={14} />
+                      </div>
+                      <input
+                        type="text"
+                        value={motherName}
+                        onChange={(e) => setMotherName(e.target.value)}
+                        placeholder="e.g. Rahima Begum"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className={labelClass}>Date of Birth</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <Calendar size={14} />
+                      </div>
+                      <input
+                        type="date"
+                        max={new Date().toISOString().split("T")[0]}
+                        value={dateOfBirth}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <CustomSelect
+                    label="Blood Group"
+                    icon={Droplet}
+                    value={bloodGroup}
+                    onChange={setBloodGroup}
+                    options={BLOOD_GROUPS}
+                    placeholder="Select Blood Group"
+                  />
+                </div>
+
+                <div className="space-y-1 mt-2">
+                  <label className={labelClass}>Permanent Address</label>
+                  <div className="relative group">
+                    <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+                      <Home size={14} />
+                    </div>
+                    <textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="Permanent address: Village/House, Post Office, District"
+                      rows={2}
+                      className={`${inputClass} resize-none`}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className={labelClass}>Mother&apos;s Name</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <Users size={14} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                  <div className="space-y-1">
+                    <label className={labelClass}>Phone Number</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <Phone size={14} />
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={11}
+                        value={phone}
+                        onChange={(e) => {
+                          let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                          if (val.length > 0) {
+                            if (val[0] !== "0") val = "0" + val.slice(1);
+                            if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                          }
+                          setPhone(val);
+                        }}
+                        placeholder="01712345678"
+                        className={inputClass}
+                      />
                     </div>
-                    <input
-                      type="text"
-                      value={motherName}
-                      onChange={(e) => setMotherName(e.target.value)}
-                      placeholder="e.g. Rahima Begum"
-                      className={inputClass}
-                    />
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className={labelClass}>Date of Birth</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <Calendar size={14} />
+                  <div className="space-y-1">
+                    <label className={labelClass}>Present Address</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <MapPin size={14} />
+                      </div>
+                      <input
+                        type="text"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Present address: e.g. Dhaka, Bangladesh"
+                        className={inputClass}
+                      />
                     </div>
-                    <input
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className={labelClass}>Blood Group</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <Droplet size={14} />
-                    </div>
-                    <select
-                      value={bloodGroup}
-                      onChange={(e) => setBloodGroup(e.target.value)}
-                      className={`${inputClass} appearance-none cursor-pointer`}
-                    >
-                      <option value="">Select</option>
-                      {BLOOD_GROUPS.map((bg) => (
-                        <option key={bg} value={bg}>
-                          {bg}
-                        </option>
-                      ))}
-                    </select>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-1 mt-2">
-                <label className={labelClass}>Address</label>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
+                  {isTeacher ? "Professional Details" : "Academic Details"}
+                </p>
+                {isTeacher ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className={labelClass}>Department</label>
+                      <div className="relative group">
+                        <div className={iconWrapClass}>
+                          <Building2 size={14} />
+                        </div>
+                        <input
+                          type="text"
+                          value={department}
+                          onChange={(e) => setDepartment(e.target.value)}
+                          placeholder="e.g. Computer Science"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className={labelClass}>
+                        Education Qualification
+                      </label>
+                      <div className="relative group">
+                        <div className={iconWrapClass}>
+                          <Award size={14} />
+                        </div>
+                        <input
+                          type="text"
+                          value={qualification}
+                          onChange={(e) => setQualification(e.target.value)}
+                          placeholder="e.g. M.Sc in Physics"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+                    <div className="space-y-1">
+                      <label className={labelClass}>School Name</label>
+                      <div className="relative group">
+                        <div className={iconWrapClass}>
+                          <School size={14} />
+                        </div>
+                        <input
+                          type="text"
+                          value={schoolName}
+                          onChange={(e) => setSchoolName(e.target.value)}
+                          placeholder="e.g. EduNexus High School"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+
+                    <CustomSelect
+                      label="Class"
+                      icon={BookOpen}
+                      value={studentClass}
+                      onChange={(val) => {
+                        setStudentClass(val);
+                        if (val !== "Class 9" && val !== "Class 10") {
+                          setDepartment("");
+                        }
+                      }}
+                      options={CLASS_OPTIONS}
+                      placeholder="Select Class"
+                    />
+
+                    <CustomSelect
+                      label="Section"
+                      icon={Users}
+                      value={studentSection}
+                      onChange={setStudentSection}
+                      options={["Section A", "Section B"]}
+                      placeholder="Select Section"
+                    />
+
+                    {(studentClass === "Class 9" || studentClass === "Class 10") && (
+                      <CustomSelect
+                        label="Group"
+                        icon={Building2}
+                        value={department}
+                        onChange={setDepartment}
+                        options={GROUP_OPTIONS}
+                        placeholder="Select Group"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label className={labelClass}>Short Bio (Optional)</label>
                 <div className="relative group">
-                  <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-violet-500 transition-colors pointer-events-none">
-                    <Home size={14} />
+                  <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
+                    <FileText size={14} />
                   </div>
                   <textarea
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Village/House, Post Office, District"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="A line or two about yourself (optional)"
                     rows={2}
                     className={`${inputClass} resize-none`}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                <div className="space-y-1">
-                  <label className={labelClass}>Phone Number</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <Phone size={14} />
-                    </div>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="01712345678"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className={labelClass}>Location</label>
-                  <div className="relative group">
-                    <div className={iconWrapClass}>
-                      <MapPin size={14} />
-                    </div>
-                    <input
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="Dhaka, Bangladesh"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-2">
-                {isTeacher ? "Professional Details" : "Academic Details"}
-              </p>
-              {isTeacher ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <label className={labelClass}>Department</label>
-                    <div className="relative group">
-                      <div className={iconWrapClass}>
-                        <Building2 size={14} />
-                      </div>
-                      <input
-                        type="text"
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        placeholder="e.g. Computer Science"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className={labelClass}>
-                      Education Qualification
-                    </label>
-                    <div className="relative group">
-                      <div className={iconWrapClass}>
-                        <Award size={14} />
-                      </div>
-                      <input
-                        type="text"
-                        value={qualification}
-                        onChange={(e) => setQualification(e.target.value)}
-                        placeholder="e.g. M.Sc in Physics"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <label className={labelClass}>School Name</label>
-                    <div className="relative group">
-                      <div className={iconWrapClass}>
-                        <School size={14} />
-                      </div>
-                      <input
-                        type="text"
-                        value={schoolName}
-                        onChange={(e) => setSchoolName(e.target.value)}
-                        placeholder="e.g. EduNexus High School"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className={labelClass}>Class</label>
-                    <div className="relative group">
-                      <div className={iconWrapClass}>
-                        <BookOpen size={14} />
-                      </div>
-                      <input
-                        type="text"
-                        value={studentClass}
-                        onChange={(e) => setStudentClass(e.target.value)}
-                        placeholder="e.g. Class 9"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                </div>
+              {error && (
+                <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
+                  {error}
+                </p>
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className={labelClass}>Short Bio</label>
-              <div className="relative group">
-                <div className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 group-focus-within:text-violet-500 transition-colors pointer-events-none">
-                  <FileText size={14} />
-                </div>
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="A line or two about yourself"
-                  rows={2}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
-                {error}
-              </p>
-            )}
-
-            <div className="flex gap-2 pt-1 bg-white dark:bg-slate-900 pb-1">
+            {/* Dedicated Action Buttons Footer */}
+            <div className="px-5 sm:px-10 py-3.5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <motion.button
                 type="button"
                 onClick={onCancel}
                 disabled={isSubmitting}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm py-2 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto shrink-0 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <X size={14} />
-                Cancel
+                <span>Cancel</span>
               </motion.button>
               <motion.button
                 type="submit"
                 disabled={isSubmitting}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-[2] bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-violet-500/20 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full sm:flex-1 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-2.5 px-5 rounded-xl shadow-md shadow-indigo-500/25 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                 ) : (
                   <>
-                    Complete Registration
+                    <span>Complete Registration</span>
                     <ArrowRight size={14} />
                   </>
                 )}
