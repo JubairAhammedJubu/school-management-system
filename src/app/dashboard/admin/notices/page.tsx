@@ -15,7 +15,9 @@ export default function AdminNoticesPage() {
 
   useEffect(() => {
     if (!isPending) {
-      if (!session?.user || rawRole !== "admin") {
+      if (!session?.user) {
+        router.replace("/");
+      } else if (rawRole !== "admin") {
         router.replace("/unauthorized");
       }
     }
