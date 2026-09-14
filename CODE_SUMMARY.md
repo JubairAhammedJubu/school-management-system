@@ -58,21 +58,26 @@ Browser Client (Next.js App Router)
   │
   └── Communication Channels to Backend:
         ├── Server Actions (`src/lib/actions/*.ts` via Next.js server runtime)
-        └── Client Fetch (`authedFetch()` / `getAuthToken()` with Bearer token)
+        └── Client Fetch (`credentials: "include"` with automatic session cookies)
               │
               ▼
-        Express REST API (`NEXT_PUBLIC_SERVER_URL` - separate repo)
+        Next.js API Reverse Proxy (`next.config.ts` rewrites `/api/:path*`)
               │
               ▼
-        PostgreSQL via Prisma ORM
+        Express REST API (`NEXT_PUBLIC_SERVER_URL` / Better Auth - separate repo)
+              │
+              ▼
+        PostgreSQL / MongoDB via Prisma ORM
 ```
 
-### Cross-Origin Auth Token Synchronization
-Because the Next.js frontend and Express backend typically operate on distinct domains or ports in production and development:
-1. `better-auth` stores the session token in browser **`localStorage`** under the key `better-auth.session_token`.
-2. The auth client mirrors this token into a **same-origin cookie** (`better-auth.session_token`).
-3. **Server Actions** read this cookie via `next/headers` and forward it as `Authorization: Bearer <token>` and `Cookie: better-auth.session_token=<token>` to the Express backend.
-4. **Client Components** retrieve the token from `localStorage` and supply `Authorization: Bearer <token>` on direct fetch requests.
+### Native Better Auth Cookie Authentication (Zero Client-Side Token Handling)
+Authentication has been refactored to eliminate manual JWT/bearer token manipulation and `localStorage` storage:
+1. **Cookie-Based Sessions**: Better Auth issues an `HttpOnly`, `SameSite` session cookie (`better-auth.session_token`).
+2. **First-Party Reverse Proxy**: `next.config.ts` proxies `/api/:path*` to the backend Express server (`NEXT_PUBLIC_SERVER_URL`), allowing the session cookie to be handled strictly as a first-party cookie without CORS or third-party cookie restrictions.
+3. **No `localStorage` Storage**: Sensitive authentication tokens are never stored in browser `localStorage` (XSS-immune).
+4. **Zero Manual Authorization Headers**: The browser automatically attaches the session cookie to all client-side API requests via `credentials: "include"`.
+5. **Native Next.js Server Actions**: Server actions read cookies directly via `next/headers` (`cookies()`) and forward them natively, eliminating the need to pass `authToken` arguments from UI components.
+6. **React Client Hook**: Client components access current authentication and user state exclusively through Better Auth's standard `useSession()` hook.
 
 ---
 
@@ -388,4 +393,4 @@ NEXT_PUBLIC_SERVER_URL=http://localhost:5000
 
 ---
 
-*Summary updated to reflect all recent commits, newly implemented features (Teacher Attendance tracking, Result auto-grading, Submissions Modal, Admin Events scheduler, and expanded registration flow).*
+*Summary updated to reflect all recent commits, newly implemented features (Teacher Attendance tracking, Result auto-grading, Submissions Modal, Admin Events scheduler, and expanded registration flow), as well as the migration to native Better Auth HttpOnly cookie authentication and Next.js reverse proxy architecture (removing all client-side localStorage token storage and manual Bearer headers).*

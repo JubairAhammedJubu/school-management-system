@@ -23,14 +23,8 @@ import {
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 function authedFetch(path: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("better-auth.session_token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
   return fetch(`${SERVER_URL}${path}`, {
     ...init,
-    headers,
     credentials: "include",
     cache: "no-store",
   });
@@ -121,7 +115,9 @@ export default function AdminApprovalsPage() {
   const loadTeacherRequests = useCallback(async () => {
     setIsLoadingRequests(true);
     try {
-      const response = await authedFetch("/api/teacher/requests");
+      const response = await authedFetch("/api/teacher/requests", {
+        credentials: "include",
+      });
       const result = await response.json();
       if (response.ok) {
         setTeacherRequests(result.requests ?? []);
@@ -148,6 +144,7 @@ export default function AdminApprovalsPage() {
       const response = await authedFetch("/api/admin/approve-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ userId: user.id }),
       });
       const result = await response.json();
@@ -168,6 +165,7 @@ export default function AdminApprovalsPage() {
       const res = await authedFetch(`/api/admin/requests/${requestId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ status }),
       });
       const data = await res.json();
@@ -204,7 +202,7 @@ export default function AdminApprovalsPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
         <div className="absolute -right-16 -top-16 w-72 h-72 bg-blue-500/15 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -301,7 +299,7 @@ export default function AdminApprovalsPage() {
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-5"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-extrabold shadow-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-tr from-blue-600 to-indigo-500 text-white font-extrabold shadow-md">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">

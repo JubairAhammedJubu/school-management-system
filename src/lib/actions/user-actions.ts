@@ -36,16 +36,14 @@ export async function updateUserProfileAction(
   data: UpdateProfileInput,
 ): Promise<ActionResponse> {
   try {
-    const authToken =
-      typeof window !== "undefined"
-        ? localStorage.getItem("better-auth.session_token")
-        : null;
+   
+  
+
     const response = await fetch(`${SERVER_URL}/api/user/profile`, {
       method: "PUT",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
       body: JSON.stringify(data),
       cache: "no-store",

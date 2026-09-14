@@ -25,14 +25,8 @@ import {
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 function authedFetch(path: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("better-auth.session_token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
   return fetch(`${SERVER_URL}${path}`, {
     ...init,
-    headers,
     credentials: "include",
     cache: "no-store",
   });
@@ -323,7 +317,7 @@ export default function AdminClassesPage() {
                 {/* Top Row */}
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-amber-500/25">
+                    <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-amber-500/25">
                       <BookOpen className="w-6 h-6" />
                     </div>
                     <div>
