@@ -31,6 +31,8 @@ import {
   Briefcase,
   GraduationCap,
   Check,
+  X,
+  Info,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { updateUserProfileAction } from "@/lib/actions/user-actions";
@@ -191,6 +193,14 @@ export default function ProfilePage() {
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+
+  const userEmail = session?.user?.email || "user@edunexus.com";
+  const userEmailLower = userEmail.toLowerCase();
+  const isDemoUser =
+    userEmailLower === "demostudent@edunexus.std.com" ||
+    userEmailLower === "demoteacher@edunexus.tchr.com" ||
+    (session?.user as Record<string, any>)?.isDemo === true;
 
   // Sync all user details on session load
   useEffect(() => {
@@ -221,10 +231,15 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  // Profile Image Upload Handlers (EXACTLY UNTOUCHED)
+  // Profile Image Upload Handlers
   const handleProfileImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    if (isDemoUser) {
+      setShowDemoModal(true);
+      event.target.value = "";
+      return;
+    }
     const file = event.target.files?.[0];
     event.target.value = "";
 
@@ -314,6 +329,10 @@ export default function ProfilePage() {
   };
 
   const openProfileImagePicker = () => {
+    if (isDemoUser) {
+      setShowDemoModal(true);
+      return;
+    }
     if (!isUploadingImage) {
       profileImageInputRef.current?.click();
     }
@@ -321,6 +340,10 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDemoUser) {
+      setShowDemoModal(true);
+      return;
+    }
     if (!name.trim()) {
       toast.error("Please enter a valid full name.");
       return;
@@ -504,7 +527,6 @@ export default function ProfilePage() {
   const isStudent = rawRole === "student";
   const isAdmin = rawRole === "admin";
 
-  const userEmail = session?.user?.email || "user@edunexus.com";
   const userCreatedAt = session?.user?.createdAt
     ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
         month: "short",
@@ -552,6 +574,37 @@ export default function ProfilePage() {
                 : "Admin Profile"}
           </span>
         </div>
+
+        {/* Demo Account Read-Only Banner */}
+        {isDemoUser && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50/90 dark:bg-amber-500/10 p-4 shadow-sm backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-amber-900 dark:text-amber-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+                <Lock className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Demo Account — Read-Only Mode
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Profile modifications are disabled for demo accounts to maintain standard credentials for all visitors.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowDemoModal(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-100/80 dark:bg-amber-500/20 px-3.5 py-2 text-xs font-bold text-amber-800 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors cursor-pointer shrink-0"
+            >
+              <Info className="h-4 w-4" />
+              <span>Learn More</span>
+            </button>
+          </motion.div>
+        )}
 
         {/* ========================================================= */}
         {/* PROFILE HEADER COVER CARD */}
@@ -678,7 +731,13 @@ export default function ProfilePage() {
               <div className="flex items-center justify-center sm:justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => {
+                    if (isDemoUser) {
+                      setShowDemoModal(true);
+                    } else {
+                      setIsEditing(!isEditing);
+                    }
+                  }}
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-600 dark:hover:border-indigo-400 transition-all shadow-xs cursor-pointer"
                 >
                   <Edit3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -1261,6 +1320,78 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Demo Account Restriction Modal */}
+      <AnimatePresence>
+        {showDemoModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDemoModal(false)}
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-md"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.3, bounce: 0.15 }}
+              className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-7 shadow-2xl dark:shadow-black/80"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowDemoModal(false)}
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Content Header */}
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 shadow-sm">
+                  <Lock className="h-7 w-7" />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    Demo Account Restriction
+                  </h3>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800">
+                    <Mail className="h-3 w-3 text-amber-500" />
+                    {userEmail}
+                  </span>
+                </div>
+              </div>
+
+              {/* Body Text */}
+              <div className="mt-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 p-4 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed space-y-2">
+                <p className="font-semibold text-slate-900 dark:text-white">
+                  Demo student and teacher profiles cannot be edited or updated.
+                </p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">
+                  To ensure a consistent and reliable demonstration experience for all visitors and reviewers, credentials, photos, and personal information for demo accounts are read-only.
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <div className="mt-6 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowDemoModal(false)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-6 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+                >
+                  <span>Got It</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

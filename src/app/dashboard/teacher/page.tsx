@@ -13,7 +13,9 @@ export default function TeacherDashboardPage() {
 
   useEffect(() => {
     if (!isPending) {
-      if (!session?.user || rawRole !== "teacher") {
+      if (!session?.user) {
+        router.replace("/");
+      } else if (rawRole !== "teacher") {
         router.replace("/unauthorized");
       }
     }
