@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   User,
   UserCheck,
+  Loader2,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
@@ -187,12 +188,13 @@ export default function DashboardLayout({
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
-      setShowLogoutModal(false);
-      router.replace("/");
       await signOut();
+      setShowLogoutModal(false);
       toast.success("Logged out successfully.");
+      router.replace("/");
     } catch {
       toast.error("Failed to log out. Please try again.");
+      setShowLogoutModal(false);
     } finally {
       setIsLoggingOut(false);
     }
@@ -748,7 +750,7 @@ export default function DashboardLayout({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setShowLogoutModal(false)}
+              onClick={() => !isLoggingOut && setShowLogoutModal(false)}
               className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
             />
             <motion.div
@@ -785,7 +787,10 @@ export default function DashboardLayout({
                   className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isLoggingOut ? (
-                    <span>Logging out...</span>
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Logging out...</span>
+                    </>
                   ) : (
                     <>
                       <LogOut className="h-4 w-4" />
