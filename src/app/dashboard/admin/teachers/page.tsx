@@ -94,8 +94,12 @@ export default function AdminTeachersPage() {
   const [editAvailability, setEditAvailability] = useState<"Active" | "On Leave">("Active");
 
   useEffect(() => {
-    if (!isPending && (!session?.user || rawRole !== "admin")) {
-      router.replace("/unauthorized");
+    if (!isPending) {
+      if (!session?.user) {
+        router.replace("/");
+      } else if (rawRole !== "admin") {
+        router.replace("/unauthorized");
+      }
     }
   }, [session, rawRole, isPending, router]);
 
