@@ -118,9 +118,8 @@ function ProfileCustomSelect({
             <Icon size={16} className="text-slate-400 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
             <ChevronDown
               size={16}
-              className={`transition-transform duration-200 ${
-                isOpen ? "rotate-180 text-indigo-500 dark:text-indigo-400" : ""
-              }`}
+              className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-indigo-500 dark:text-indigo-400" : ""
+                }`}
             />
           </div>
         </button>
@@ -144,11 +143,10 @@ function ProfileCustomSelect({
                       onChange(opt);
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer ${
-                      isSelected
+                    className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer ${isSelected
                         ? "bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold"
                         : "text-slate-700 dark:text-slate-200"
-                    }`}
+                      }`}
                   >
                     <span>{opt}</span>
                     {isSelected && (
@@ -261,17 +259,12 @@ export default function ProfilePage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const authToken = localStorage.getItem("better-auth.session_token");
-      const authHeaders = authToken
-        ? { Authorization: `Bearer ${authToken}` }
-        : undefined;
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/profile/image`,
         {
           method: "POST",
           credentials: "include",
-          headers: authHeaders,
           body: formData,
         },
       );
@@ -295,7 +288,7 @@ export default function ProfilePage() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            ...(authHeaders ?? {}),
+
           },
           body: JSON.stringify({
             email: userEmail,
@@ -529,21 +522,21 @@ export default function ProfilePage() {
 
   const userCreatedAt = session?.user?.createdAt
     ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "Jan 2026";
   const userUpdatedAt = (
     session?.user as { updatedAt?: string | Date } | undefined
   )?.updatedAt
     ? new Date(
-        (session?.user as { updatedAt?: string | Date }).updatedAt!,
-      ).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      (session?.user as { updatedAt?: string | Date }).updatedAt!,
+    ).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "Recently";
   const isEmailVerified =
     (session?.user as { emailVerified?: boolean } | undefined)?.emailVerified ??
@@ -679,13 +672,12 @@ export default function ProfilePage() {
 
                     {/* Role Badge */}
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${
-                        isTeacher
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${isTeacher
                           ? "bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20"
                           : isStudent
                             ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20"
                             : "bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20"
-                      }`}
+                        }`}
                     >
                       {isTeacher ? (
                         <Briefcase className="h-3.5 w-3.5" />
@@ -1257,11 +1249,10 @@ export default function ProfilePage() {
                       Email Verification
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 font-bold ${
-                        isEmailVerified
+                      className={`inline-flex items-center gap-1 font-bold ${isEmailVerified
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-amber-600 dark:text-amber-400"
-                      }`}
+                        }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {isEmailVerified ? "Verified" : "Pending"}

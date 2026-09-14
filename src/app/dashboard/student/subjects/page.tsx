@@ -19,32 +19,25 @@ interface Subject {
   teacherName?: string | null;
   teacherEmail?: string | null;
 }
-
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
+import { useSession } from "@/lib/auth-client";
 
 export default function StudentSubjectsPage() {
+  const { data: session, isPending: isSessionLoading } = useSession();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (isSessionLoading) return;
+
     const fetchSubjects = async () => {
       try {
         setIsLoading(true);
-        const token = getAuthToken();
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`,
           {
             credentials: "include",
-            headers: {
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
           }
         );
 
@@ -63,7 +56,7 @@ export default function StudentSubjectsPage() {
     };
 
     fetchSubjects();
-  }, []);
+  }, [isSessionLoading, session?.user?.email]);
 
   return (
     <div className="space-y-6">

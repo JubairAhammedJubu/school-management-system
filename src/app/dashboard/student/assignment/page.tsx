@@ -24,13 +24,7 @@ interface AssignmentRecord {
   attemptsUsed: number;
 }
 
-// Safely retrieve token on client side
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
+import { useSession } from "@/lib/auth-client";
 
 // Helper function to safely parse API responses
 const parseJsonResponse = async (response: Response) => {
@@ -44,15 +38,11 @@ const parseJsonResponse = async (response: Response) => {
 
 const getAssignments = async () => {
   try {
-    const authToken = getAuthToken();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
       {
         method: "GET",
         credentials: "include",
-        headers: {
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
       }
     );
 
@@ -98,6 +88,7 @@ const statusStyles: Record<
 };
 
 export default function StudentAssignmentsPage() {
+  const { data: session, isPending: isSessionLoading } = useSession();
   const [assignments, setAssignments] = useState<AssignmentRecord[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -105,6 +96,7 @@ export default function StudentAssignmentsPage() {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
+    if (isSessionLoading) return;
     const fetchAssignments = async () => {
       const data = await getAssignments();
       if (data) {
@@ -113,7 +105,7 @@ export default function StudentAssignmentsPage() {
     };
 
     fetchAssignments();
-  }, []);
+  }, [isSessionLoading]);
 
   const pendingCount = assignments.filter((a) => a.submitStatus === 'PENDING').length;
   const submittedAssignments = assignments.filter(
@@ -176,7 +168,6 @@ export default function StudentAssignmentsPage() {
 
     setIsSubmitting(true);
     try {
-      const authToken = getAuthToken();
       const formData = new FormData();
       formData.append("file", selectedFile);
 
@@ -186,11 +177,7 @@ export default function StudentAssignmentsPage() {
         {
           method: "POST",
           credentials: "include",
-          headers: {
-            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-          },
           body: formData,
-          
         }
       );
       // console.log("Upload response status:", uploadResponse, uploadResponse.statusText);
@@ -206,7 +193,7 @@ export default function StudentAssignmentsPage() {
         throw new Error("The uploaded PDF URL was not returned by the server.");
       }
 
-      // 2. Submit Assignment (Include Auth header and application/json)
+      // 2. Submit Assignment (Include application/json, credentials: include sends session cookie)
       const submitResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
         {
@@ -214,7 +201,6 @@ export default function StudentAssignmentsPage() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
           },
           body: JSON.stringify({
             content: `PDF submission: ${selectedFile.name}`,

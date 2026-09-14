@@ -24,13 +24,6 @@ import { toast } from "react-toastify";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
-
 const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTION_OPTIONS = ["Section A", "Section B"]; // Strictly Section A and Section B
 const GROUP_OPTIONS = ["All Groups", "Science", "Business Studies", "Humanities"];
@@ -82,7 +75,6 @@ export default function MarkAttendanceModal({
         setIsLoadingRoster(true);
         setError("");
 
-        const token = getAuthToken();
         const queryParams = new URLSearchParams({
           grade: selectedClass,
           section: selectedSection,
@@ -96,9 +88,6 @@ export default function MarkAttendanceModal({
           `${SERVER_URL}/api/teacher/attendance/students?${queryParams.toString()}`,
           {
             credentials: "include",
-            headers: {
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
           }
         );
 
@@ -162,7 +151,6 @@ export default function MarkAttendanceModal({
     try {
       setIsSaving(true);
       setError("");
-      const token = getAuthToken();
 
       const payload = {
         date: selectedDate,
@@ -182,7 +170,6 @@ export default function MarkAttendanceModal({
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });

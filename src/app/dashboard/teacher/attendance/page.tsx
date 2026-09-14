@@ -45,13 +45,6 @@ import MarkAttendanceModal from "@/components/shared/MarkAttendanceModal";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
-
 const CLASS_FILTER_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTION_FILTER_OPTIONS = ["All Sections", "Section A", "Section B"]; // Strictly Section A and Section B
 const GROUP_FILTER_OPTIONS = ["All Groups", "Science", "Business Studies", "Humanities"];
@@ -117,13 +110,9 @@ export default function TeacherAttendancePage() {
   const fetchAttendanceStats = useCallback(async () => {
     try {
       setIsLoading(true);
-      const token = getAuthToken();
 
       const response = await fetch(`${SERVER_URL}/api/teacher/attendance/stats`, {
         credentials: "include",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
 
       const data = await response.json();
@@ -142,7 +131,6 @@ export default function TeacherAttendancePage() {
   const fetchTableRecords = useCallback(async () => {
     try {
       setIsTableLoading(true);
-      const token = getAuthToken();
 
       const queryParams = new URLSearchParams({
         ...(tableClass !== "All Classes" ? { grade: tableClass } : {}),
@@ -178,9 +166,6 @@ export default function TeacherAttendancePage() {
         `${SERVER_URL}/api/teacher/attendance/students?${queryParams.toString()}`,
         {
           credentials: "include",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
         }
       );
 
@@ -1346,7 +1331,6 @@ function InlineStatusDropdown({
     setIsOpen(false);
     try {
       setIsUpdating(true);
-      const token = getAuthToken();
       const payload = {
         date,
         grade: studentClass || "Class 8",
@@ -1367,7 +1351,6 @@ function InlineStatusDropdown({
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
