@@ -24,14 +24,8 @@ import {
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 function authedFetch(path: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("better-auth.session_token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
   return fetch(`${SERVER_URL}${path}`, {
     ...init,
-    headers,
     credentials: "include",
     cache: "no-store",
   });

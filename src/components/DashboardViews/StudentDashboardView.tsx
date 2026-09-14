@@ -40,13 +40,6 @@ interface Subject {
   subjectCode?: string;
 }
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
-
 export default function StudentOverviewPage() {
   const { data: session } = useSession();
   const studentName = session?.user?.name || "Student";
@@ -63,25 +56,19 @@ export default function StudentOverviewPage() {
     const fetchAll = async () => {
       try {
         setIsLoading(true);
-        const token = getAuthToken();
-        const headers = {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
 
         const [assignRes, resultRes, subjectRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`, {
             credentials: "include",
-            headers,
           }),
           fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results?studentEmail=${encodeURIComponent(
               studentEmail
             )}&status=PUBLISHED`,
-            { credentials: "include", headers }
+            { credentials: "include" }
           ),
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`, {
             credentials: "include",
-            headers,
           }).catch(() => null), // subjects endpoint may not exist yet
         ]);
 

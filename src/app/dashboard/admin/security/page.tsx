@@ -24,14 +24,8 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000"
 // fetches to our own /api/admin/* routes carry the same auth as the rest
 // of the app (better-auth session cookie + localStorage bearer fallback).
 function authedFetch(path: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("better-auth.session_token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
   return fetch(`${SERVER_URL}${path}`, {
     ...init,
-    headers,
     credentials: "include",
     cache: "no-store",
   });
@@ -138,7 +132,7 @@ export default function AdminSecurityPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
         <div className="absolute -right-16 -top-16 w-72 h-72 bg-blue-500/15 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -187,7 +181,7 @@ export default function AdminSecurityPage() {
             disabled={isLookingUp || !searchEmail.trim()}
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2.5 px-5 rounded-xl shadow-lg shadow-blue-500/20 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2.5 px-5 rounded-xl shadow-lg shadow-blue-500/20 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLookingUp ? (
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />

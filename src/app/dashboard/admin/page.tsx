@@ -29,14 +29,8 @@ import {
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 function authedFetch(path: string, init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("better-auth.session_token");
-    if (token) headers.set("Authorization", `Bearer ${token}`);
-  }
   return fetch(`${SERVER_URL}${path}`, {
     ...init,
-    headers,
     credentials: "include",
     cache: "no-store",
   });
@@ -299,7 +293,7 @@ export default function AdminDashboardPage() {
                   {col.rate}
                 </span>
                 <div 
-                  className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-indigo-400 dark:from-blue-700 dark:to-cyan-400 rounded-t-2xl hover:from-blue-500 hover:to-indigo-300 transition-all duration-300 shadow-lg shadow-blue-500/10"
+                  className="w-full max-w-10 bg-linear-to-t from-blue-600 to-indigo-400 dark:from-blue-700 dark:to-cyan-400 rounded-t-2xl hover:from-blue-500 hover:to-indigo-300 transition-all duration-300 shadow-lg shadow-blue-500/10"
                   style={{ height: col.height }}
                 />
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 pt-1">
@@ -316,7 +310,7 @@ export default function AdminDashboardPage() {
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">96.5%</span>
               </div>
               <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/50 dark:border-slate-700/50">
-                <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 shadow-sm" style={{ width: "96.5%" }} />
+                <div className="h-full bg-linear-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 shadow-sm" style={{ width: "96.5%" }} />
               </div>
             </div>
           </div>

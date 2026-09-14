@@ -1,30 +1,4 @@
-"use server";
-
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
-async function getAuthHeaders(token?: string | null): Promise<Record<string, string>> {
-  const headersMap: Record<string, string> = {};
-  if (token) {
-    headersMap["Authorization"] = `Bearer ${token}`;
-  }
-  try {
-    const { headers } = await import("next/headers");
-    const reqHeaders = await headers();
-    const cookie = reqHeaders.get("cookie");
-    if (cookie) {
-      headersMap["cookie"] = cookie;
-      if (!headersMap["Authorization"]) {
-        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
-        if (match) {
-          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
-        }
-      }
-    }
-  } catch {
-    // running outside request context
-  }
-  return headersMap;
-}
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export interface NoticePayload {
   teacherName?: string;
@@ -68,17 +42,19 @@ export interface CreateNoticeResponse {
  */
 export async function getNoticesAction(): Promise<GetNoticesResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+    
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       cache: "no-store",
-      headers: {
-        ...authHeaders,
-      },
+     credentials: "include",
     });
 
     const contentType = res.headers.get("content-type");
     if (!res.ok || !contentType?.includes("application/json")) {
-      return { success: false, notices: [], error: "Invalid response from server" };
+      return {
+        success: false,
+        notices: [],
+        error: "Invalid response from server",
+      };
     }
 
     const data = await res.json();
@@ -86,10 +62,10 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
       const mapped: NoticeItem[] = data.notices.map((item: any) => {
         const itemDate = item.createdAt
           ? new Date(item.createdAt).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })
           : "Recently";
 
         return {
@@ -98,8 +74,16 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
           category: (item.category as NoticeItem["category"]) || "General",
           date: itemDate,
           detail: item.detail || "",
-          teacherName: item.teacherName || item.publishedBy || item.author?.name || "Teacher",
-          publishedBy: item.teacherName || item.publishedBy || item.author?.name || "Teacher",
+          teacherName:
+            item.teacherName ||
+            item.publishedBy ||
+            item.author?.name ||
+            "Teacher",
+          publishedBy:
+            item.teacherName ||
+            item.publishedBy ||
+            item.author?.name ||
+            "Teacher",
           authorEmail: item.authorEmail || item.author?.email || undefined,
           isPinned: Boolean(item.isPinned),
           createdAt: item.createdAt,
@@ -109,10 +93,18 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
       return { success: true, notices: mapped };
     }
 
-    return { success: false, notices: [], error: data.error || "Failed to fetch notices" };
+    return {
+      success: false,
+      notices: [],
+      error: data.error || "Failed to fetch notices",
+    };
   } catch (error: any) {
     console.error("getNoticesAction error:", error);
-    return { success: false, notices: [], error: error?.message || "Failed to fetch notices" };
+    return {
+      success: false,
+      notices: [],
+      error: error?.message || "Failed to fetch notices",
+    };
   }
 }
 
@@ -121,25 +113,25 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
  */
 export async function createNoticeAction(
   payload: NoticePayload,
-  token?: string | null
+  token?: string | null,
 ): Promise<CreateNoticeResponse> {
   try {
-    const authHeaders = await getAuthHeaders(token);
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...authHeaders,
-    };
-
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       method: "POST",
       cache: "no-store",
-      headers,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
-      return { success: false, error: "Server returned invalid response format" };
+      return {
+        success: false,
+        error: "Server returned invalid response format",
+      };
     }
 
     const data = await res.json();
@@ -155,9 +147,18 @@ export async function createNoticeAction(
           year: "numeric",
         }),
         detail: createdItem.detail || "",
-        teacherName: createdItem.teacherName || createdItem.publishedBy || payload.teacherName || "Teacher",
-        publishedBy: createdItem.teacherName || createdItem.publishedBy || payload.teacherName || "Teacher",
-        authorEmail: createdItem.authorEmail || payload.authorEmail || undefined,
+        teacherName:
+          createdItem.teacherName ||
+          createdItem.publishedBy ||
+          payload.teacherName ||
+          "Teacher",
+        publishedBy:
+          createdItem.teacherName ||
+          createdItem.publishedBy ||
+          payload.teacherName ||
+          "Teacher",
+        authorEmail:
+          createdItem.authorEmail || payload.authorEmail || undefined,
         isPinned: Boolean(createdItem.isPinned),
         createdAt: createdItem.createdAt,
       };
@@ -188,25 +189,25 @@ export async function createNoticeAction(
 export async function updateNoticeAction(
   id: string,
   payload: Partial<NoticePayload>,
-  token?: string | null
+  token?: string | null,
 ): Promise<CreateNoticeResponse> {
   try {
-    const authHeaders = await getAuthHeaders(token);
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...authHeaders,
-    };
-
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "PUT",
       cache: "no-store",
-      headers,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
-      return { success: false, error: "Server returned invalid response format" };
+      return {
+        success: false,
+        error: "Server returned invalid response format",
+      };
     }
 
     const data = await res.json();
@@ -222,8 +223,10 @@ export async function updateNoticeAction(
           year: "numeric",
         }),
         detail: updatedItem.detail || "",
-        teacherName: updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
-        publishedBy: updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
+        teacherName:
+          updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
+        publishedBy:
+          updatedItem.teacherName || updatedItem.publishedBy || "Teacher",
         authorEmail: updatedItem.authorEmail || undefined,
         isPinned: Boolean(updatedItem.isPinned),
         createdAt: updatedItem.createdAt,
@@ -254,23 +257,24 @@ export async function updateNoticeAction(
  */
 export async function deleteNoticeAction(
   id: string,
-  token?: string | null
+  token?: string | null,
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
-    const authHeaders = await getAuthHeaders(token);
-    const headers: Record<string, string> = {
-      ...authHeaders,
-    };
-
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "DELETE",
       cache: "no-store",
-      headers,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
-      return { success: false, error: "Server returned invalid response format" };
+      return {
+        success: false,
+        error: "Server returned invalid response format",
+      };
     }
 
     const data = await res.json();
