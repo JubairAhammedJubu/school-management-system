@@ -206,7 +206,7 @@ export default function StudentOverviewPage() {
               </h2>
             </div>
             <Link
-              href="/student/assignments"
+              href="/dashboard/student/assignment"
               className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
             >
               View all <ArrowRight className="h-3 w-3" />
@@ -263,7 +263,7 @@ export default function StudentOverviewPage() {
               </h2>
             </div>
             <Link
-              href="/student/results"
+              href="/dashboard/student/result"
               className="text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
             >
               View all <ArrowRight className="h-3 w-3" />
