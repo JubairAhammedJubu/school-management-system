@@ -66,6 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           closeOnClick
           pauseOnHover
           draggable
+          style={{ top: "60px" }}
         />
       </body>
     </html>
