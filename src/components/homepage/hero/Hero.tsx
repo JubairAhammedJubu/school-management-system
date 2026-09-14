@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, cloneElement } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Play } from "lucide-react";
@@ -11,12 +11,134 @@ export default function Hero() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [mounted, setMounted] = useState(false);
+  const [isSliderPaused, setIsSliderPaused] = useState(false);
 
   useEffect(() => {
     // Keep session-dependent buttons out of the hydration mismatch path.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  // The bottom visual strip's cards, defined once so the slider can
+  // render two back-to-back copies for a seamless infinite loop
+  // (animating the track from 0% to -50% of its own width always
+  // lines the second copy up exactly where the first one started).
+  const heroCards = [
+    <motion.div
+      key="text-card"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="relative h-[240px] w-[170px] sm:h-[275px] sm:w-[185px] shrink-0 overflow-hidden rounded-[27px] bg-white dark:bg-slate-900/90 p-5 text-slate-900 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
+    >
+      <div className="absolute left-0 top-0 h-[105px] w-full overflow-hidden">
+        <svg
+          viewBox="0 0 260 110"
+          className="absolute left-[-20px] top-0 h-full w-[290px]"
+          fill="none"
+        >
+          {Array.from({ length: 11 }).map((_, index) => (
+            <path
+              key={index}
+              d={`M-20 ${20 + index * 7} C 50 ${-10 + index * 5}, 90 ${85 + index * 3}, 165 ${42 + index * 5} C 205 ${15 + index * 6}, 230 ${65 + index * 4}, 280 ${30 + index * 5}`}
+              stroke="#818cf8"
+              strokeWidth="1"
+              opacity="0.4"
+            />
+          ))}
+        </svg>
+      </div>
+
+      <div className="absolute left-5 top-[112px]">
+        <ArrowRight
+          size={29}
+          strokeWidth={1.5}
+          className="text-indigo-600 dark:text-indigo-400"
+        />
+      </div>
+
+      <p className="absolute bottom-7 left-5 right-5 text-[14px] leading-[1.45] font-semibold text-slate-900 dark:text-white">
+        Empower Your
+        <br />
+        Educational
+        <br />
+        Institution with
+        <br />
+        School Manager Pro
+      </p>
+    </motion.div>,
+
+    <motion.div
+      key="stat-260"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="flex h-[180px] w-[105px] sm:h-[200px] sm:w-[112px] shrink-0 flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center"
+    >
+      <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
+        260%
+      </span>
+      <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
+        Your ultimate SaaS
+        <br />
+        solution for effortless
+      </p>
+    </motion.div>,
+
+    <motion.div
+      key="image-classroom"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="relative h-[140px] w-[170px] sm:h-[155px] sm:w-[210px] shrink-0 overflow-hidden rounded-[20px] sm:rounded-[25px] bg-slate-800 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
+    >
+      <img
+        src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=700&q=85"
+        alt="Team collaborating in a modern workspace"
+        className="h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black/5" />
+    </motion.div>,
+
+    <motion.div
+      key="stat-98"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="flex h-[175px] w-[100px] sm:h-[200px] sm:w-[112px] shrink-0 flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center"
+    >
+      <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
+        98%
+      </span>
+      <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
+        our comprehensive suite
+        <br />
+        of tools and support.
+      </p>
+    </motion.div>,
+
+    <motion.div
+      key="image-student-1"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="relative h-[200px] w-[145px] sm:h-[240px] sm:w-[170px] lg:h-[275px] lg:w-[195px] shrink-0 overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
+    >
+      <img
+        src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=85"
+        alt="Student studying with a laptop"
+        className="h-full w-full object-cover"
+      />
+    </motion.div>,
+
+    <motion.div
+      key="image-student-2"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.25 }}
+      className="relative h-[200px] w-[80px] sm:h-[240px] sm:w-[95px] lg:h-[275px] lg:w-[105px] shrink-0 overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
+    >
+      <img
+        src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=500&q=85"
+        alt="Student working on a laptop"
+        className="h-full w-full object-cover"
+      />
+    </motion.div>,
+  ];
 
   return (
     <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-black text-slate-900 dark:text-white transition-colors duration-300">
@@ -122,126 +244,28 @@ export default function Hero() {
           </a>
         </motion.div>
 
-        {/* BOTTOM VISUALS */}
+        {/* BOTTOM VISUALS — auto-scrolling slider so every card is
+            visible on every screen size instead of being hidden below
+            certain breakpoints. Pauses on hover so it's easy to actually
+            look at a card. */}
         <motion.div
           initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-          className="relative mt-6 sm:mt-9 flex h-[200px] sm:h-[300px] w-full max-w-[1040px] items-end justify-center gap-2.5 sm:gap-4 px-2"
+          className="relative mt-6 sm:mt-9 w-full max-w-[1040px] overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
+          onMouseEnter={() => setIsSliderPaused(true)}
+          onMouseLeave={() => setIsSliderPaused(false)}
         >
-          {/* CARD 1 — TEXT CARD */}
           <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="relative hidden h-[275px] w-[185px] overflow-hidden rounded-[27px] bg-white dark:bg-slate-900/90 p-5 text-slate-900 dark:text-slate-100 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 lg:block"
+            className="flex items-end gap-2.5 sm:gap-4"
+            animate={isSliderPaused ? {} : { x: ["0%", "-50%"] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
           >
-            <div className="absolute left-0 top-0 h-[105px] w-full overflow-hidden">
-              <svg
-                viewBox="0 0 260 110"
-                className="absolute left-[-20px] top-0 h-full w-[290px]"
-                fill="none"
-              >
-                {Array.from({ length: 11 }).map((_, index) => (
-                  <path
-                    key={index}
-                    d={`M-20 ${20 + index * 7} C 50 ${-10 + index * 5}, 90 ${85 + index * 3}, 165 ${42 + index * 5} C 205 ${15 + index * 6}, 230 ${65 + index * 4}, 280 ${30 + index * 5}`}
-                    stroke="#818cf8"
-                    strokeWidth="1"
-                    opacity="0.4"
-                  />
-                ))}
-              </svg>
-            </div>
-
-            <div className="absolute left-5 top-[112px]">
-              <ArrowRight
-                size={29}
-                strokeWidth={1.5}
-                className="text-indigo-600 dark:text-indigo-400"
-              />
-            </div>
-
-            <p className="absolute bottom-7 left-5 right-5 text-[14px] leading-[1.45] font-semibold text-slate-900 dark:text-white">
-              Empower Your
-              <br />
-              Educational
-              <br />
-              Institution with
-              <br />
-              School Manager Pro
-            </p>
-          </motion.div>
-
-          {/* CARD 2 — 260% */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="hidden sm:flex h-[180px] w-[105px] sm:h-[200px] sm:w-[112px] flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center shrink-0"
-          >
-            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
-              260%
-            </span>
-            <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
-              Your ultimate SaaS
-              <br />
-              solution for effortless
-            </p>
-          </motion.div>
-
-          {/* CARD 3 — CLASSROOM IMAGE */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="relative h-[140px] w-[170px] sm:h-[155px] sm:w-[210px] overflow-hidden rounded-[20px] sm:rounded-[25px] bg-slate-800 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 shrink-0"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=700&q=85"
-              alt="Team collaborating in a modern workspace"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/5" />
-          </motion.div>
-
-          {/* CARD 4 — 98% */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="flex h-[175px] w-[100px] sm:h-[200px] sm:w-[112px] flex-col items-center justify-center rounded-[22px] sm:rounded-[26px] bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-lg sm:shadow-xl shadow-slate-200/50 dark:shadow-black/40 text-center shrink-0"
-          >
-            <span className="text-[16px] sm:text-[18px] font-bold text-slate-900 dark:text-white">
-              98%
-            </span>
-            <p className="mt-1 px-2 sm:px-3 text-[8px] leading-[1.35] text-slate-600 dark:text-slate-400 font-medium">
-              our comprehensive suite
-              <br />
-              of tools and support.
-            </p>
-          </motion.div>
-
-          {/* CARD 5 — STUDENT IMAGE */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="relative hidden sm:block h-[240px] w-[170px] lg:h-[275px] lg:w-[195px] overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 shrink-0"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=85"
-              alt="Student studying with a laptop"
-              className="h-full w-full object-cover"
-            />
-          </motion.div>
-
-          {/* Second overlapping student shape */}
-          <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.25 }}
-            className="relative hidden md:block h-[240px] w-[95px] lg:h-[275px] lg:w-[105px] overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40 shrink-0"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=500&q=85"
-              alt="Student working on a laptop"
-              className="h-full w-full object-cover"
-            />
+            {[...heroCards, ...heroCards].map((card, index) =>
+              // Re-key each duplicate so React doesn't warn about
+              // reused keys across the two copies of the track.
+              cloneElement(card, { key: `${card.key}-${index}` })
+            )}
           </motion.div>
         </motion.div>
       </div>
