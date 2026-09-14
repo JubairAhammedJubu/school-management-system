@@ -24,12 +24,7 @@ interface Result {
   createdAt: string;
 }
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
+import { useSession } from "@/lib/auth-client";
 
 const getGradeColor = (grade: string) => {
   const g = grade.toUpperCase();
@@ -43,23 +38,22 @@ const getGradeColor = (grade: string) => {
 };
 
 export default function StudentResultsPage() {
+  const { data: session, isPending: isSessionLoading } = useSession();
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (isSessionLoading) return;
+
     const fetchResults = async () => {
       try {
         setIsLoading(true);
-        const token = getAuthToken();
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/results`,
           {
             credentials: "include",
-            headers: {
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
           }
         );
 
@@ -79,7 +73,7 @@ export default function StudentResultsPage() {
     };
 
     fetchResults();
-  }, []);
+  }, [isSessionLoading]);
 
   // Summary calculations
   const totalExams = results.length;

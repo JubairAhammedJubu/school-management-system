@@ -77,23 +77,13 @@ export default function TeacherStudentsPage() {
   const fetchStudents = useCallback(
     (pageNum: number, searchVal: string, classVal: string) => {
       setIsLoading(true);
-      setErrorMessage(null); // NEW
       startTransition(async () => {
-        // NEW: read the Better Auth bearer token stored on sign-in.
-        // Server Actions run in Node and cannot read localStorage
-        // themselves, so it must be passed in explicitly here.
-        const token =
-          localStorage.getItem("better-auth.session_token") ?? undefined;
-
-        const res = await getTeacherStudentsAction(
-          {
-            page: pageNum,
-            limit: 20,
-            search: searchVal,
-            studentClass: classVal,
-          },
-          token, // NEW: forwarded to the server action
-        );
+        const res = await getTeacherStudentsAction({
+          page: pageNum,
+          limit: 20,
+          search: searchVal,
+          studentClass: classVal,
+        },);
 
         if (res.success) {
           setStudents(res.students);
@@ -101,6 +91,7 @@ export default function TeacherStudentsPage() {
           if (res.classes && res.classes.length > 0) {
             setClassesList(res.classes);
           }
+          setErrorMessage(null);
         } else {
           setStudents([]);
           setPagination({ total: 0, page: 1, limit: 20, totalPages: 1 });
@@ -260,7 +251,7 @@ export default function TeacherStudentsPage() {
 
             <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
               {/* Search Bar */}
-              <div className="relative w-full sm:w-[280px]">
+              <div className="relative w-full sm:w-70">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   value={search}
@@ -282,7 +273,7 @@ export default function TeacherStudentsPage() {
 
         {/* Desktop Roster Table */}
         <div className="hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[700px]">
+          <table className="w-full min-w-175">
             <thead>
               <tr className="border-b border-slate-100/80 bg-slate-50/70 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 dark:border-slate-800/80 dark:bg-slate-950/80">
                 <th className="px-6 py-4">Student</th>
@@ -704,7 +695,7 @@ function ClassSelectDropdown({
   }, []);
 
   return (
-    <div className="relative w-full sm:w-[200px]" ref={dropdownRef}>
+    <div className="relative w-full sm:w-50" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -734,7 +725,7 @@ function ClassSelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-full min-w-[200px] rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/70"
+            className="absolute right-0 top-[calc(100%+0.35rem)] z-50 w-full min-w-50 rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-2xl backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-950/95 dark:shadow-black/70"
           >
             <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar pr-0.5">
               {options.map((option) => {

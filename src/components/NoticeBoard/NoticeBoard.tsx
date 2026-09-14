@@ -121,10 +121,6 @@ export default function NoticeBoard({
 
     setIsSubmitting(true);
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("better-auth.session_token")
-          : null;
       const currentUserName =
         (session?.user as { name?: string } | undefined)?.name ||
         session?.user?.email ||
@@ -142,7 +138,7 @@ export default function NoticeBoard({
         createdAt: new Date().toISOString(),
       };
 
-      const res = await createNoticeAction(payload, token);
+      const res = await createNoticeAction(payload);
 
       if (res.success && res.notice) {
         toast.success(res.message || "Notice published successfully!");
@@ -192,10 +188,6 @@ export default function NoticeBoard({
 
     setIsUpdating(true);
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("better-auth.session_token")
-          : null;
       const payload = {
         title: editFormTitle.trim(),
         detail: editFormDetail.trim(),
@@ -203,7 +195,7 @@ export default function NoticeBoard({
         isPinned: editFormIsPinned,
       };
 
-      const res = await updateNoticeAction(editingNotice.id, payload, token);
+      const res = await updateNoticeAction(editingNotice.id, payload);
 
       if (res.success && res.notice) {
         toast.success(res.message || "Notice updated successfully!");
@@ -236,11 +228,7 @@ export default function NoticeBoard({
 
     setIsDeleting(true);
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("better-auth.session_token")
-          : null;
-      const res = await deleteNoticeAction(deletingNotice.id, token);
+      const res = await deleteNoticeAction(deletingNotice.id);
 
       if (res.success) {
         toast.success(res.message || "Notice deleted successfully!");

@@ -106,7 +106,6 @@ export default function TeacherDashboardView() {
     setIsLoadingRealData(true);
     setIsLoadingAttendance(true);
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("better-auth.session_token") : null;
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
       if (teacherEmail) {
@@ -127,7 +126,6 @@ export default function TeacherDashboardView() {
       if (teacherEmail) {
         const assignRes = await fetch(`${serverUrl}/api/teacher/assignments?teacherEmail=${encodeURIComponent(teacherEmail)}`, {
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const assignData = await assignRes.json();
         if (assignData.success) {
@@ -161,7 +159,6 @@ export default function TeacherDashboardView() {
       try {
         const attendanceRes = await fetch(`${serverUrl}/api/teacher/attendance/stats`, {
           credentials: "include",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const attendanceData = await attendanceRes.json();
         if (attendanceRes.ok && attendanceData.success && attendanceData.stats) {
