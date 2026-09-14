@@ -34,6 +34,7 @@ import {
   ChevronDown,
   Check,
   Clock,
+  Sparkles,
 } from "lucide-react";
 import { authClient, signIn, signOut, signUp } from "@/lib/auth-client";
 import { checkApprovalStatusAction } from "@/lib/actions/approval-actions";
@@ -130,6 +131,14 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     if (!trimmedEmail || !trimmedEmail.includes("@")) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setApprovalStatus("unknown");
+      return;
+    }
+
+    if (
+      trimmedEmail === "demostudent@edunexus.std.com" ||
+      trimmedEmail === "demoteacher@edunexus.tchr.com"
+    ) {
+      setApprovalStatus("approved");
       return;
     }
 
@@ -342,7 +351,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         user?: { twoFactorEnabled?: boolean };
       };
 
-      if (signInData?.twoFactorRedirect) {
+      const isDemoAccount =
+        email.trim().toLowerCase() === "demostudent@edunexus.std.com" ||
+        email.trim().toLowerCase() === "demoteacher@edunexus.tchr.com";
+
+      if (!isDemoAccount && signInData?.twoFactorRedirect) {
         // Returning user, 2FA already set up — ask for the app's code.
         setTwoFactorError("");
         setOtpCode("");
@@ -350,7 +363,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         return;
       }
 
-      if (signInData?.user && !signInData.user.twoFactorEnabled) {
+      if (!isDemoAccount && signInData?.user && !signInData.user.twoFactorEnabled) {
         // Email + password shothik, ar ei account e 2FA age theke set up
         // kora nei — first-time setup hisebe QR code dekhai.
         const { data: enableData, error: enableError } =
@@ -934,6 +947,65 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 {isLogin ? "Sign up" : "Log in"}
               </button>
             </p>
+
+            {isLogin && (
+              <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center justify-between mb-1.5 px-0.5">
+                  <span className="text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
+                    <Sparkles size={11} className="text-amber-500" />
+                    Quick Demo Credentials
+                  </span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Click to fill</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("demostudent@edunexus.std.com");
+                      setPassword("demostudent1234");
+                      setError("");
+                      toast.info("Demo Student credentials filled!");
+                    }}
+                    className="flex flex-col items-start p-2 text-left rounded-xl bg-slate-50 hover:bg-blue-50/80 dark:bg-slate-800/50 dark:hover:bg-blue-950/40 border border-slate-200/80 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-800 transition-all duration-200 group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5 w-full">
+                      <div className="p-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                        <GraduationCap size={13} />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        Demo Student
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 mt-1 font-mono truncate w-full">
+                      demostudent@edunexus.std.com
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("demoteacher@edunexus.tchr.com");
+                      setPassword("demoteacher1234");
+                      setError("");
+                      toast.info("Demo Teacher credentials filled!");
+                    }}
+                    className="flex flex-col items-start p-2 text-left rounded-xl bg-slate-50 hover:bg-indigo-50/80 dark:bg-slate-800/50 dark:hover:bg-indigo-950/40 border border-slate-200/80 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all duration-200 group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5 w-full">
+                      <div className="p-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                        <Briefcase size={13} />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        Demo Teacher
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 mt-1 font-mono truncate w-full">
+                      demoteacher@edunexus.tchr.com
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* --- DECORATIVE PANEL WITH IMAGE BACKGROUND (unchanged) --- */}

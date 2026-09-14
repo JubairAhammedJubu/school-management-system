@@ -13,7 +13,9 @@ export default function StudentDashboardPage() {
 
   useEffect(() => {
     if (!isPending) {
-      if (!session?.user || rawRole !== "student") {
+      if (!session?.user) {
+        router.replace("/");
+      } else if (rawRole !== "student") {
         router.replace("/unauthorized");
       }
     }
