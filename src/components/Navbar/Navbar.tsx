@@ -309,12 +309,12 @@ const Navbar: React.FC = () => {
   const handleLogoutConfirm = async () => {
     setIsLoggingOut(true);
     try {
-      await signOut();
-      toast.success("Logged out successfully.");
       setShowLogoutModal(false);
       setShowUserDropdown(false);
       setIsOpen(false);
-      router.push("/");
+      router.replace("/");
+      await signOut();
+      toast.success("Logged out successfully.");
     } catch (err) {
       toast.error("Failed to log out. Please try again.");
     } finally {
