@@ -13,7 +13,7 @@ export default function DashboardOverviewPage() {
   useEffect(() => {
     if (!isPending) {
       if (!session?.user) {
-        router.replace("/unauthorized");
+        router.replace("/");
       } else if (rawRole === "student") {
         router.replace("/dashboard/student");
       } else if (rawRole === "teacher") {

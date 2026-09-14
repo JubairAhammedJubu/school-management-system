@@ -33,8 +33,14 @@ export default function StudentExaminationsPage() {
   const [status, setStatus] = useState("All");
   const [selectedExam, setSelectedExam] = useState<ExamItem | null>(null);
 
-  useEffect(() => { if (!isPending && (!session?.user || rawRole !== "student")) 
-    router.replace("/unauthorized"); 
+  useEffect(() => {
+    if (!isPending) {
+      if (!session?.user) {
+        router.replace("/");
+      } else if (rawRole !== "student") {
+        router.replace("/unauthorized");
+      }
+    }
   }, [isPending, rawRole, router, session?.user]);
 
   const fetchExams = async (refresh = false) => {

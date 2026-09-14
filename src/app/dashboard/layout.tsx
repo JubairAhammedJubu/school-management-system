@@ -171,7 +171,7 @@ export default function DashboardLayout({
 
       if (isAdminRoute || isStudentRoute || isTeacherRoute) {
         if (!session?.user) {
-          router.replace("/unauthorized");
+          router.replace("/");
         } else if (isAdminRoute && rawRole !== "admin") {
           router.replace("/unauthorized");
         } else if (isStudentRoute && rawRole !== "student") {
@@ -187,10 +187,10 @@ export default function DashboardLayout({
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
+      setShowLogoutModal(false);
+      router.replace("/");
       await signOut();
       toast.success("Logged out successfully.");
-      setShowLogoutModal(false);
-      router.push("/");
     } catch {
       toast.error("Failed to log out. Please try again.");
     } finally {
@@ -539,11 +539,12 @@ export default function DashboardLayout({
     </motion.div>
   );
 
+  const isAdminRoute = pathname.startsWith("/dashboard/admin");
   const isStudentRoute = pathname.startsWith("/dashboard/student");
   const isTeacherRoute = pathname.startsWith("/dashboard/teacher");
   const isUnauthorized =
-    (isStudentRoute || isTeacherRoute) &&
-    (!session?.user ||
+    !!session?.user &&
+    ((isAdminRoute && rawRole !== "admin") ||
       (isStudentRoute && rawRole !== "student") ||
       (isTeacherRoute && rawRole !== "teacher"));
 
