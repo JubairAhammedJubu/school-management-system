@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -76,6 +76,8 @@ export default function StudentAttendancePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PRESENT" | "LATE" | "ABSENT">("ALL");
 
+  const hasInitialized = useRef(false);
+
   const fetchAttendance = useCallback(async (isManualRefresh = false) => {
     try {
       if (isManualRefresh) {
@@ -108,8 +110,8 @@ export default function StudentAttendancePage() {
       if (isManualRefresh) {
         toast.success("Attendance records updated!");
       }
-    } catch (err: any) {
-      const msg = err.message || "Something went wrong";
+    } catch (err) {
+      const msg = (err instanceof Error ? err.message : String(err)) || "Something went wrong";
       setError(msg);
       if (isManualRefresh) {
         toast.error(msg);
@@ -121,7 +123,10 @@ export default function StudentAttendancePage() {
   }, []);
 
   useEffect(() => {
-    fetchAttendance();
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      fetchAttendance();
+    }
   }, [fetchAttendance]);
 
   const formatDate = (dateStr: string) => {
