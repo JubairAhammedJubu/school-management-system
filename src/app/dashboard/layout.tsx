@@ -99,6 +99,11 @@ const studentRoutes: RouteItem[] = [
     href: "/dashboard/student/assignment",
     icon: FileText,
   },
+  {
+    label: "Subjects",
+    href: "/dashboard/student/subjects",
+    icon: BookOpen, // make sure BookOpen is imported from lucide-react
+  },
   { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
   { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
 ];
@@ -237,7 +242,13 @@ export default function DashboardLayout({
         },
         {
           title: "Academics & Management",
-          items: [adminRoutes[4], adminRoutes[5], adminRoutes[6], adminRoutes[7], adminRoutes[8]],
+          items: [
+            adminRoutes[4],
+            adminRoutes[5],
+            adminRoutes[6],
+            adminRoutes[7],
+            adminRoutes[8],
+          ],
         },
       ];
     } else if (role === "teacher") {
@@ -268,11 +279,17 @@ export default function DashboardLayout({
         },
         {
           title: "Academic Workspace",
-          items: [studentRoutes[1], studentRoutes[2], studentRoutes[3], studentRoutes[4]],
+          items: [
+            studentRoutes[1],
+            studentRoutes[2],
+            studentRoutes[3],
+            studentRoutes[4],
+            studentRoutes[5],
+          ],
         },
         {
           title: "Finance & Alerts",
-          items: [studentRoutes[5], studentRoutes[6]],
+          items: [studentRoutes[6], studentRoutes[7]],
         },
       ];
     }
