@@ -328,17 +328,12 @@ export default function AssignmentFormModal({
         : `${SERVER_URL}/api/teacher/assignments`;
 
       const method = isEditing ? "PATCH" : "POST";
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("better-auth.session_token")
-          : null;
 
       const response = await fetch(url, {
         method,
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           title: form.title.trim(),

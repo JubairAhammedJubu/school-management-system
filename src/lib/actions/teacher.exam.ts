@@ -2,26 +2,6 @@
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const headersMap: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  try {
-    const { headers } = await import("next/headers");
-    const reqHeaders = await headers();
-    const cookie = reqHeaders.get("cookie");
-    if (cookie) {
-      headersMap["cookie"] = cookie;
-      const match = cookie.match(/better-auth\.session_token=([^;]+)/);
-      if (match) {
-        headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
-      }
-    }
-  } catch {
-    // running outside request context
-  }
-  return headersMap;
-}
 
 export interface ExamItem {
   id: string;
@@ -83,10 +63,10 @@ export interface ActionExamResponse {
  */
 export async function getTeacherExamsAction(): Promise<GetExamsResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+   
     const res = await fetch(`${SERVER_URL}/api/exams`, {
       cache: "no-store",
-      headers: authHeaders,
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -134,10 +114,13 @@ export async function createTeacherExamAction(
   payload: CreateExamPayload
 ): Promise<ActionExamResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+
     const res = await fetch(`${SERVER_URL}/api/exams`, {
       method: "POST",
-      headers: authHeaders,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
@@ -187,10 +170,10 @@ export async function createTeacherExamAction(
  */
 export async function cancelTeacherExamAction(examId: string): Promise<ActionExamResponse> {
   try {
-    const authHeaders = await getAuthHeaders();
+
     const res = await fetch(`${SERVER_URL}/api/exams/${examId}/cancel`, {
       method: "PATCH",
-      headers: authHeaders,
+      credentials: "include",
     });
 
     const data = await res.json();
