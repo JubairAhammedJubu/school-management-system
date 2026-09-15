@@ -65,7 +65,7 @@ export default function StudentOverviewPage() {
             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results?studentEmail=${encodeURIComponent(
               studentEmail
             )}&status=PUBLISHED`,
-            { credentials: "include" }
+            { credentials: "include" }  
           ),
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`, {
             credentials: "include",
@@ -109,7 +109,7 @@ export default function StudentOverviewPage() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-slate-900 p-6 sm:p-8"
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-linear-to-br from-indigo-50 to-white dark:from-indigo-950/30 dark:to-slate-900 p-6 sm:p-8"
       >
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white text-xl font-bold shadow-lg shadow-indigo-500/25">
