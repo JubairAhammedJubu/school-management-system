@@ -110,7 +110,7 @@ export default function SubmissionsModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex min-h-full items-center justify-center p-2 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-100 flex min-h-full items-center justify-center p-2 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -149,7 +149,7 @@ export default function SubmissionsModal({
                     </span>
                   </div>
 
-                  <h2 className="mt-1 text-sm sm:text-xl font-extrabold text-slate-900 dark:text-white leading-snug break-words">
+                  <h2 className="mt-1 text-sm sm:text-xl font-extrabold text-slate-900 dark:text-white leading-snug wrap-break-word">
                     {assignment.title}
                   </h2>
 
@@ -347,7 +347,7 @@ export default function SubmissionsModal({
           {/* Nested PDF Viewer Modal */}
           <AnimatePresence>
             {activePreviewPdf && (
-              <div className="fixed inset-0 z-[110] flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+              <div className="fixed inset-0 z-110 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

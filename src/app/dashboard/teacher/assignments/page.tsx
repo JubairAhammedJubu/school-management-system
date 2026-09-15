@@ -311,7 +311,7 @@ const handleDelete = async (assignmentId: string) => {
 
           <div className="flex w-full flex-wrap items-center gap-2.5 sm:gap-3 lg:w-auto max-w-full">
             {/* Search Input */}
-            <div className="relative w-full sm:w-[210px] shrink-0">
+            <div className="relative w-full sm:w-52.5 shrink-0">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 value={search}
@@ -509,7 +509,7 @@ function SelectDropdown({
   }, []);
 
   return (
-    <div className="relative w-full sm:w-auto sm:min-w-[135px] sm:max-w-[155px] shrink-0 min-w-0" ref={dropdownRef}>
+    <div className="relative w-full sm:w-auto sm:min-w-33.75 sm:max-w-38.75 shrink-0 min-w-0" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -529,7 +529,7 @@ function SelectDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full z-30 mt-1.5 w-full min-w-[160px] max-h-60 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950"
+            className="absolute right-0 top-full z-30 mt-1.5 w-full min-w-40 max-h-60 overflow-y-auto rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800/90 dark:bg-slate-950"
           >
             {options.map((option) => {
               const isSelected = option === value;
