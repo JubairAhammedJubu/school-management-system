@@ -35,8 +35,10 @@ import {
   Check,
   Clock,
   Sparkles,
+  AlertCircle,
+  LogOut,
 } from "lucide-react";
-import { authClient, signIn, signOut, signUp } from "@/lib/auth-client";
+import { authClient, signIn, signOut, signUp, useSession } from "@/lib/auth-client";
 import { checkApprovalStatusAction } from "@/lib/actions/approval-actions";
 import {
   setNewPasswordAction,
@@ -61,6 +63,7 @@ const TEACHER_PROFILE_IMAGE =
 
 export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const router = useRouter();
+  const { data: session, isPending: isSessionPending } = useSession();
 
   const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [showPassword, setShowPassword] = useState(false);
@@ -271,12 +274,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setError("");
-    setName("");
-    setEmail("");
+    // Keep email intact so login form displays the email entered in register form
     setPassword("");
     setConfirmPassword("");
     setRegisterStep("form");
-    resetInfoFields();
     resetTwoFactorState();
   };
 
@@ -633,6 +634,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           detectedRole === "student"
             ? studentSection.trim() || undefined
             : undefined,
+        group:
+          detectedRole === "student"
+            ? department.trim() || undefined
+            : undefined,
         qualification:
           detectedRole === "teacher"
             ? qualification.trim() || undefined
@@ -658,18 +663,34 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     }
   };
 
-  // Cancel on the info step aborts registration entirely — no account is
-  // created, and we drop back to the basic details form.
+  // Navigating back from the info step returns to the basic details form
+  // while keeping all entered information fields intact.
   const handleCancelInfo = () => {
     setRegisterStep("form");
-    resetInfoFields();
     setError("");
   };
 
+  if (isSessionPending) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-950 p-4 font-sans transition-colors duration-500">
+        <div className="h-10 w-10 rounded-full border-4 border-indigo-500/20 border-t-indigo-600 animate-spin mb-3" />
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+          Checking authentication status...
+        </p>
+      </div>
+    );
+  }
+
+  if (session?.user) {
+    return <AlreadyLoggedInView session={session} />;
+  }
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-slate-950 pt-24 sm:pt-20 pb-6 p-4 font-sans transition-colors duration-500">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-[#030712] pt-24 sm:pt-20 pb-6 p-4 font-sans transition-colors duration-500">
       {!isLogin && registerStep === "info" ? (
         <ProfileCompletionStep
+          name={name}
+          email={email}
           detectedRole={detectedRole}
           isSubmitting={isSubmitting}
           error={error}
@@ -737,11 +758,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: "easeOut" }}
-          className="relative w-full max-w-[880px] min-h-[420px] bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden flex flex-col md:flex-row transition-colors duration-500 border border-slate-200 dark:border-slate-800"
+          className="relative w-full max-w-[880px] min-h-[420px] bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/50 dark:shadow-black/60 overflow-hidden flex flex-col md:flex-row transition-colors duration-500 border border-slate-200 dark:border-slate-800/80"
         >
           {/* --- FORM CONTAINER --- */}
           <div
-            className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-slate-900 ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
+            className={`w-full md:w-1/2 flex flex-col justify-center px-7 sm:px-10 py-6 transition-all duration-700 ease-in-out z-10 bg-white dark:bg-[#0b0f19] ${isLogin ? "md:translate-x-0" : "md:translate-x-full"
               }`}
           >
             <div className="mb-3">
@@ -916,9 +937,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 disabled={isSubmitting || (isLogin && approvalStatus === "pending")}
                 whileHover={isLogin && approvalStatus === "pending" ? {} : { y: -1 }}
                 whileTap={isLogin && approvalStatus === "pending" ? {} : { scale: 0.98 }}
-                className={`w-full font-bold text-sm py-2 rounded-lg transition-all mt-2 flex items-center justify-center gap-2 ${isLogin && approvalStatus === "pending"
+                className={`w-full font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer ${isLogin && approvalStatus === "pending"
                     ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
-                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                    : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-500/25 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                   }`}
               >
                 {isSubmitting ? (
@@ -1258,7 +1279,7 @@ function TwoFactorStep({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden border border-slate-200 dark:border-slate-800 px-7 sm:px-9 py-7"
+      className="relative w-full max-w-md bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/50 dark:shadow-black/60 overflow-hidden border border-slate-200 dark:border-slate-800/80 px-7 sm:px-9 py-7"
     >
       <div className="flex flex-col items-center text-center mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 mb-2">
@@ -1338,7 +1359,7 @@ function TwoFactorStep({
         disabled={isVerifying || !otpCode}
         whileHover={{ y: -1 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl shadow-md shadow-indigo-500/25 active:scale-95 transition-all mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isVerifying ? (
           <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -1407,7 +1428,7 @@ function ForgotPasswordStep({
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
-      className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden border border-slate-200 dark:border-slate-800 px-7 sm:px-9 py-7"
+      className="relative w-full max-w-md bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/50 dark:shadow-black/60 overflow-hidden border border-slate-200 dark:border-slate-800/80 px-7 sm:px-9 py-7"
     >
       <div className="flex flex-col items-center text-center mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 mb-2">
@@ -1482,7 +1503,7 @@ function ForgotPasswordStep({
             disabled={isVerifyingCode || !email.trim() || !code.trim()}
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl shadow-md shadow-indigo-500/25 active:scale-95 transition-all mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {isVerifyingCode ? (
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -1577,7 +1598,7 @@ function ForgotPasswordStep({
             }
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2 rounded-lg shadow-lg shadow-blue-500/20 transition-colors mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl shadow-md shadow-indigo-500/25 active:scale-95 transition-all mt-3 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSettingNewPassword ? (
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -1605,6 +1626,8 @@ function ForgotPasswordStep({
 }
 
 interface ProfileCompletionStepProps {
+  name: string;
+  email: string;
   detectedRole: "student" | "teacher";
   isSubmitting: boolean;
   error: string;
@@ -1764,6 +1787,8 @@ function CustomSelect({
 }
 
 function ProfileCompletionStep({
+  name,
+  email,
   detectedRole,
   isSubmitting,
   error,
@@ -1810,7 +1835,7 @@ function ProfileCompletionStep({
       initial={{ opacity: 0, y: 18, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative w-full max-w-5xl bg-white dark:bg-slate-900 rounded-[1.75rem] shadow-2xl shadow-slate-300/50 dark:shadow-black/40 overflow-hidden border border-slate-200 dark:border-slate-800"
+      className="relative w-full max-w-5xl bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/50 dark:shadow-black/60 overflow-hidden border border-slate-200 dark:border-slate-800/80"
     >
       {/* Progress rail */}
       <div className="flex items-center gap-2 sm:gap-3 px-5 sm:px-10 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -1867,6 +1892,29 @@ function ProfileCompletionStep({
                   </p>
                 </div>
               </div>
+
+              {/* Account Credentials Display Box (Name & Email) */}
+              {(name || email) && (
+                <div className="mb-4 p-3.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-500/10 border border-indigo-200/80 dark:border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4 text-xs text-slate-800 dark:text-slate-100 font-bold truncate">
+                    {name && (
+                      <div className="flex items-center gap-1.5 truncate">
+                        <User size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span className="truncate">{name}</span>
+                      </div>
+                    )}
+                    {email && (
+                      <div className="flex items-center gap-1.5 truncate text-slate-600 dark:text-slate-300 font-medium">
+                        <Mail size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span className="truncate">{email}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100/80 dark:bg-indigo-500/20 px-2.5 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/30 shrink-0 flex items-center gap-1 self-start sm:self-auto">
+                    <CheckCircle2 size={11} /> Registered Account
+                  </span>
+                </div>
+              )}
 
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
@@ -2034,56 +2082,76 @@ function ProfileCompletionStep({
                     />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
-                    <div className="space-y-1">
-                      <label className={labelClass}>School Name</label>
-                      <div className="relative group">
-                        <div className={iconWrapClass}>
-                          <School size={14} />
-                        </div>
-                        <input
-                          type="text"
-                          value={schoolName}
-                          onChange={(e) => setSchoolName(e.target.value)}
-                          placeholder="e.g. EduNexus High School"
-                          className={inputClass}
-                        />
+                  <div className="space-y-2.5">
+                    <div className="p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 flex items-start gap-2.5 shadow-xs">
+                      <div className="p-1 rounded-lg bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 shrink-0 mt-0.5">
+                        <AlertCircle size={15} />
+                      </div>
+                      <div className="text-[11px] leading-relaxed text-red-900 dark:text-red-200">
+                        <span className="font-bold text-red-950 dark:text-red-300 block mb-0.5">
+                          One-Time Entry Notice
+                        </span>
+                        School Name, Class, Section, and Group are registered once and cannot be changed anytime after submitting this form.
                       </div>
                     </div>
 
-                    <CustomSelect
-                      label="Class"
-                      icon={BookOpen}
-                      value={studentClass}
-                      onChange={(val) => {
-                        setStudentClass(val);
-                        if (val !== "Class 9" && val !== "Class 10") {
-                          setDepartment("");
-                        }
-                      }}
-                      options={CLASS_OPTIONS}
-                      placeholder="Select Class"
-                    />
+                    <div className="space-y-2">
+                      {/* Row 1: School Name & Class side-by-side */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className={labelClass}>School Name</label>
+                          <div className="relative group">
+                            <div className={iconWrapClass}>
+                              <School size={14} />
+                            </div>
+                            <input
+                              type="text"
+                              value={schoolName}
+                              onChange={(e) => setSchoolName(e.target.value)}
+                              placeholder="e.g. EduNexus High School"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
 
-                    <CustomSelect
-                      label="Section"
-                      icon={Users}
-                      value={studentSection}
-                      onChange={setStudentSection}
-                      options={["Section A", "Section B"]}
-                      placeholder="Select Section"
-                    />
+                        <CustomSelect
+                          label="Class"
+                          icon={BookOpen}
+                          value={studentClass}
+                          onChange={(val) => {
+                            setStudentClass(val);
+                            if (val !== "Class 9" && val !== "Class 10") {
+                              setDepartment("");
+                            }
+                          }}
+                          options={CLASS_OPTIONS}
+                          placeholder="Select Class"
+                        />
+                      </div>
 
-                    {(studentClass === "Class 9" || studentClass === "Class 10") && (
-                      <CustomSelect
-                        label="Group"
-                        icon={Building2}
-                        value={department}
-                        onChange={setDepartment}
-                        options={GROUP_OPTIONS}
-                        placeholder="Select Group"
-                      />
-                    )}
+                      {/* Row 2: Section & Group below them */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <CustomSelect
+                          label="Section"
+                          icon={Users}
+                          value={studentSection}
+                          onChange={setStudentSection}
+                          options={["Section A", "Section B"]}
+                          placeholder="Select Section"
+                        />
+
+                        {(studentClass === "Class 9" || studentClass === "Class 10") && (
+                          <CustomSelect
+                            label="Group"
+                            icon={Building2}
+                            value={department}
+                            onChange={setDepartment}
+                            options={GROUP_OPTIONS}
+                            placeholder="Select Group"
+                          />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2112,14 +2180,28 @@ function ProfileCompletionStep({
               </div>
 
               {error && (
-                <p className="text-[11px] font-medium text-red-500 dark:text-red-400 ml-1">
-                  {error}
-                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3.5 rounded-xl bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 flex items-start gap-3 text-xs text-red-600 dark:text-red-400 mt-2"
+                >
+                  <div className="p-1 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 shrink-0 mt-0.5">
+                    <AlertCircle size={16} />
+                  </div>
+                  <div className="flex-1 space-y-0.5">
+                    <p className="font-bold text-[12px] text-red-700 dark:text-red-300">
+                      Registration Limit Notice
+                    </p>
+                    <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">
+                      {error}
+                    </p>
+                  </div>
+                </motion.div>
               )}
             </div>
 
             {/* Dedicated Action Buttons Footer */}
-            <div className="px-5 sm:px-10 py-3.5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+            <div className="px-5 sm:px-10 py-3.5 bg-white dark:bg-[#0b0f19] border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <motion.button
                 type="button"
                 onClick={onCancel}
@@ -2128,8 +2210,8 @@ function ProfileCompletionStep({
                 whileTap={{ scale: 0.98 }}
                 className="w-full sm:w-auto shrink-0 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <X size={14} />
-                <span>Cancel</span>
+                <ArrowLeft size={14} />
+                <span>Back</span>
               </motion.button>
               <motion.button
                 type="submit"
@@ -2212,5 +2294,152 @@ function ProfileCompletionStep({
         </div>
       </div>
     </motion.div>
+  );
+}
+
+interface AlreadyLoggedInProps {
+  session: any;
+}
+
+function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const u = session?.user || {};
+  const userName = u.name || u.email || "EduNexus User";
+  const userEmail = u.email || "";
+  const rawRole = (u.role || "student").toLowerCase();
+  const roleDisplay = rawRole.toUpperCase();
+
+  const isTeacher = rawRole === "teacher";
+  const isStudent = rawRole === "student";
+
+  const dashboardUrl =
+    rawRole === "student"
+      ? "/dashboard/student"
+      : rawRole === "teacher"
+        ? "/dashboard/teacher"
+        : rawRole === "admin"
+          ? "/dashboard/admin"
+          : "/dashboard";
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      toast.info("Signed out successfully.");
+      window.location.reload();
+    } catch {
+      toast.error("Failed to sign out.");
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-[#030712] p-4 font-sans transition-colors duration-500 relative overflow-hidden">
+      {/* Background Mesh Glows */}
+      <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
+      <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative w-full max-w-md bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/60 dark:shadow-black/60 border border-slate-200 dark:border-slate-800/80 p-7 sm:p-8 text-center"
+      >
+        {/* Status Badge */}
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-6">
+          <CheckCircle2 size={13} />
+          <span>Already Signed In</span>
+        </div>
+
+        {/* User Avatar */}
+        <div className="relative mx-auto h-24 w-24 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 flex items-center justify-center text-3xl font-extrabold mb-4 overflow-hidden border-4 border-white dark:border-slate-800">
+          {u.image ? (
+            <img src={u.image} alt={userName} className="h-full w-full object-cover" />
+          ) : (
+            <span>{userName[0]?.toUpperCase()}</span>
+          )}
+        </div>
+
+        {/* User Details */}
+        <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+          Welcome back, {userName}!
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 flex items-center justify-center gap-1.5">
+          <Mail size={13} className="text-indigo-500" />
+          <span>{userEmail}</span>
+        </p>
+
+        {/* Role & Details Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold border ${
+              isTeacher
+                ? "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20"
+                : isStudent
+                  ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20"
+                  : "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20"
+            }`}
+          >
+            {isTeacher ? (
+              <Briefcase size={12} />
+            ) : isStudent ? (
+              <GraduationCap size={12} />
+            ) : (
+              <ShieldCheck size={12} />
+            )}
+            {roleDisplay}
+          </span>
+
+          {isStudent && (u.studentClass || u.studentSection) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-500/15 px-3 py-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+              <School size={12} />
+              {[u.studentClass, u.studentSection].filter(Boolean).join(" - ")}
+            </span>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="space-y-2.5">
+          <motion.button
+            type="button"
+            onClick={() => router.push(dashboardUrl)}
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Go to My Dashboard</span>
+            <ArrowRight size={14} />
+          </motion.button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <motion.button
+              type="button"
+              onClick={() => router.push("/profile")}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <User size={13} />
+              <span>View Profile</span>
+            </motion.button>
+
+            <motion.button
+              type="button"
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-500/20 transition-all disabled:opacity-60 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <LogOut size={13} />
+              <span>{isSigningOut ? "Signing out..." : "Switch Account"}</span>
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
