@@ -69,6 +69,7 @@ export default function TeacherResultsPage() {
         `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results/${resultToDelete.id}`,
         {
           method: "DELETE",
+          credentials: "include",
         }
       );
 
