@@ -72,7 +72,10 @@ export default function ResultList({
       setError("");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results`
+        `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results`,
+        {
+          credentials: "include",
+        }
       );
 
       const data = await response.json();
