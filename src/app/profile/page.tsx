@@ -33,6 +33,7 @@ import {
   Check,
   X,
   Info,
+  Hash,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { updateUserProfileAction } from "@/lib/actions/user-actions";
@@ -176,6 +177,7 @@ export default function ProfilePage() {
   const [department, setDepartment] = useState("");
   const [studentClass, setStudentClass] = useState("");
   const [studentSection, setStudentSection] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [fatherName, setFatherName] = useState("");
   const [motherName, setMotherName] = useState("");
@@ -212,6 +214,9 @@ export default function ProfilePage() {
       if (u.studentClass) setStudentClass(u.studentClass);
       if (u.studentSection || u.section) {
         setStudentSection(u.studentSection || u.section);
+      }
+      if (u.rollNumber || u.roll) {
+        setRollNumber(String(u.rollNumber || u.roll));
       }
       if (u.schoolName) setSchoolName(u.schoolName);
       if (u.fatherName) setFatherName(u.fatherName);
@@ -704,10 +709,14 @@ export default function ProfilePage() {
                       </span>
                     )}
 
-                    {isStudent && (studentClass || studentSection) && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 dark:bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+                    {isStudent && (studentClass || studentSection || rollNumber) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
                         <School className="h-3.5 w-3.5" />
-                        {[studentClass, studentSection].filter(Boolean).join(" - ")}
+                        {[
+                          studentClass,
+                          studentSection,
+                          rollNumber ? `Roll: ${rollNumber}` : null,
+                        ].filter(Boolean).join(" • ")}
                       </span>
                     )}
                   </div>
@@ -847,104 +856,137 @@ export default function ProfilePage() {
                 {/* STUDENT SPECIFIC: Academic Details */}
                 {isStudent && (
                   <div className="space-y-4">
-                    <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <GraduationCap className="h-4 w-4" />
-                      <span>Academic Enrollment</span>
-                    </h4>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <h4 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <GraduationCap className="h-4 w-4" />
+                        <span>Academic Enrollment Details</span>
+                      </h4>
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+                        <span>Read-only enrollment fields</span>
+                      </span>
+                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                          School Name
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            disabled={!isEditing}
-                            value={schoolName}
-                            onChange={(e) => setSchoolName(e.target.value)}
-                            placeholder="e.g. EduNexus High School"
-                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
-                          />
-                          <School className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
-                        </div>
-                      </div>
+                    <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-start gap-2.5 shadow-xs">
+                      <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] leading-relaxed text-blue-900 dark:text-blue-200">
+                        <strong className="font-bold text-blue-950 dark:text-blue-100">Need to update your academic information?</strong> Academic enrollment details (School Name, Class, Section, Roll Number &amp; Group) cannot be self-edited. Please contact your school administrator to make any changes.
+                      </p>
+                    </div>
 
-                      {isEditing ? (
-                        <ProfileCustomSelect
-                          label="Class"
-                          icon={School}
-                          value={studentClass}
-                          onChange={(val) => {
-                            setStudentClass(val);
-                            if (val !== "Class 9" && val !== "Class 10") {
-                              setDepartment("");
-                            }
-                          }}
-                          options={CLASS_OPTIONS}
-                          placeholder="Select Class"
-                        />
-                      ) : (
+                    <div className="space-y-4">
+                      {/* Row 1: School Name & Class side-by-side */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* School Name (Disabled / Read Only for Student) */}
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Class
-                          </label>
-                          <input
-                            type="text"
-                            disabled
-                            value={studentClass || "Not assigned"}
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
-                          />
-                        </div>
-                      )}
-
-                      {isEditing ? (
-                        <ProfileCustomSelect
-                          label="Section"
-                          icon={Users}
-                          value={studentSection}
-                          onChange={setStudentSection}
-                          options={SECTION_OPTIONS}
-                          placeholder="Select Section"
-                        />
-                      ) : (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Section
-                          </label>
-                          <input
-                            type="text"
-                            disabled
-                            value={studentSection || "Not assigned"}
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
-                          />
-                        </div>
-                      )}
-
-                      {(studentClass === "Class 9" || studentClass === "Class 10") && (
-                        isEditing ? (
-                          <ProfileCustomSelect
-                            label="Group"
-                            icon={Building}
-                            value={department}
-                            onChange={setDepartment}
-                            options={GROUP_OPTIONS}
-                            placeholder="Select Group"
-                          />
-                        ) : (
-                          <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                              Group
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                              School Name
                             </label>
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> Read Only
+                            </span>
+                          </div>
+                          <div className="relative">
                             <input
                               type="text"
                               disabled
-                              value={department || "Not specified"}
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                              value={schoolName || "Not assigned"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
                             />
+                            <School className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                           </div>
-                        )
-                      )}
+                        </div>
+
+                        {/* Class (Disabled for Student) */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                              Class
+                            </label>
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> Read Only
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={studentClass || "Not assigned"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
+                            />
+                            <School className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Row 2: Section, Roll Number & Group lower to them */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Section (Disabled for Student) */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                              Section
+                            </label>
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> Read Only
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={studentSection || "Not assigned"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
+                            />
+                            <Users className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* Roll Number (Disabled for Student) */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                              Roll Number
+                            </label>
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> Read Only
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={rollNumber ? `Roll ${rollNumber}` : "Not assigned"}
+                              className="w-full rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/20 px-4 py-2.5 text-sm text-emerald-700 dark:text-emerald-300 font-extrabold cursor-not-allowed"
+                            />
+                            <Hash className="absolute right-3.5 top-3 h-4 w-4 text-emerald-500 dark:text-emerald-400 pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* Group (Class 9 & 10) (Disabled for Student) */}
+                        {(studentClass === "Class 9" || studentClass === "Class 10") && (
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                                Group
+                              </label>
+                              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 flex items-center gap-0.5">
+                                <Lock className="w-2.5 h-2.5" /> Read Only
+                              </span>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                disabled
+                                value={department || "Not specified"}
+                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
+                              />
+                              <Building className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

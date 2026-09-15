@@ -17,7 +17,9 @@ export interface StudentUser {
   bloodGroup?: string | null;
   schoolName?: string | null;
   studentClass?: string | null;
+  studentSection?: string | null;
   roll?: string | null;
+  rollNumber?: string | null;
   createdAt?: string | Date | null;
 }
 

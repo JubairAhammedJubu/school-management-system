@@ -47,6 +47,7 @@ interface StudentUser {
   phone?: string;
   studentClass?: string;
   studentSection?: string;
+  rollNumber?: string;
   isApproved: boolean;
   twoFactorEnabled: boolean;
   createdAt: string;
