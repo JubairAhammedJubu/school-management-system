@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Trophy,
@@ -42,9 +42,12 @@ export default function StudentResultsPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (isSessionLoading) return;
+    if (isSessionLoading || hasFetched.current) return;
+
+    hasFetched.current = true;
 
     const fetchResults = async () => {
       try {
@@ -54,7 +57,7 @@ export default function StudentResultsPage() {
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/results`,
           {
             credentials: "include",
-          }
+          },
         );
 
         const data = await response.json();
@@ -81,7 +84,7 @@ export default function StudentResultsPage() {
     totalExams > 0
       ? Math.round(
           results.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) /
-            totalExams
+            totalExams,
         )
       : 0;
   const highestScore =
@@ -215,7 +218,7 @@ export default function StudentResultsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {results.map((result, index) => {
                 const percentage = Math.round(
-                  (result.score / result.total) * 100
+                  (result.score / result.total) * 100,
                 );
 
                 return (
@@ -239,7 +242,7 @@ export default function StudentResultsPage() {
 
                       <span
                         className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${getGradeColor(
-                          result.grade
+                          result.grade,
                         )}`}
                       >
                         {result.grade}
