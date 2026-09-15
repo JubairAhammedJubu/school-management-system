@@ -304,6 +304,7 @@ export default function SubmitResultModal({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           studentId: finalStudentId,
           studentName: finalStudentName,
