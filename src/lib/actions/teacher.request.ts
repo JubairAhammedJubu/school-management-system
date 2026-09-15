@@ -1,40 +1,8 @@
-"use server";
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
-async function getAuthHeaders(authToken?: string): Promise<Record<string, string>> {
-  const headersMap: Record<string, string> = {};
-  if (authToken) {
-    headersMap["Authorization"] = `Bearer ${authToken}`;
-  }
-  try {
-    const { headers } = await import("next/headers");
-    const reqHeaders = await headers();
-    const cookie = reqHeaders.get("cookie");
-    if (cookie) {
-      headersMap["cookie"] = cookie;
-      if (!headersMap["Authorization"]) {
-        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
-        if (match) {
-          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
-        }
-      }
-    }
-  } catch {
-    // running outside request context
-  }
-  return headersMap;
-}
 
 // Helper to safely handle non-JSON or HTML server errors (e.g., 401, 500 pages)
-async function parseResponse(res: Response) {
-  const contentType = res.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    return await res.json();
-  }
-  const rawText = await res.text();
-  throw new Error(`Server Non-JSON Response [Status ${res.status}]: ${rawText.substring(0, 150)}`);
-}
+
 
 export interface ClassSubjectRequestItem {
   id: string;
@@ -101,7 +69,6 @@ export async function getTeacherRequestsAction(
       return { success: false, requests: [], error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const authHeaders = await getAuthHeaders(authToken);
     const params = new URLSearchParams();
     if (teacherEmail) params.append("teacherEmail", teacherEmail);
     if (status) params.append("status", status);
@@ -109,14 +76,20 @@ export async function getTeacherRequestsAction(
     const queryString = params.toString();
     const url = `${SERVER_URL}/api/teacher/requests${queryString ? `?${queryString}` : ""}`;
 
+   
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     const res = await fetch(url, {
       cache: "no-store",
-      headers: {
-        ...authHeaders,
-      },
+      credentials: "include",
+      headers,
     });
 
-    const data = await parseResponse(res);
+    const data = await res.json();
 
     if (!res.ok) {
       return { success: false, requests: [], error: data.error || `Unauthorized or HTTP Error ${res.status}` };
@@ -132,7 +105,7 @@ export async function getTeacherRequestsAction(
     return { success: false, requests: [], error: data.error || "Failed to load requests" };
   } catch (err: any) {
     console.error("getTeacherRequestsAction Error:", err);
-    return { success: false, requests: [], error: err?.message || "Server action failed" };
+    return { success: false, requests: [], error: err?.message || "Failed to load requests" };
   }
 }
 
@@ -148,18 +121,20 @@ export async function createTeacherRequestAction(
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const authHeaders = await getAuthHeaders(authToken);
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
+      credentials: "include",
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
-    const data = await parseResponse(res);
+    const data = await res.json();
 
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to submit request" };
@@ -172,7 +147,7 @@ export async function createTeacherRequestAction(
     };
   } catch (err: any) {
     console.error("createTeacherRequestAction Error:", err);
-    return { success: false, error: err?.message || "Server action failed" };
+    return { success: false, error: err?.message || "Failed to submit request" };
   }
 }
 
@@ -188,16 +163,19 @@ export async function deleteTeacherRequestAction(
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const authHeaders = await getAuthHeaders(authToken);
+    const headers: Record<string, string> = {};
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
       cache: "no-store",
-      headers: {
-        ...authHeaders,
-      },
+      credentials: "include",
+      headers,
     });
 
-    const data = await parseResponse(res);
+    const data = await res.json();
 
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to delete request" };
@@ -209,7 +187,7 @@ export async function deleteTeacherRequestAction(
     };
   } catch (err: any) {
     console.error("deleteTeacherRequestAction Error:", err);
-    return { success: false, error: err?.message || "Server action failed" };
+    return { success: false, error: err?.message || "Failed to delete request" };
   }
 }
 
@@ -227,18 +205,20 @@ export async function updateTeacherRequestStatusAction(
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const authHeaders = await getAuthHeaders(authToken);
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
+      credentials: "include",
+      headers,
       body: JSON.stringify({ status, adminFeedback }),
     });
 
-    const data = await parseResponse(res);
+    const data = await res.json();
 
     if (!res.ok || !data.success) {
       return { success: false, error: data.error || "Failed to update request status" };
@@ -250,6 +230,6 @@ export async function updateTeacherRequestStatusAction(
     };
   } catch (err: any) {
     console.error("updateTeacherRequestStatusAction Error:", err);
-    return { success: false, error: err?.message || "Server action failed" };
+    return { success: false, error: err?.message || "Failed to update request status" };
   }
 }

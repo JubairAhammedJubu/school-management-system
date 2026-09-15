@@ -25,13 +25,6 @@ import SubmissionsModal from "@/components/shared/SubmissionsModal";
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
-const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("better-auth.session_token");
-  }
-  return null;
-};
-
 const STATUS_OPTIONS = ["All Status", "ACTIVE", "DRAFT", "CLOSED"];
 const CLASS_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 
@@ -69,16 +62,12 @@ export default function TeacherAssignmentsPage() {
       setIsLoading(true);
       setError("");
 
-      const token = getAuthToken();
       const response = await fetch(
         `${SERVER_URL}/api/teacher/assignments?teacherEmail=${encodeURIComponent(
           teacherEmail
         )}`,
         {
           credentials: "include",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
         }
       );
 
@@ -162,16 +151,11 @@ export default function TeacherAssignmentsPage() {
    */
 const handleDelete = async (assignmentId: string) => {
   try {
-    const token = getAuthToken();
-
     const response = await fetch(
       `${SERVER_URL}/api/teacher/assignments/${assignmentId}`,
       {
         method: "DELETE",
         credentials: "include",
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       }
     );
 

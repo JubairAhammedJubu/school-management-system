@@ -1,30 +1,4 @@
-"use server";
-
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
-async function getAuthHeaders(token?: string): Promise<Record<string, string>> {
-  const headersMap: Record<string, string> = {};
-  if (token) {
-    headersMap["Authorization"] = `Bearer ${token}`;
-  }
-  try {
-    const { headers } = await import("next/headers");
-    const reqHeaders = await headers();
-    const cookie = reqHeaders.get("cookie");
-    if (cookie) {
-      headersMap["cookie"] = cookie;
-      if (!headersMap["Authorization"]) {
-        const match = cookie.match(/better-auth\.session_token=([^;]+)/);
-        if (match) {
-          headersMap["Authorization"] = `Bearer ${decodeURIComponent(match[1])}`;
-        }
-      }
-    }
-  } catch {
-    // running outside request context
-  }
-  return headersMap;
-}
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export interface StudentUser {
   id: string;
@@ -97,12 +71,15 @@ export async function getTeacherStudentsAction(
       query.set("studentClass", studentClass);
     }
 
-    const authHeaders = await getAuthHeaders(token);
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${SERVER_URL}/api/teacher/students?${query.toString()}`, {
       cache: "no-store",
-      headers: {
-        ...authHeaders,
-      },
+      credentials: "include",
+      headers,
     });
 
     const contentType = res.headers.get("content-type");
