@@ -220,7 +220,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       const u = session.user as Record<string, any>;
-      console.log("Syncing user details from session:", u);
+      // console.log("Syncing user details from session:", u);
       if (u.name) setName(u.name);
       if (u.image) setProfileImage(u.image);
       if (u.phone) setPhone(u.phone);
