@@ -622,7 +622,7 @@ export default function TeacherDashboardView() {
                   </div>
                   <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
                     <Hash className="h-3 w-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <strong>{st.roll || "N/A"}</strong>
+                    <strong>{st.rollNumber || "N/A"}</strong>
                     <span className="text-slate-300 dark:text-slate-700">•</span>
                     <Mail className="h-3 w-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span className="truncate">{st.email}</span>
