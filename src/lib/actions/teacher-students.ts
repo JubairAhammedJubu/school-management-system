@@ -1,6 +1,9 @@
-import { log } from "console";
+"use server";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+import { cookies } from "next/headers";
+
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export interface StudentUser {
   id: string;
@@ -47,9 +50,7 @@ export interface GetTeacherStudentsResponse {
   error?: string;
 }
 
-const emptyResponse = (
-  error: string,
-): GetTeacherStudentsResponse => ({
+const emptyResponse = (error: string): GetTeacherStudentsResponse => ({
   success: false,
   students: [],
   pagination: { total: 0, page: 1, limit: 20, totalPages: 1 },
@@ -57,35 +58,51 @@ const emptyResponse = (
   error,
 });
 
+async function getCookieHeader() {
+  const cookieStore = await cookies();
+  const value = cookieStore.toString();
+  if (!value) {
+    throw new Error("Unauthorized. Please log in again.");
+  }
+  return value;
+}
+
 /**
- * Action to fetch students from Express backend API using HTTP-only cookies
+ * Fetch students from Express backend using HTTP-only session cookie
  */
 export async function getTeacherStudentsAction(
   params: GetTeacherStudentsParams = {},
 ): Promise<GetTeacherStudentsResponse> {
   try {
     const { page = 1, limit = 20, search = "", studentClass = "" } = params;
+    const safePage = Math.max(Number(page) || 1, 1);
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50);
 
     const query = new URLSearchParams();
-    query.set("page", page.toString());
-    query.set("limit", limit.toString());
-    if (search) query.set("search", search);
+    query.set("page", String(safePage));
+    query.set("limit", String(safeLimit));
+    if (search.trim()) query.set("search", search.trim());
     if (studentClass && studentClass !== "All Classes") {
       query.set("studentClass", studentClass);
     }
 
-    const res = await fetch(`${SERVER_URL}/api/teacher/students?${query.toString()}`, {
-      cache: "no-store",
-      credentials: "include",
-    });
-    
+    const res = await fetch(
+      `${SERVER_URL}/api/teacher/students?${query.toString()}`,
+      {
+        cache: "no-store",
+        headers: {
+          Cookie: await getCookieHeader(),
+        },
+      },
+    );
+
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
       return emptyResponse("Invalid response from server");
     }
-    
+
     const data = await res.json();
-    console.log("getTeacherStudentsAction response status:", data);
+
     if (!res.ok || !data.success) {
       return emptyResponse(data.error || "Failed to fetch student list");
     }

@@ -1,8 +1,9 @@
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+"use server";
 
+import { cookies } from "next/headers";
 
-// Helper to safely handle non-JSON or HTML server errors (e.g., 401, 500 pages)
-
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export interface ClassSubjectRequestItem {
   id: string;
@@ -56,6 +57,14 @@ export interface ActionResponse {
   error?: string;
 }
 
+async function getCookieHeader() {
+  const cookieStore = await cookies();
+  const value = cookieStore.toString();
+  if (!value) {
+    throw new Error("Unauthorized. Please log in again.");
+  }
+  return value;
+}
 /**
  * Fetch class & subject requests from EduNexus API server
  */
@@ -65,7 +74,11 @@ export async function getTeacherRequestsAction(
 ): Promise<GetRequestsResponse> {
   try {
     if (!SERVER_URL) {
-      return { success: false, requests: [], error: "SERVER_URL is missing in Production ENV" };
+      return {
+        success: false,
+        requests: [],
+        error: "SERVER_URL is missing in Production ENV",
+      };
     }
 
     const params = new URLSearchParams();
@@ -77,13 +90,19 @@ export async function getTeacherRequestsAction(
 
     const res = await fetch(url, {
       cache: "no-store",
-      credentials: "include",
+      headers: {
+        Cookie: await getCookieHeader(),
+      },
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      return { success: false, requests: [], error: data.error || `Unauthorized or HTTP Error ${res.status}` };
+      return {
+        success: false,
+        requests: [],
+        error: data.error || `Unauthorized or HTTP Error ${res.status}`,
+      };
     }
 
     if (data.success && Array.isArray(data.requests)) {
@@ -93,10 +112,18 @@ export async function getTeacherRequestsAction(
       };
     }
 
-    return { success: false, requests: [], error: data.error || "Failed to load requests" };
+    return {
+      success: false,
+      requests: [],
+      error: data.error || "Failed to load requests",
+    };
   } catch (err: any) {
     console.error("getTeacherRequestsAction Error:", err);
-    return { success: false, requests: [], error: err?.message || "Failed to load requests" };
+    return {
+      success: false,
+      requests: [],
+      error: err?.message || "Failed to load requests",
+    };
   }
 }
 
@@ -108,15 +135,18 @@ export async function createTeacherRequestAction(
 ): Promise<CreateRequestResponse> {
   try {
     if (!SERVER_URL) {
-      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+      return {
+        success: false,
+        error: "SERVER_URL is missing in Production ENV",
+      };
     }
 
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
-      credentials: "include",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
+        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify(payload),
     });
@@ -124,7 +154,10 @@ export async function createTeacherRequestAction(
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return { success: false, error: data.error || "Failed to submit request" };
+      return {
+        success: false,
+        error: data.error || "Failed to submit request",
+      };
     }
 
     return {
@@ -134,7 +167,10 @@ export async function createTeacherRequestAction(
     };
   } catch (err: any) {
     console.error("createTeacherRequestAction Error:", err);
-    return { success: false, error: err?.message || "Failed to submit request" };
+    return {
+      success: false,
+      error: err?.message || "Failed to submit request",
+    };
   }
 }
 
@@ -146,19 +182,27 @@ export async function deleteTeacherRequestAction(
 ): Promise<ActionResponse> {
   try {
     if (!SERVER_URL) {
-      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+      return {
+        success: false,
+        error: "SERVER_URL is missing in Production ENV",
+      };
     }
 
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
       cache: "no-store",
-      credentials: "include",
+      headers: {
+        Cookie: await getCookieHeader(),
+      },
     });
 
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return { success: false, error: data.error || "Failed to delete request" };
+      return {
+        success: false,
+        error: data.error || "Failed to delete request",
+      };
     }
 
     return {
@@ -167,7 +211,10 @@ export async function deleteTeacherRequestAction(
     };
   } catch (err: any) {
     console.error("deleteTeacherRequestAction Error:", err);
-    return { success: false, error: err?.message || "Failed to delete request" };
+    return {
+      success: false,
+      error: err?.message || "Failed to delete request",
+    };
   }
 }
 
@@ -181,15 +228,18 @@ export async function updateTeacherRequestStatusAction(
 ): Promise<ActionResponse> {
   try {
     if (!SERVER_URL) {
-      return { success: false, error: "SERVER_URL is missing in Production ENV" };
+      return {
+        success: false,
+        error: "SERVER_URL is missing in Production ENV",
+      };
     }
 
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
       cache: "no-store",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify({ status, adminFeedback }),
     });
@@ -197,7 +247,10 @@ export async function updateTeacherRequestStatusAction(
     const data = await res.json();
 
     if (!res.ok || !data.success) {
-      return { success: false, error: data.error || "Failed to update request status" };
+      return {
+        success: false,
+        error: data.error || "Failed to update request status",
+      };
     }
 
     return {
@@ -206,6 +259,9 @@ export async function updateTeacherRequestStatusAction(
     };
   } catch (err: any) {
     console.error("updateTeacherRequestStatusAction Error:", err);
-    return { success: false, error: err?.message || "Failed to update request status" };
+    return {
+      success: false,
+      error: err?.message || "Failed to update request status",
+    };
   }
 }
