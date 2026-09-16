@@ -220,6 +220,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       const u = session.user as Record<string, any>;
+      console.log("Syncing user details from session:", u);
       if (u.name) setName(u.name);
       if (u.image) setProfileImage(u.image);
       if (u.phone) setPhone(u.phone);
@@ -234,7 +235,7 @@ export default function ProfilePage() {
         setStudentSection(u.studentSection || u.section);
       }
       if (u.rollNumber || u.roll) {
-        setRollNumber(String(u.rollNumber || u.roll));
+        setRollNumber(String( u.rollNumber || u.roll || "" ));
       }
       if (u.schoolName) setSchoolName(u.schoolName);
       if (u.fatherName) setFatherName(u.fatherName);
@@ -575,7 +576,7 @@ export default function ProfilePage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-6 py-3 font-semibold text-white shadow-md shadow-indigo-500/25 transition-all cursor-pointer"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 px-6 py-3 font-semibold text-white shadow-md shadow-indigo-500/25 transition-all cursor-pointer"
           >
             <span>Go to Login</span>
           </Link>
