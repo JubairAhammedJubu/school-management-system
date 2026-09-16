@@ -113,7 +113,6 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
  */
 export async function createNoticeAction(
   payload: NoticePayload,
-  token?: string | null,
 ): Promise<CreateNoticeResponse> {
   try {
     const res = await fetch(`${SERVER_URL}/api/notices`, {
@@ -189,7 +188,6 @@ export async function createNoticeAction(
 export async function updateNoticeAction(
   id: string,
   payload: Partial<NoticePayload>,
-  token?: string | null,
 ): Promise<CreateNoticeResponse> {
   try {
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
@@ -257,7 +255,6 @@ export async function updateNoticeAction(
  */
 export async function deleteNoticeAction(
   id: string,
-  token?: string | null,
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
