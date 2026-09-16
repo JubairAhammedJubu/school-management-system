@@ -83,7 +83,7 @@ export default function TeacherStudentsPage() {
           limit: 20,
           search: searchVal,
           studentClass: classVal,
-        },);
+        });
 
         if (res.success) {
           setStudents(res.students);

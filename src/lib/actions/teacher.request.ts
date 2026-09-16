@@ -62,7 +62,6 @@ export interface ActionResponse {
 export async function getTeacherRequestsAction(
   teacherEmail?: string,
   status?: string,
-  authToken?: string
 ): Promise<GetRequestsResponse> {
   try {
     if (!SERVER_URL) {
@@ -76,17 +75,9 @@ export async function getTeacherRequestsAction(
     const queryString = params.toString();
     const url = `${SERVER_URL}/api/teacher/requests${queryString ? `?${queryString}` : ""}`;
 
-   
-
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
     const res = await fetch(url, {
       cache: "no-store",
       credentials: "include",
-      headers,
     });
 
     const data = await res.json();
@@ -114,23 +105,19 @@ export async function getTeacherRequestsAction(
  */
 export async function createTeacherRequestAction(
   payload: CreateRequestPayload,
-  authToken?: string
 ): Promise<CreateRequestResponse> {
   try {
     if (!SERVER_URL) {
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
       credentials: "include",
       cache: "no-store",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
 
@@ -156,23 +143,16 @@ export async function createTeacherRequestAction(
  */
 export async function deleteTeacherRequestAction(
   requestId: string,
-  authToken?: string
 ): Promise<ActionResponse> {
   try {
     if (!SERVER_URL) {
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
       cache: "no-store",
       credentials: "include",
-      headers,
     });
 
     const data = await res.json();
@@ -198,23 +178,19 @@ export async function updateTeacherRequestStatusAction(
   requestId: string,
   status: "APPROVED" | "REJECTED" | "PENDING",
   adminFeedback?: string,
-  authToken?: string
 ): Promise<ActionResponse> {
   try {
     if (!SERVER_URL) {
       return { success: false, error: "SERVER_URL is missing in Production ENV" };
     }
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
       cache: "no-store",
       credentials: "include",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ status, adminFeedback }),
     });
 
