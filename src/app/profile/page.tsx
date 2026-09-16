@@ -39,6 +39,15 @@ import { useSession } from "@/lib/auth-client";
 import { updateUserProfileAction } from "@/lib/actions/user-actions";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
+const GUARDIAN_RELATION_OPTIONS = [
+  "Father",
+  "Mother",
+  "Legal Guardian",
+  "Uncle",
+  "Aunt",
+  "Other",
+];
 const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTION_OPTIONS = ["Section A", "Section B"];
 const GROUP_OPTIONS = ["Science", "Business Studies", "Humanities"];
@@ -175,6 +184,8 @@ export default function ProfilePage() {
   const [location, setLocation] = useState(""); // Present Address
   const [address, setAddress] = useState(""); // Permanent Address
   const [department, setDepartment] = useState("");
+  const currentYearStr = new Date().getFullYear().toString();
+  const [sessionYear, setSessionYear] = useState(currentYearStr);
   const [studentClass, setStudentClass] = useState("");
   const [studentSection, setStudentSection] = useState("");
   const [rollNumber, setRollNumber] = useState("");
@@ -183,6 +194,9 @@ export default function ProfilePage() {
   const [motherName, setMotherName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
+  const [gender, setGender] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
+  const [guardianRelation, setGuardianRelation] = useState("");
   const [qualification, setQualification] = useState("");
   const [bio, setBio] = useState("");
 
@@ -211,6 +225,10 @@ export default function ProfilePage() {
       if (u.phone) setPhone(u.phone);
       if (u.location) setLocation(u.location);
       if (u.department) setDepartment(u.department);
+      const createdYear = u.createdAt ? new Date(u.createdAt).getFullYear() : null;
+      const validCreatedYear = createdYear && !isNaN(createdYear) ? String(createdYear) : "";
+      const derivedSession = u.sessionYear || u.session || validCreatedYear || currentYearStr;
+      setSessionYear(String(derivedSession));
       if (u.studentClass) setStudentClass(u.studentClass);
       if (u.studentSection || u.section) {
         setStudentSection(u.studentSection || u.section);
@@ -229,6 +247,9 @@ export default function ProfilePage() {
       }
       if (u.address) setAddress(u.address);
       if (u.bloodGroup) setBloodGroup(u.bloodGroup);
+      if (u.gender) setGender(u.gender);
+      if (u.guardianPhone) setGuardianPhone(u.guardianPhone);
+      if (u.guardianRelation) setGuardianRelation(u.guardianRelation);
       if (u.qualification) setQualification(u.qualification);
       if (u.bio) setBio(u.bio);
     }
@@ -355,6 +376,23 @@ export default function ProfilePage() {
       return;
     }
 
+    if (
+      guardianPhone.trim() &&
+      (!guardianPhone.trim().startsWith("01") || guardianPhone.trim().length !== 11)
+    ) {
+      toast.error("Guardian phone number must be exactly 11 digits and start with 01.");
+      return;
+    }
+
+    if (
+      phone.trim() &&
+      guardianPhone.trim() &&
+      phone.trim() === guardianPhone.trim()
+    ) {
+      toast.error("Student phone number cannot be the same as Guardian phone number.");
+      return;
+    }
+
     setIsSavingProfile(true);
     try {
       const res = await updateUserProfileAction({
@@ -368,11 +406,15 @@ export default function ProfilePage() {
         studentClass: studentClass.trim(),
         studentSection: studentSection.trim(),
         section: studentSection.trim(),
+        sessionYear: sessionYear.trim() || currentYearStr,
         schoolName: schoolName.trim(),
         fatherName: fatherName.trim(),
         motherName: motherName.trim(),
         dateOfBirth: dateOfBirth,
         bloodGroup: bloodGroup,
+        gender: gender,
+        guardianPhone: guardianPhone.trim(),
+        guardianRelation: guardianRelation,
         qualification: qualification.trim(),
         bio: bio.trim(),
       });
@@ -709,13 +751,14 @@ export default function ProfilePage() {
                       </span>
                     )}
 
-                    {isStudent && (studentClass || studentSection || rollNumber) && (
+                    {isStudent && (studentClass || studentSection || rollNumber || sessionYear) && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
                         <School className="h-3.5 w-3.5" />
                         {[
                           studentClass,
                           studentSection,
                           rollNumber ? `Roll: ${rollNumber}` : null,
+                          sessionYear ? `Session ${sessionYear}` : null,
                         ].filter(Boolean).join(" • ")}
                       </span>
                     )}
@@ -986,6 +1029,27 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         )}
+
+                        {/* Session Year */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                              Session Year
+                            </label>
+                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" /> Read Only
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={sessionYear || "2026"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
+                            />
+                            <Calendar className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1111,6 +1175,78 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       )}
+
+                      {/* Gender */}
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Gender"
+                          icon={User}
+                          value={gender}
+                          onChange={setGender}
+                          options={GENDER_OPTIONS}
+                          placeholder="Select Gender"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Gender
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={gender || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                            <User className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Guardian Phone */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Guardian Phone Number
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            disabled={!isEditing}
+                            value={guardianPhone}
+                            onChange={(e) => setGuardianPhone(e.target.value)}
+                            placeholder="e.g. 01712345678"
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                          />
+                          <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Guardian Relationship */}
+                      {isEditing ? (
+                        <ProfileCustomSelect
+                          label="Guardian Relationship"
+                          icon={Users}
+                          value={guardianRelation}
+                          onChange={setGuardianRelation}
+                          options={GUARDIAN_RELATION_OPTIONS}
+                          placeholder="Select Relationship"
+                        />
+                      ) : (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Guardian Relationship
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              disabled
+                              value={guardianRelation || "Not specified"}
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                            />
+                            <Users className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1156,7 +1292,7 @@ export default function ProfilePage() {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Phone Number {isTeacher && "*"}
+                        {isStudent ? "Student Phone Number" : isTeacher ? "Phone Number *" : "Phone Number"}
                       </label>
                       <div className="relative">
                         <input
