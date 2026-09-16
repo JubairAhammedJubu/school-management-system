@@ -102,7 +102,10 @@ function ProfileCustomSelect({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -121,15 +124,23 @@ function ProfileCustomSelect({
           onClick={() => setIsOpen((prev) => !prev)}
           className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-600/20 shadow-xs flex items-center justify-between text-left cursor-pointer"
         >
-          <span className={value ? "font-medium" : "text-slate-400 dark:text-slate-500"}>
+          <span
+            className={
+              value ? "font-medium" : "text-slate-400 dark:text-slate-500"
+            }
+          >
             {value || placeholder}
           </span>
           <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-400">
-            <Icon size={16} className="text-slate-400 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+            <Icon
+              size={16}
+              className="text-slate-400 dark:text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors"
+            />
             <ChevronDown
               size={16}
-              className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-indigo-500 dark:text-indigo-400" : ""
-                }`}
+              className={`transition-transform duration-200 ${
+                isOpen ? "rotate-180 text-indigo-500 dark:text-indigo-400" : ""
+              }`}
             />
           </div>
         </button>
@@ -153,14 +164,18 @@ function ProfileCustomSelect({
                       onChange(opt);
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer ${isSelected
+                    className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/15 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer ${
+                      isSelected
                         ? "bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-bold"
                         : "text-slate-700 dark:text-slate-200"
-                      }`}
+                    }`}
                   >
                     <span>{opt}</span>
                     {isSelected && (
-                      <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <Check
+                        size={14}
+                        className="text-indigo-600 dark:text-indigo-400 shrink-0"
+                      />
                     )}
                   </button>
                 );
@@ -226,16 +241,20 @@ export default function ProfilePage() {
       if (u.phone) setPhone(u.phone);
       if (u.location) setLocation(u.location);
       if (u.department) setDepartment(u.department);
-      const createdYear = u.createdAt ? new Date(u.createdAt).getFullYear() : null;
-      const validCreatedYear = createdYear && !isNaN(createdYear) ? String(createdYear) : "";
-      const derivedSession = u.sessionYear || u.session || validCreatedYear || currentYearStr;
+      const createdYear = u.createdAt
+        ? new Date(u.createdAt).getFullYear()
+        : null;
+      const validCreatedYear =
+        createdYear && !isNaN(createdYear) ? String(createdYear) : "";
+      const derivedSession =
+        u.sessionYear || u.session || validCreatedYear || currentYearStr;
       setSessionYear(String(derivedSession));
       if (u.studentClass) setStudentClass(u.studentClass);
       if (u.studentSection || u.section) {
         setStudentSection(u.studentSection || u.section);
       }
       if (u.rollNumber || u.roll) {
-        setRollNumber(String( u.rollNumber || u.roll || "" ));
+        setRollNumber(String(u.rollNumber || u.roll || ""));
       }
       if (u.schoolName) setSchoolName(u.schoolName);
       if (u.fatherName) setFatherName(u.fatherName);
@@ -309,14 +328,14 @@ export default function ProfilePage() {
       }
 
       const profileResponse = await updateUserProfileAction({
-        email: userEmail,
-        userId: session?.user?.id,
         name: name.trim() || session?.user?.name || "EduNexus Member",
         image: imageUrl.trim(),
       });
 
       if (!profileResponse.success) {
-        throw new Error(profileResponse.error || "Failed to save profile image.");
+        throw new Error(
+          profileResponse.error || "Failed to save profile image.",
+        );
       }
 
       setProfileImage(imageUrl.trim());
@@ -367,9 +386,12 @@ export default function ProfilePage() {
 
     if (
       guardianPhone.trim() &&
-      (!guardianPhone.trim().startsWith("01") || guardianPhone.trim().length !== 11)
+      (!guardianPhone.trim().startsWith("01") ||
+        guardianPhone.trim().length !== 11)
     ) {
-      toast.error("Guardian phone number must be exactly 11 digits and start with 01.");
+      toast.error(
+        "Guardian phone number must be exactly 11 digits and start with 01.",
+      );
       return;
     }
 
@@ -378,15 +400,15 @@ export default function ProfilePage() {
       guardianPhone.trim() &&
       phone.trim() === guardianPhone.trim()
     ) {
-      toast.error("Student phone number cannot be the same as Guardian phone number.");
+      toast.error(
+        "Student phone number cannot be the same as Guardian phone number.",
+      );
       return;
     }
 
     setIsSavingProfile(true);
     try {
       const res = await updateUserProfileAction({
-        email: userEmail,
-        userId: session?.user?.id,
         name: name.trim(),
         phone: phone.trim(),
         location: location.trim(),
@@ -596,21 +618,21 @@ export default function ProfilePage() {
 
   const userCreatedAt = session?.user?.createdAt
     ? new Date(session.user.createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "Jan 2026";
   const userUpdatedAt = (
     session?.user as { updatedAt?: string | Date } | undefined
   )?.updatedAt
     ? new Date(
-      (session?.user as { updatedAt?: string | Date }).updatedAt!,
-    ).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+        (session?.user as { updatedAt?: string | Date }).updatedAt!,
+      ).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "Recently";
   const isEmailVerified =
     (session?.user as { emailVerified?: boolean } | undefined)?.emailVerified ??
@@ -658,7 +680,8 @@ export default function ProfilePage() {
                   Demo Account — Read-Only Mode
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Profile modifications are disabled for demo accounts to maintain standard credentials for all visitors.
+                  Profile modifications are disabled for demo accounts to
+                  maintain standard credentials for all visitors.
                 </p>
               </div>
             </div>
@@ -746,12 +769,13 @@ export default function ProfilePage() {
 
                     {/* Role Badge */}
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${isTeacher
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${
+                        isTeacher
                           ? "bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20"
                           : isStudent
                             ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20"
                             : "bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20"
-                        }`}
+                      }`}
                     >
                       {isTeacher ? (
                         <Briefcase className="h-3.5 w-3.5" />
@@ -778,17 +802,23 @@ export default function ProfilePage() {
                       </span>
                     )}
 
-                    {isStudent && (studentClass || studentSection || rollNumber || sessionYear) && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
-                        <School className="h-3.5 w-3.5" />
-                        {[
-                          studentClass,
-                          studentSection,
-                          rollNumber ? `Roll: ${rollNumber}` : null,
-                          sessionYear ? `Session ${sessionYear}` : null,
-                        ].filter(Boolean).join(" • ")}
-                      </span>
-                    )}
+                    {isStudent &&
+                      (studentClass ||
+                        studentSection ||
+                        rollNumber ||
+                        sessionYear) && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
+                          <School className="h-3.5 w-3.5" />
+                          {[
+                            studentClass,
+                            studentSection,
+                            rollNumber ? `Roll: ${rollNumber}` : null,
+                            sessionYear ? `Session ${sessionYear}` : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" • ")}
+                        </span>
+                      )}
                   </div>
 
                   <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 flex items-center justify-center sm:justify-start gap-2">
@@ -856,7 +886,6 @@ export default function ProfilePage() {
               </div>
 
               <form onSubmit={handleSaveProfile} className="space-y-6">
-
                 {/* ── 1. ROLE-SPECIFIC SPECIAL SECTION ───────────────── */}
 
                 {/* TEACHER SPECIFIC: Professional Info */}
@@ -940,7 +969,13 @@ export default function ProfilePage() {
                     <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-start gap-2.5 shadow-xs">
                       <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                       <p className="text-[11px] leading-relaxed text-blue-900 dark:text-blue-200">
-                        <strong className="font-bold text-blue-950 dark:text-blue-100">Need to update your academic information?</strong> Academic enrollment details (School Name, Class, Section, Roll Number &amp; Group) cannot be self-edited. Please contact your school administrator to make any changes.
+                        <strong className="font-bold text-blue-950 dark:text-blue-100">
+                          Need to update your academic information?
+                        </strong>{" "}
+                        Academic enrollment details (School Name, Class,
+                        Section, Roll Number &amp; Group) cannot be self-edited.
+                        Please contact your school administrator to make any
+                        changes.
                       </p>
                     </div>
 
@@ -1027,7 +1062,11 @@ export default function ProfilePage() {
                             <input
                               type="text"
                               disabled
-                              value={rollNumber ? `Roll ${rollNumber}` : "Not assigned"}
+                              value={
+                                rollNumber
+                                  ? `Roll ${rollNumber}`
+                                  : "Not assigned"
+                              }
                               className="w-full rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/20 px-4 py-2.5 text-sm text-emerald-700 dark:text-emerald-300 font-extrabold cursor-not-allowed"
                             />
                             <Hash className="absolute right-3.5 top-3 h-4 w-4 text-emerald-500 dark:text-emerald-400 pointer-events-none" />
@@ -1035,7 +1074,8 @@ export default function ProfilePage() {
                         </div>
 
                         {/* Group (Class 9 & 10) (Disabled for Student) */}
-                        {(studentClass === "Class 9" || studentClass === "Class 10") && (
+                        {(studentClass === "Class 9" ||
+                          studentClass === "Class 10") && (
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -1243,10 +1283,13 @@ export default function ProfilePage() {
                             maxLength={11}
                             value={guardianPhone}
                             onChange={(e) => {
-                              let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                              let val = e.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 11);
                               if (val.length > 0) {
                                 if (val[0] !== "0") val = "0" + val.slice(1);
-                                if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                                if (val.length > 1 && val[1] !== "1")
+                                  val = "01" + val.slice(2);
                               }
                               setGuardianPhone(val);
                             }}
@@ -1328,7 +1371,11 @@ export default function ProfilePage() {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        {isStudent ? "Student Phone Number" : isTeacher ? "Phone Number *" : "Phone Number"}
+                        {isStudent
+                          ? "Student Phone Number"
+                          : isTeacher
+                            ? "Phone Number *"
+                            : "Phone Number"}
                       </label>
                       <div className="relative">
                         <input
@@ -1337,10 +1384,13 @@ export default function ProfilePage() {
                           maxLength={11}
                           value={phone}
                           onChange={(e) => {
-                            let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                            let val = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 11);
                             if (val.length > 0) {
                               if (val[0] !== "0") val = "0" + val.slice(1);
-                              if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                              if (val.length > 1 && val[1] !== "1")
+                                val = "01" + val.slice(2);
                             }
                             setPhone(val);
                           }}
@@ -1463,10 +1513,11 @@ export default function ProfilePage() {
                       Email Verification
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 font-bold ${isEmailVerified
+                      className={`inline-flex items-center gap-1 font-bold ${
+                        isEmailVerified
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-amber-600 dark:text-amber-400"
-                        }`}
+                      }`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {isEmailVerified ? "Verified" : "Pending"}
@@ -1579,7 +1630,9 @@ export default function ProfilePage() {
                   Demo student and teacher profiles cannot be edited or updated.
                 </p>
                 <p className="text-slate-500 dark:text-slate-400 text-xs">
-                  To ensure a consistent and reliable demonstration experience for all visitors and reviewers, credentials, photos, and personal information for demo accounts are read-only.
+                  To ensure a consistent and reliable demonstration experience
+                  for all visitors and reviewers, credentials, photos, and
+                  personal information for demo accounts are read-only.
                 </p>
               </div>
 
