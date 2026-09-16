@@ -307,27 +307,15 @@ export default function ProfilePage() {
         );
       }
 
-      const profileResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/profile`,
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
+      const profileResponse = await updateUserProfileAction({
+        email: userEmail,
+        userId: session?.user?.id,
+        name: name.trim() || session?.user?.name || "EduNexus Member",
+        image: imageUrl.trim(),
+      });
 
-          },
-          body: JSON.stringify({
-            email: userEmail,
-            userId: session?.user?.id,
-            name: name.trim() || session?.user?.name || "EduNexus Member",
-            image: imageUrl.trim(),
-          }),
-        },
-      );
-      const profileData = await profileResponse.json();
-
-      if (!profileResponse.ok) {
-        throw new Error(profileData.error || "Failed to save profile image.");
+      if (!profileResponse.success) {
+        throw new Error(profileResponse.error || "Failed to save profile image.");
       }
 
       setProfileImage(imageUrl.trim());
@@ -434,7 +422,7 @@ export default function ProfilePage() {
   // Skeleton Loader while checking session
   if (isPending) {
     return (
-      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans py-12 sm:py-16 lg:py-24 flex flex-col justify-center items-center">
+      <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans py-12 sm:py-16 lg:py-24 flex flex-col justify-center items-center">
         {/* Background Mesh Glows */}
         <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
         <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
@@ -443,21 +431,25 @@ export default function ProfilePage() {
           {/* Breadcrumb Skeleton */}
           <div className="flex items-center justify-between">
             <div className="h-4 w-20 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
-            <div className="h-4 w-24 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
+            <div className="h-4 w-28 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
           </div>
 
           {/* Header Cover Card Skeleton */}
           <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-8 shadow-xl dark:shadow-2xl dark:shadow-black/70 animate-pulse">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5">
-                {/* Avatar Skeleton */}
-                <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                {/* Avatar & Upload button Skeleton */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                  <div className="h-6 w-24 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                </div>
                 <div className="space-y-3 text-center sm:text-left">
-                  <div className="flex items-center gap-2 justify-center sm:justify-start">
+                  <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                     <div className="h-8 w-48 sm:w-64 rounded-lg bg-slate-200 dark:bg-slate-800" />
                     <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-6 w-28 rounded-full bg-slate-200 dark:bg-slate-800" />
                   </div>
-                  <div className="h-4 w-40 sm:w-56 rounded-md bg-slate-200 dark:bg-slate-800 mx-auto sm:mx-0" />
+                  <div className="h-4 w-44 sm:w-60 rounded-md bg-slate-200 dark:bg-slate-800 mx-auto sm:mx-0" />
                 </div>
               </div>
               <div className="h-10 w-32 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
@@ -473,53 +465,87 @@ export default function ProfilePage() {
                 <div className="h-4 w-full max-w-sm rounded-md bg-slate-200 dark:bg-slate-800" />
               </div>
 
-              {/* Form Section 1 */}
+              {/* Form Section 1: Academic / Professional */}
               <div className="space-y-4 pt-2">
-                <div className="h-4 w-36 rounded-md bg-slate-200 dark:bg-slate-800" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                </div>
-              </div>
-
-              {/* Form Section 2 */}
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="h-4 w-44 rounded-md bg-slate-200 dark:bg-slate-800" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
                 </div>
-                <div className="h-20 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
               </div>
 
-              {/* Form Section 3 (Bio) */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
-                <div className="h-28 rounded-xl bg-slate-200 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+              {/* Form Section 2: Personal Info */}
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="h-4 w-40 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="h-3.5 w-32 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-20 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
+                </div>
+              </div>
+
+              {/* Form Section 3: Bio */}
+              <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="h-3.5 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+                <div className="h-24 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" />
               </div>
             </div>
 
             {/* Right Sidebar Skeleton */}
             <div className="space-y-6">
-              {/* System Details Card Skeleton */}
+              {/* System Identity Card Skeleton */}
               <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-4 animate-pulse">
                 <div className="h-5 w-44 rounded-md bg-slate-200 dark:bg-slate-800" />
                 <div className="space-y-3 pt-2">
-                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
-                  <div className="h-11 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80" />
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800/80 last:border-0"
+                    >
+                      <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-5 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Tip Card Skeleton */}
-              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-2 animate-pulse">
-                <div className="h-4 w-3/4 rounded-md bg-slate-200 dark:bg-slate-800" />
-                <div className="h-3 w-full rounded-md bg-slate-200 dark:bg-slate-800/60" />
-                <div className="h-3 w-5/6 rounded-md bg-slate-200 dark:bg-slate-800/60" />
+              <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 shadow-md dark:shadow-2xl dark:shadow-black/70 space-y-3 animate-pulse">
+                <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800" />
+                <div className="h-3 w-full rounded-md bg-slate-200/80 dark:bg-slate-800/80" />
+                <div className="h-3 w-4/5 rounded-md bg-slate-200/60 dark:bg-slate-800/60" />
               </div>
             </div>
           </div>
@@ -1210,11 +1236,20 @@ export default function ProfilePage() {
                         </label>
                         <div className="relative">
                           <input
-                            type="text"
+                            type="tel"
+                            inputMode="numeric"
                             disabled={!isEditing}
+                            maxLength={11}
                             value={guardianPhone}
-                            onChange={(e) => setGuardianPhone(e.target.value)}
-                            placeholder="e.g. 01712345678"
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                              if (val.length > 0) {
+                                if (val[0] !== "0") val = "0" + val.slice(1);
+                                if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                              }
+                              setGuardianPhone(val);
+                            }}
+                            placeholder="01712345678"
                             className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
                           />
                           <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
