@@ -1,3 +1,5 @@
+import { log } from "console";
+
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 export interface StudentUser {
@@ -56,11 +58,10 @@ const emptyResponse = (
 });
 
 /**
- * Server action to fetch students from Express backend API
+ * Action to fetch students from Express backend API using HTTP-only cookies
  */
 export async function getTeacherStudentsAction(
   params: GetTeacherStudentsParams = {},
-  token?: string,
 ): Promise<GetTeacherStudentsResponse> {
   try {
     const { page = 1, limit = 20, search = "", studentClass = "" } = params;
@@ -73,23 +74,18 @@ export async function getTeacherStudentsAction(
       query.set("studentClass", studentClass);
     }
 
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
     const res = await fetch(`${SERVER_URL}/api/teacher/students?${query.toString()}`, {
       cache: "no-store",
       credentials: "include",
-      headers,
     });
-
+    
     const contentType = res.headers.get("content-type");
     if (!contentType?.includes("application/json")) {
       return emptyResponse("Invalid response from server");
     }
-
+    
     const data = await res.json();
+    console.log("getTeacherStudentsAction response status:", data);
     if (!res.ok || !data.success) {
       return emptyResponse(data.error || "Failed to fetch student list");
     }

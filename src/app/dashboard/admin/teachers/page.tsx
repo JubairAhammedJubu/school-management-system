@@ -150,6 +150,7 @@ export default function AdminTeachersPage() {
     try {
       const res = await authedFetch(`/api/admin/users/${modal.teacher.id}`, {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           department: editDept,
@@ -223,6 +224,7 @@ export default function AdminTeachersPage() {
     try {
       const res = await authedFetch(`/api/admin/users/${modal.teacher.id}/role`, {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: newRole }),
       });
