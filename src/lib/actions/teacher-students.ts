@@ -1,7 +1,3 @@
-"use server";
-
-import { cookies } from "next/headers";
-
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
@@ -58,30 +54,19 @@ const emptyResponse = (error: string): GetTeacherStudentsResponse => ({
   error,
 });
 
-async function getCookieHeader() {
-  const cookieStore = await cookies();
-  const value = cookieStore.toString();
-  if (!value) {
-    throw new Error("Unauthorized. Please log in again.");
-  }
-  return value;
-}
-
 /**
- * Fetch students from Express backend using HTTP-only session cookie
+ * Action to fetch students from Express backend API using HTTP-only cookies
  */
 export async function getTeacherStudentsAction(
   params: GetTeacherStudentsParams = {},
 ): Promise<GetTeacherStudentsResponse> {
   try {
     const { page = 1, limit = 20, search = "", studentClass = "" } = params;
-    const safePage = Math.max(Number(page) || 1, 1);
-    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50);
 
     const query = new URLSearchParams();
-    query.set("page", String(safePage));
-    query.set("limit", String(safeLimit));
-    if (search.trim()) query.set("search", search.trim());
+    query.set("page", page.toString());
+    query.set("limit", limit.toString());
+    if (search) query.set("search", search);
     if (studentClass && studentClass !== "All Classes") {
       query.set("studentClass", studentClass);
     }
@@ -90,9 +75,7 @@ export async function getTeacherStudentsAction(
       `${SERVER_URL}/api/teacher/students?${query.toString()}`,
       {
         cache: "no-store",
-        headers: {
-          Cookie: await getCookieHeader(),
-        },
+        credentials: "include",
       },
     );
 
@@ -102,7 +85,7 @@ export async function getTeacherStudentsAction(
     }
 
     const data = await res.json();
-
+    console.log("getTeacherStudentsAction response status:", data);
     if (!res.ok || !data.success) {
       return emptyResponse(data.error || "Failed to fetch student list");
     }
@@ -110,8 +93,12 @@ export async function getTeacherStudentsAction(
     return {
       success: true,
       students: data.students || [],
-      pagination:
-        data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 },
+      pagination: data.pagination || {
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      },
       classes: data.classes || ["All Classes"],
     };
   } catch (error: unknown) {
