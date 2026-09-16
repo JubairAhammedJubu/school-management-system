@@ -1,4 +1,6 @@
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+"use server";
+
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 export interface UpdateProfileInput {
   email?: string;
   userId?: string;
@@ -13,9 +15,13 @@ export interface UpdateProfileInput {
   dateOfBirth?: string;
   address?: string;
   bloodGroup?: string;
+  gender?: string;
+  guardianPhone?: string;
+  guardianRelation?: string;
   schoolName?: string;
   studentClass?: string;
   studentSection?: string;
+  sessionYear?: string;
   section?: string;
   roll?: string;
   qualification?: string;
@@ -73,6 +79,31 @@ export async function updateUserProfileAction(
         error instanceof Error
           ? error.message
           : "Server action request failed.",
+    };
+  }
+}
+
+/**
+ * Checks whether an account with the given email already exists in the system.
+ */
+export async function checkUserExistsAction(
+  email: string
+): Promise<{ success: boolean; exists: boolean; user?: any; error?: string }> {
+  try {
+    const response = await fetch(
+      `${SERVER_URL}/api/user/check-exists?email=${encodeURIComponent(email)}`,
+      {
+        method: "GET",
+        cache: "no-store",
+      }
+    );
+    const result = await response.json();
+    return result;
+  } catch (error: any) {
+    return {
+      success: false,
+      exists: false,
+      error: error?.message || "Failed to check email existence.",
     };
   }
 }

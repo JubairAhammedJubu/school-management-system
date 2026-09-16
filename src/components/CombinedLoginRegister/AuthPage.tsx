@@ -44,7 +44,10 @@ import {
   setNewPasswordAction,
   verifyPasswordResetCodeAction,
 } from "@/lib/actions/password-reset-actions";
-import { updateUserProfileAction } from "@/lib/actions/user-actions";
+import {
+  updateUserProfileAction,
+  checkUserExistsAction,
+} from "@/lib/actions/user-actions";
 
 interface AuthPageProps {
   initialMode?: "login" | "register";
@@ -195,6 +198,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [address, setAddress] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
+  const [gender, setGender] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
+  const [guardianRelation, setGuardianRelation] = useState("");
   const [schoolName, setSchoolName] = useState("");
   const [studentClass, setStudentClass] = useState("");
   const [studentSection, setStudentSection] = useState("");
@@ -293,8 +299,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     }
 
     if (!isLogin) {
-      // Step 1 of registration: just validate the basics and move on to the
-      // additional-info form. No account is created here.
+      // Step 1 of registration: validate basics & check if user already exists
       if (password !== confirmPassword) {
         setError("Passwords do not match.");
         toast.error("Passwords do not match. Please verify your password.");
@@ -304,8 +309,29 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         setError("Please fill in all fields.");
         return;
       }
+
+      setIsSubmitting(true);
       setError("");
-      setRegisterStep("info");
+
+      try {
+        const checkRes = await checkUserExistsAction(email.trim());
+        if (checkRes.exists) {
+          const msg = `An account with ${email.trim()} already exists. Returning to Sign In...`;
+          setError(msg);
+          toast.warning(msg);
+          setIsLogin(true);
+          setPassword("");
+          setConfirmPassword("");
+          setRegisterStep("form");
+          return;
+        }
+        setRegisterStep("info");
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to check email.");
+        setRegisterStep("info");
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -600,7 +626,28 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     }
 
     if (phone.trim() && (!phone.trim().startsWith("01") || phone.trim().length !== 11)) {
-      const msg = "Phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
+      const msg = "Student phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    if (
+      guardianPhone.trim() &&
+      (!guardianPhone.trim().startsWith("01") || guardianPhone.trim().length !== 11)
+    ) {
+      const msg = "Guardian phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    if (
+      phone.trim() &&
+      guardianPhone.trim() &&
+      phone.trim() === guardianPhone.trim()
+    ) {
+      const msg = "Student phone number cannot be the same as Guardian phone number.";
       setError(msg);
       toast.error(msg);
       return;
@@ -622,6 +669,9 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         dateOfBirth: dateOfBirth || undefined,
         address: address.trim() || undefined,
         bloodGroup: bloodGroup || undefined,
+        gender: gender || undefined,
+        guardianPhone: guardianPhone.trim() || undefined,
+        guardianRelation: guardianRelation || undefined,
         schoolName:
           detectedRole === "student"
             ? schoolName.trim() || undefined
@@ -634,6 +684,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           detectedRole === "student"
             ? studentSection.trim() || undefined
             : undefined,
+        sessionYear:
+          detectedRole === "student"
+            ? new Date().getFullYear().toString()
+            : undefined,
         group:
           detectedRole === "student"
             ? department.trim() || undefined
@@ -644,6 +698,21 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             : undefined,
       } as any);
       if (signUpError) {
+        const errMsg = signUpError.message || "";
+        if (
+          errMsg.toLowerCase().includes("already exists") ||
+          errMsg.toLowerCase().includes("already registered") ||
+          (signUpError as any).code === "USER_ALREADY_EXISTS"
+        ) {
+          const msg = `An account with ${email.trim()} already exists. Returning to Sign In...`;
+          setError(msg);
+          toast.warning(msg);
+          setIsLogin(true);
+          setPassword("");
+          setConfirmPassword("");
+          setRegisterStep("form");
+          return;
+        }
         throw new Error(
           signUpError.message ?? "Could not create your account.",
         );
@@ -704,6 +773,12 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           setDateOfBirth={setDateOfBirth}
           bloodGroup={bloodGroup}
           setBloodGroup={setBloodGroup}
+          gender={gender}
+          setGender={setGender}
+          guardianPhone={guardianPhone}
+          setGuardianPhone={setGuardianPhone}
+          guardianRelation={guardianRelation}
+          setGuardianRelation={setGuardianRelation}
           address={address}
           setAddress={setAddress}
           phone={phone}
@@ -1641,6 +1716,12 @@ interface ProfileCompletionStepProps {
   setDateOfBirth: (v: string) => void;
   bloodGroup: string;
   setBloodGroup: (v: string) => void;
+  gender: string;
+  setGender: (v: string) => void;
+  guardianPhone: string;
+  setGuardianPhone: (v: string) => void;
+  guardianRelation: string;
+  setGuardianRelation: (v: string) => void;
   address: string;
   setAddress: (v: string) => void;
   phone: string;
@@ -1662,6 +1743,15 @@ interface ProfileCompletionStepProps {
 }
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
+const GUARDIAN_RELATION_OPTIONS = [
+  "Father",
+  "Mother",
+  "Legal Guardian",
+  "Uncle",
+  "Aunt",
+  "Other",
+];
 const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const GROUP_OPTIONS = ["Science", "Business Studies", "Humanities"];
 const TEACHER_DEPARTMENT_OPTIONS = [
@@ -1802,6 +1892,12 @@ function ProfileCompletionStep({
   setDateOfBirth,
   bloodGroup,
   setBloodGroup,
+  gender,
+  setGender,
+  guardianPhone,
+  setGuardianPhone,
+  guardianRelation,
+  setGuardianRelation,
   address,
   setAddress,
   phone,
@@ -1986,6 +2082,49 @@ function ProfileCompletionStep({
                     options={BLOOD_GROUPS}
                     placeholder="Select Blood Group"
                   />
+
+                  <CustomSelect
+                    label="Gender"
+                    icon={User}
+                    value={gender}
+                    onChange={setGender}
+                    options={GENDER_OPTIONS}
+                    placeholder="Select Gender"
+                  />
+
+                  <div className="space-y-1">
+                    <label className={labelClass}>Guardian Phone</label>
+                    <div className="relative group">
+                      <div className={iconWrapClass}>
+                        <Phone size={14} />
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={11}
+                        value={guardianPhone}
+                        onChange={(e) => {
+                          let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                          if (val.length > 0) {
+                            if (val[0] !== "0") val = "0" + val.slice(1);
+                            if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                          }
+                          setGuardianPhone(val);
+                        }}
+                        placeholder="01712345678"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <CustomSelect
+                    label="Guardian Relationship"
+                    icon={Users}
+                    value={guardianRelation}
+                    onChange={setGuardianRelation}
+                    options={GUARDIAN_RELATION_OPTIONS}
+                    placeholder="Select Relationship"
+                  />
                 </div>
 
                 <div className="space-y-1 mt-2">
@@ -2010,7 +2149,7 @@ function ProfileCompletionStep({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                   <div className="space-y-1">
                     <label className={labelClass}>
-                      {isTeacher ? "Phone Number *" : "Phone Number"}
+                      {isTeacher ? "Phone Number *" : "Student Phone Number"}
                     </label>
                     <div className="relative group">
                       <div className={iconWrapClass}>
