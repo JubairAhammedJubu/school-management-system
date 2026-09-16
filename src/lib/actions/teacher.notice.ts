@@ -1,7 +1,3 @@
-"use server";
-
-import { cookies } from "next/headers";
-
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
@@ -42,11 +38,6 @@ export interface CreateNoticeResponse {
   error?: string;
 }
 
-async function getCookieHeader() {
-  const cookieStore = await cookies();
-  return cookieStore.toString();
-}
-
 /**
  * Fetch all notices from EduNexus API
  */
@@ -54,9 +45,7 @@ export async function getNoticesAction(): Promise<GetNoticesResponse> {
   try {
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       cache: "no-store",
-      headers: {
-        Cookie: await getCookieHeader(),
-      },
+      credentials: "include",
     });
 
     const contentType = res.headers.get("content-type");
@@ -129,9 +118,9 @@ export async function createNoticeAction(
     const res = await fetch(`${SERVER_URL}/api/notices`, {
       method: "POST",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify(payload),
     });
@@ -204,9 +193,9 @@ export async function updateNoticeAction(
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "PUT",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify(payload),
     });
@@ -271,9 +260,9 @@ export async function deleteNoticeAction(
     const res = await fetch(`${SERVER_URL}/api/notices/${id}`, {
       method: "DELETE",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
     });
 
