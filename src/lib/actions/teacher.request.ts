@@ -1,9 +1,7 @@
-"use server";
-
-import { cookies } from "next/headers";
-
 const SERVER_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+// Helper to safely handle non-JSON or HTML server errors (e.g., 401, 500 pages)
 
 export interface ClassSubjectRequestItem {
   id: string;
@@ -57,14 +55,6 @@ export interface ActionResponse {
   error?: string;
 }
 
-async function getCookieHeader() {
-  const cookieStore = await cookies();
-  const value = cookieStore.toString();
-  if (!value) {
-    throw new Error("Unauthorized. Please log in again.");
-  }
-  return value;
-}
 /**
  * Fetch class & subject requests from EduNexus API server
  */
@@ -90,9 +80,7 @@ export async function getTeacherRequestsAction(
 
     const res = await fetch(url, {
       cache: "no-store",
-      headers: {
-        Cookie: await getCookieHeader(),
-      },
+      credentials: "include",
     });
 
     const data = await res.json();
@@ -143,10 +131,10 @@ export async function createTeacherRequestAction(
 
     const res = await fetch(`${SERVER_URL}/api/teacher/requests`, {
       method: "POST",
+      credentials: "include",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify(payload),
     });
@@ -191,9 +179,7 @@ export async function deleteTeacherRequestAction(
     const res = await fetch(`${SERVER_URL}/api/teacher/requests/${requestId}`, {
       method: "DELETE",
       cache: "no-store",
-      headers: {
-        Cookie: await getCookieHeader(),
-      },
+      credentials: "include",
     });
 
     const data = await res.json();
@@ -237,9 +223,9 @@ export async function updateTeacherRequestStatusAction(
     const res = await fetch(`${SERVER_URL}/api/admin/requests/${requestId}`, {
       method: "PATCH",
       cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify({ status, adminFeedback }),
     });

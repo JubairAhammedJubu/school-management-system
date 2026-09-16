@@ -1,9 +1,7 @@
-"use server";
 
-import { cookies } from "next/headers";
 
-const SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
 
 export interface ExamItem {
   id: string;
@@ -46,6 +44,7 @@ export interface CreateExamPayload {
   teacherEmail?: string;
 }
 
+
 export interface GetExamsResponse {
   success: boolean;
   exams: ExamItem[];
@@ -59,33 +58,19 @@ export interface ActionExamResponse {
   error?: string;
 }
 
-async function getCookieHeader() {
-  const cookieStore = await cookies();
-  const value = cookieStore.toString();
-  if (!value) {
-    throw new Error("Unauthorized. Please log in again.");
-  }
-  return value;
-}
-
 /**
  * Fetch all examination schedules from the database via EduNexus server
  */
 export async function getTeacherExamsAction(): Promise<GetExamsResponse> {
   try {
+   
     const res = await fetch(`${SERVER_URL}/api/exams`, {
       cache: "no-store",
-      headers: {
-        Cookie: await getCookieHeader(),
-      },
+      credentials: "include",
     });
 
     if (!res.ok) {
-      return {
-        success: false,
-        exams: [],
-        error: `Server error: ${res.status}`,
-      };
+      return { success: false, exams: [], error: `Server error: ${res.status}` };
     }
 
     const data = await res.json();
@@ -118,11 +103,7 @@ export async function getTeacherExamsAction(): Promise<GetExamsResponse> {
     return { success: true, exams: [] };
   } catch (error: any) {
     console.error("Error fetching exams in action:", error);
-    return {
-      success: false,
-      exams: [],
-      error: error?.message || "Failed to fetch exams",
-    };
+    return { success: false, exams: [], error: error?.message || "Failed to fetch exams" };
   }
 }
 
@@ -130,15 +111,15 @@ export async function getTeacherExamsAction(): Promise<GetExamsResponse> {
  * Create a new examination record in the database
  */
 export async function createTeacherExamAction(
-  payload: CreateExamPayload,
+  payload: CreateExamPayload
 ): Promise<ActionExamResponse> {
   try {
+
     const res = await fetch(`${SERVER_URL}/api/exams`, {
       method: "POST",
-      cache: "no-store",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        Cookie: await getCookieHeader(),
       },
       body: JSON.stringify(payload),
     });
@@ -172,6 +153,7 @@ export async function createTeacherExamAction(
       status: item.status || "Upcoming",
     };
 
+
     return {
       success: true,
       message: data.message || "Exam created successfully",
@@ -179,26 +161,19 @@ export async function createTeacherExamAction(
     };
   } catch (error: any) {
     console.error("Error creating exam in action:", error);
-    return {
-      success: false,
-      error: error?.message || "Failed to create exam",
-    };
+    return { success: false, error: error?.message || "Failed to create exam" };
   }
 }
 
 /**
  * Cancel an examination schedule in the database
  */
-export async function cancelTeacherExamAction(
-  examId: string,
-): Promise<ActionExamResponse> {
+export async function cancelTeacherExamAction(examId: string): Promise<ActionExamResponse> {
   try {
+
     const res = await fetch(`${SERVER_URL}/api/exams/${examId}/cancel`, {
       method: "PATCH",
-      cache: "no-store",
-      headers: {
-        Cookie: await getCookieHeader(),
-      },
+      credentials: "include",
     });
 
     const data = await res.json();
@@ -215,9 +190,6 @@ export async function cancelTeacherExamAction(
     };
   } catch (error: any) {
     console.error("Error cancelling exam in action:", error);
-    return {
-      success: false,
-      error: error?.message || "Failed to cancel exam",
-    };
+    return { success: false, error: error?.message || "Failed to cancel exam" };
   }
 }
