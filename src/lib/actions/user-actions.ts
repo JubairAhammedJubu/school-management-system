@@ -1,5 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
+
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 export interface UpdateProfileInput {
   email?: string;
@@ -35,21 +37,22 @@ export interface ActionResponse<T = unknown> {
 }
 
 /**
- * Server Action to update user profile details via EduNexus Express Backend API
- * without relying on cookies.
+ * Server Action to update user profile details via EduNexus Express Backend API.
+ * Forwards request cookies to ensure Express session authentication succeeds.
  */
 export async function updateUserProfileAction(
   data: UpdateProfileInput,
 ): Promise<ActionResponse> {
   try {
-   
-  
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
 
     const response = await fetch(`${SERVER_URL}/api/user/profile`, {
       method: "PUT",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
       },
       body: JSON.stringify(data),
       cache: "no-store",

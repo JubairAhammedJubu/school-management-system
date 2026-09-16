@@ -205,6 +205,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [studentClass, setStudentClass] = useState("");
   const [studentSection, setStudentSection] = useState("");
   const [qualification, setQualification] = useState("");
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [registeredName, setRegisteredName] = useState("");
+  const [registeredRole, setRegisteredRole] = useState<"student" | "teacher">("student");
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // The institution email decides the role server-side (see auth.ts), so we
   // mirror that logic client-side to know which extra fields to show.
@@ -214,6 +219,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     .endsWith("@edunexus.tchr.com")
     ? "teacher"
     : "student";
+
+  const getTargetDashboard = (_userRole?: string) => {
+    return "/";
+  };
 
   const lockoutStorageKey = (forEmail: string) =>
     `edunexus:lockoutUntil:${forEmail.toLowerCase().trim()}`;
@@ -421,8 +430,11 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         // login diye continue kore jai.
       }
 
+      const userRole = (signInData?.user as any)?.role || detectedRole;
+      const targetUrl = getTargetDashboard(userRole);
+      setIsRedirecting(true);
       toast.success("Welcome back! Redirecting to your workspace...");
-      router.push("/");
+      router.push(targetUrl);
     } catch (err) {
       const message =
         err instanceof Error
@@ -484,12 +496,15 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         }
       }
 
+      const userRole = (session?.user as any)?.role || detectedRole;
+      const targetUrl = getTargetDashboard(userRole);
+      setIsRedirecting(true);
       toast.success(
         twoFactorStage === "setup"
-          ? "Authenticator app shofolvabe set up hoyeche!"
+          ? "Authenticator app set up successfully!"
           : "Welcome back! Redirecting to your workspace...",
       );
-      router.push("/");
+      router.push(targetUrl);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Bhul code. Abar try korun.";
@@ -718,8 +733,12 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         );
       }
 
-      toast.success("Account created successfully! Welcome to EduNexus 🎉");
-      router.push("/");
+      await signOut();
+      setRegisteredName(name.trim());
+      setRegisteredEmail(email.trim());
+      setRegisteredRole(detectedRole);
+      setIsRegistrationComplete(true);
+      toast.success("Account created successfully! Awaiting admin approval.");
     } catch (err) {
       const message =
         err instanceof Error
@@ -750,7 +769,45 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     );
   }
 
-  if (session?.user) {
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-100 dark:bg-[#030712] p-4 font-sans transition-colors duration-500">
+        <div className="h-12 w-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-600 animate-spin mb-4" />
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+          Signing in...
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Redirecting to your workspace...
+        </p>
+      </div>
+    );
+  }
+
+  if (isRegistrationComplete) {
+    return (
+      <RegistrationSuccessView
+        name={registeredName || name}
+        email={registeredEmail || email}
+        role={registeredRole || detectedRole}
+        onGoToLogin={() => {
+          setIsRegistrationComplete(false);
+          setIsLogin(true);
+          setRegisterStep("form");
+          setPassword("");
+          setConfirmPassword("");
+          setError("");
+        }}
+      />
+    );
+  }
+
+  if (
+    session?.user &&
+    twoFactorStage === "none" &&
+    forgotPasswordStage === "none" &&
+    !isRedirecting &&
+    !isRegistrationComplete
+  ) {
     return <AlreadyLoggedInView session={session} />;
   }
 
@@ -2436,6 +2493,98 @@ function ProfileCompletionStep({
   );
 }
 
+interface RegistrationSuccessViewProps {
+  name: string;
+  email: string;
+  role: "student" | "teacher";
+  onGoToLogin: () => void;
+}
+
+function RegistrationSuccessView({
+  name,
+  email,
+  role,
+  onGoToLogin,
+}: RegistrationSuccessViewProps) {
+  const isTeacher = role === "teacher";
+  const roleDisplay = isTeacher ? "TEACHER" : "STUDENT";
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-100 dark:bg-[#030712] p-4 font-sans transition-colors duration-500 relative overflow-hidden">
+      {/* Background Mesh Glows */}
+      <div className="pointer-events-none fixed top-20 left-10 h-96 w-96 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
+      <div className="pointer-events-none fixed bottom-20 right-10 h-96 w-96 rounded-full bg-purple-500/10 dark:bg-purple-600/15 blur-3xl" />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="relative w-full max-w-md bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/60 dark:shadow-black/60 border border-slate-200 dark:border-slate-800/80 p-7 sm:p-8 text-center"
+      >
+        {/* Status Badge */}
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 mb-6">
+          <Clock size={13} className="animate-spin" style={{ animationDuration: "3s" }} />
+          <span>Pending Admin Approval</span>
+        </div>
+
+        {/* Success Icon */}
+        <div className="relative mx-auto h-20 w-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/25 flex items-center justify-center mb-4 overflow-hidden">
+          <CheckCircle2 size={40} />
+        </div>
+
+        {/* User Details */}
+        <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+          Registration Submitted!
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
+          Thank you, <strong className="text-slate-800 dark:text-slate-200">{name || "Member"}</strong>. Your account registration has been submitted successfully.
+        </p>
+
+        {/* Email & Role Badges */}
+        <div className="bg-slate-50 dark:bg-slate-900/80 rounded-xl p-4 border border-slate-200/80 dark:border-slate-800 mb-6 text-left space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Account Email:</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">{email}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Registered Role:</span>
+            <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${
+              isTeacher
+                ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+            }`}>
+              {roleDisplay}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Approval Status:</span>
+            <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <Clock size={11} />
+              <span>Pending Review</span>
+            </span>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+          Your account must be reviewed and approved by an administrator before you can log in to your workspace.
+        </p>
+
+        {/* Action Button */}
+        <motion.button
+          type="button"
+          onClick={onGoToLogin}
+          whileHover={{ y: -1 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Go to Sign In</span>
+          <ArrowRight size={14} />
+        </motion.button>
+      </motion.div>
+    </div>
+  );
+}
+
 interface AlreadyLoggedInProps {
   session: any;
 }
@@ -2449,6 +2598,7 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
   const userEmail = u.email || "";
   const rawRole = (u.role || "student").toLowerCase();
   const roleDisplay = rawRole.toUpperCase();
+  const isApproved = u.isApproved ?? true;
 
   const isTeacher = rawRole === "teacher";
   const isStudent = rawRole === "student";
@@ -2488,10 +2638,17 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
         className="relative w-full max-w-md bg-white dark:bg-[#0b0f19] rounded-2xl shadow-2xl shadow-slate-300/60 dark:shadow-black/60 border border-slate-200 dark:border-slate-800/80 p-7 sm:p-8 text-center"
       >
         {/* Status Badge */}
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-6">
-          <CheckCircle2 size={13} />
-          <span>Already Signed In</span>
-        </div>
+        {isApproved ? (
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-6">
+            <CheckCircle2 size={13} />
+            <span>Already Signed In</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 mb-6">
+            <Clock size={13} className="animate-spin" style={{ animationDuration: "3s" }} />
+            <span>Pending Admin Approval</span>
+          </div>
+        )}
 
         {/* User Avatar */}
         <div className="relative mx-auto h-24 w-24 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/25 flex items-center justify-center text-3xl font-extrabold mb-4 overflow-hidden border-4 border-white dark:border-slate-800">
@@ -2504,7 +2661,7 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
 
         {/* User Details */}
         <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-          Welcome back, {userName}!
+          {isApproved ? `Welcome back, ${userName}!` : "Account Pending Approval"}
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 flex items-center justify-center gap-1.5">
           <Mail size={13} className="text-indigo-500" />
@@ -2542,41 +2699,62 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
 
         {/* Actions */}
         <div className="space-y-2.5">
-          <motion.button
-            type="button"
-            onClick={() => router.push(dashboardUrl)}
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Go to My Dashboard</span>
-            <ArrowRight size={14} />
-          </motion.button>
+          {isApproved ? (
+            <>
+              <motion.button
+                type="button"
+                onClick={() => router.push(dashboardUrl)}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Go to My Dashboard</span>
+                <ArrowRight size={14} />
+              </motion.button>
 
-          <div className="grid grid-cols-2 gap-2">
-            <motion.button
-              type="button"
-              onClick={() => router.push("/profile")}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <User size={13} />
-              <span>View Profile</span>
-            </motion.button>
+              <div className="grid grid-cols-2 gap-2">
+                <motion.button
+                  type="button"
+                  onClick={() => router.push("/profile")}
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <User size={13} />
+                  <span>View Profile</span>
+                </motion.button>
 
-            <motion.button
-              type="button"
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-500/20 transition-all disabled:opacity-60 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <LogOut size={13} />
-              <span>{isSigningOut ? "Signing out..." : "Switch Account"}</span>
-            </motion.button>
-          </div>
+                <motion.button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs py-2.5 px-3 rounded-xl border border-rose-200 dark:border-rose-500/20 transition-all disabled:opacity-60 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut size={13} />
+                  <span>{isSigningOut ? "Signing out..." : "Switch Account"}</span>
+                </motion.button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-slate-600 dark:text-slate-400 bg-amber-50/50 dark:bg-amber-500/10 p-3 rounded-xl border border-amber-200/50 dark:border-amber-500/20">
+                Your account is currently awaiting approval by an administrator. Once approved, you can log in to access your dashboard.
+              </p>
+              <motion.button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-3 px-5 rounded-xl shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                <span>{isSigningOut ? "Signing out..." : "Return to Sign In"}</span>
+                <ArrowRight size={14} />
+              </motion.button>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
