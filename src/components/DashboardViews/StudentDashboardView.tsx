@@ -12,6 +12,8 @@ import {
   ArrowRight,
   GraduationCap,
   Layers,
+  AlertTriangle,
+  Lock,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
@@ -40,6 +42,13 @@ interface Subject {
   subjectCode?: string;
 }
 
+interface FeeOverdue {
+  isRestricted: boolean;
+  unpaidMonthsCount: number;
+  unpaidMonths: { monthName: string }[];
+  cumulativeOverdue: number;
+}
+
 export default function StudentOverviewPage() {
   const { data: session } = useSession();
   const studentName = session?.user?.name || "Student";
@@ -48,6 +57,7 @@ export default function StudentOverviewPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [results, setResults] = useState<Result[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [feeOverdue, setFeeOverdue] = useState<FeeOverdue | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,30 +67,44 @@ export default function StudentOverviewPage() {
       try {
         setIsLoading(true);
 
-        const [assignRes, resultRes, subjectRes] = await Promise.all([
+        const [assignRes, resultRes, subjectRes, feeRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`, {
             credentials: "include",
-          }),
+          }).catch(() => null),
           fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results?studentEmail=${encodeURIComponent(
               studentEmail
             )}&status=PUBLISHED`,
             { credentials: "include" }  
-          ),
+          ).catch(() => null),
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`, {
             credentials: "include",
-          }).catch(() => null), // subjects endpoint may not exist yet
+          }).catch(() => null),
+          fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/fees`, {
+            credentials: "include",
+          }).catch(() => null),
         ]);
 
-        const assignData = await assignRes.json();
-        const resultData = await resultRes.json();
+        if (assignRes && assignRes.ok) {
+          const assignData = await assignRes.json();
+          if (assignData.success) setAssignments(assignData.assignments || []);
+        }
 
-        if (assignData.success) setAssignments(assignData.assignments || []);
-        if (resultData.success) setResults(resultData.results || []);
+        if (resultRes && resultRes.ok) {
+          const resultData = await resultRes.json();
+          if (resultData.success) setResults(resultData.results || []);
+        }
 
-        if (subjectRes) {
+        if (subjectRes && subjectRes.ok) {
           const subjectData = await subjectRes.json();
           if (subjectData.success) setSubjects(subjectData.subjects || []);
+        }
+
+        if (feeRes && feeRes.ok) {
+          const feeData = await feeRes.json();
+          if (feeData && feeData.overdue) {
+            setFeeOverdue(feeData.overdue);
+          }
         }
       } catch (err) {
         console.error("Overview fetch error:", err);
@@ -102,9 +126,50 @@ export default function StudentOverviewPage() {
     .slice(0, 3);
 
   const recentResults = results.slice(0, 3);
+  const isRestricted = !!feeOverdue?.isRestricted;
 
   return (
     <div className="space-y-6">
+      {/* ⚠️ CRITICAL WARNING BANNER IF 3+ MONTHS OVERDUE */}
+      {isRestricted && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border-2 border-rose-500/30 bg-rose-500/10 p-5 shadow-lg shadow-rose-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-xl bg-rose-600 text-white shadow-md shadow-rose-600/30 shrink-0">
+              <AlertTriangle className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-rose-600 dark:text-rose-400">
+                  Account Warning: Overdue Tuition Fees ({feeOverdue.unpaidMonthsCount} Months)
+                </h3>
+                <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider">
+                  Privileges Suspended
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                You have exceeded the maximum allowed limit of 3 months overdue. Unpaid months:{" "}
+                <strong className="text-rose-600 dark:text-rose-400">
+                  {feeOverdue.unpaidMonths.map((m) => m.monthName).join(", ")}
+                </strong>{" "}
+                (Total: ৳{feeOverdue.cumulativeOverdue.toLocaleString()}). Examination admit slips and result
+                sheets are locked until dues are cleared.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard/student/fee"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-md shadow-rose-600/20 shrink-0"
+          >
+            Clear Overdue Fees
+          </Link>
+        </motion.div>
+      )}
+
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -120,7 +185,7 @@ export default function StudentOverviewPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
               {studentName}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">Here’s your academic overview</p>
+            <p className="text-xs text-slate-500 mt-0.5">Here is your academic overview</p>
           </div>
         </div>
       </motion.div>
@@ -148,6 +213,7 @@ export default function StudentOverviewPage() {
             icon: Trophy,
             color: "text-emerald-600 dark:text-emerald-400",
             bg: "bg-emerald-50 dark:bg-emerald-950/40",
+            badge: isRestricted ? "Locked" : undefined,
           },
           {
             label: "Subjects",
@@ -162,10 +228,17 @@ export default function StudentOverviewPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5"
+            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 relative overflow-hidden"
           >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg}`}>
-              <item.icon className={`h-5 w-5 ${item.color}`} />
+            <div className="flex items-center justify-between">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg}`}>
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+              </div>
+              {item.badge && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <Lock className="w-3 h-3" /> {item.badge}
+                </span>
+              )}
             </div>
             <p className="mt-3 text-2xl font-extrabold text-slate-900 dark:text-white">
               {item.value}
@@ -220,14 +293,13 @@ export default function StudentOverviewPage() {
                       <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                         {item.title}
                       </p>
-                      <p className="text-xs text-slate-500">{item.subject}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-[11px] font-medium text-amber-600">Pending</p>
-                      <p className="text-[10px] text-slate-400">
-                        Due {new Date(item.dueDate).toLocaleDateString()}
+                      <p className="text-xs text-slate-500">
+                        {item.subject} • Due {new Date(item.dueDate).toLocaleDateString()}
                       </p>
                     </div>
+                    <span className="shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                      Pending
+                    </span>
                   </div>
                 ))}
               </div>
@@ -244,7 +316,7 @@ export default function StudentOverviewPage() {
         >
           <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-amber-500" />
+              <Trophy className="h-4 w-4 text-indigo-600" />
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                 Recent Results
               </h2>
@@ -261,6 +333,22 @@ export default function StudentOverviewPage() {
             {isLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              </div>
+            ) : isRestricted ? (
+              <div className="p-6 text-center space-y-2">
+                <Lock className="w-8 h-8 text-rose-500 mx-auto" />
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  Results Access Temporarily Locked
+                </p>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  You have 3 or more months of unpaid tuition fees. Please clear pending fees to view grade cards.
+                </p>
+                <Link
+                  href="/dashboard/student/fee"
+                  className="inline-block mt-2 text-xs font-bold text-rose-600 hover:underline"
+                >
+                  Go to Fee Portal →
+                </Link>
               </div>
             ) : recentResults.length === 0 ? (
               <p className="text-sm text-slate-500 text-center py-6">
@@ -280,7 +368,7 @@ export default function StudentOverviewPage() {
                           {item.exam}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {item.score}/{item.total} · {percentage}%
+                          {item.score}/{item.total} • {percentage}%
                         </p>
                       </div>
                       <span className="shrink-0 rounded-full bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
