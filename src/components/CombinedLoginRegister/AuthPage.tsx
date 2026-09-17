@@ -36,6 +36,7 @@ import {
   Clock,
   Sparkles,
   AlertCircle,
+  Info,
   LogOut,
 } from "lucide-react";
 import { authClient, signIn, signOut, signUp, useSession } from "@/lib/auth-client";
@@ -210,6 +211,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
   const [registeredName, setRegisteredName] = useState("");
   const [registeredRole, setRegisteredRole] = useState<"student" | "teacher">("student");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isEmailInfoModalOpen, setIsEmailInfoModalOpen] = useState(false);
 
   // The institution email decides the role server-side (see auth.ts), so we
   // mirror that logic client-side to know which extra fields to show.
@@ -625,6 +627,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         !motherName.trim() ||
         !dateOfBirth ||
         !bloodGroup ||
+        !gender ||
         !address.trim() ||
         !phone.trim() ||
         !location.trim() ||
@@ -633,7 +636,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         !bio.trim()
       ) {
         const msg =
-          "All profile fields (including Short Bio) are required for Teacher registration.";
+          "All profile fields (Father's Name, Mother's Name, Date of Birth, Blood Group, Gender, Permanent Address, Present Address, Phone, Department, Qualification, and Short Bio) are required for Teacher registration.";
         setError(msg);
         toast.error(msg);
         return;
@@ -641,13 +644,14 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     }
 
     if (phone.trim() && (!phone.trim().startsWith("01") || phone.trim().length !== 11)) {
-      const msg = "Student phone number must be exactly 11 digits and start with 01 (e.g. 01712345678).";
+      const msg = `${detectedRole === "teacher" ? "Phone number" : "Student phone number"} must be exactly 11 digits and start with 01 (e.g. 01712345678).`;
       setError(msg);
       toast.error(msg);
       return;
     }
 
     if (
+      detectedRole === "student" &&
       guardianPhone.trim() &&
       (!guardianPhone.trim().startsWith("01") || guardianPhone.trim().length !== 11)
     ) {
@@ -658,6 +662,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     }
 
     if (
+      detectedRole === "student" &&
       phone.trim() &&
       guardianPhone.trim() &&
       phone.trim() === guardianPhone.trim()
@@ -951,9 +956,23 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
               </AnimatePresence>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
-                  Email Address
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase ml-1 tracking-wider">
+                    Email Address
+                  </label>
+                  {!isLogin && (
+                    <motion.button
+                      type="button"
+                      onClick={() => setIsEmailInfoModalOpen(true)}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 px-2.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800/80 transition-all cursor-pointer"
+                    >
+                      <Info size={11} className="text-indigo-600 dark:text-indigo-400" />
+                      <span>Allowed Email Domains</span>
+                    </motion.button>
+                  )}
+                </div>
                 <div className="relative group">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
                     <Mail size={14} />
@@ -1070,8 +1089,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 whileHover={isLogin && approvalStatus === "pending" ? {} : { y: -1 }}
                 whileTap={isLogin && approvalStatus === "pending" ? {} : { scale: 0.98 }}
                 className={`w-full font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer ${isLogin && approvalStatus === "pending"
-                    ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
-                    : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-500/25 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                  ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
+                  : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-500/25 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                   }`}
               >
                 {isSubmitting ? (
@@ -1128,11 +1147,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                         setError("");
                         toast.success("Welcome back! Demo Student credentials filled.");
                       }}
-                      className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${
-                        isDemoStudentFilled
+                      className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${isDemoStudentFilled
                           ? "bg-blue-100/80 dark:bg-blue-950/60 border-blue-400 dark:border-blue-700 opacity-60 cursor-not-allowed"
                           : "bg-slate-50 hover:bg-blue-50/80 dark:bg-slate-800/50 dark:hover:bg-blue-950/40 border-slate-200/80 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-800 cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-1.5">
@@ -1163,11 +1181,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                         setError("");
                         toast.success("Welcome back! Demo Teacher credentials filled.");
                       }}
-                      className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${
-                        isDemoTeacherFilled
+                      className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${isDemoTeacherFilled
                           ? "bg-indigo-100/80 dark:bg-indigo-950/60 border-indigo-400 dark:border-indigo-700 opacity-60 cursor-not-allowed"
                           : "bg-slate-50 hover:bg-indigo-50/80 dark:bg-slate-800/50 dark:hover:bg-indigo-950/40 border-slate-200/80 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-800 cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-1.5">
@@ -1219,9 +1236,24 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
             <div className="absolute top-[-10%] right-[-10%] w-56 h-56 bg-blue-400/20 rounded-full blur-3xl z-0" />
             <div className="absolute bottom-[-15%] left-[-10%] w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl z-0" />
 
-            {/* Top-left brand chip */}
-            <div className="absolute top-6 left-6 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-              <GraduationCap size={16} className="text-white" />
+            {/* Top-left brand chip & Glowing Email Info Button */}
+            <div className="absolute top-6 left-6 z-30 flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-md">
+                <GraduationCap size={16} className="text-white" />
+              </div>
+
+              {!isLogin && (
+                <motion.button
+                  type="button"
+                  onClick={() => setIsEmailInfoModalOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] sm:text-[11px] font-bold px-3 py-1.5 shadow-md shadow-indigo-500/40 animate-pulse hover:animate-none border border-white/30 backdrop-blur-md cursor-pointer transition-all"
+                >
+                  <Info size={13} className="text-white/90" />
+                  <span>Allowed Email Info</span>
+                </motion.button>
+              )}
             </div>
 
             {/* Top-right encrypted/secure indicator */}
@@ -1307,8 +1339,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.08 }}
                             className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border backdrop-blur-md ${step.active
-                                ? "bg-emerald-400/20 border-emerald-300/40"
-                                : "bg-white/[0.06] border-white/15"
+                              ? "bg-emerald-400/20 border-emerald-300/40"
+                              : "bg-white/[0.06] border-white/15"
                               }`}
                           >
                             <step.icon
@@ -1321,8 +1353,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                             />
                             <span
                               className={`text-[8px] font-bold uppercase tracking-wide ${step.active
-                                  ? "text-emerald-200"
-                                  : "text-white/50"
+                                ? "text-emerald-200"
+                                : "text-white/50"
                                 }`}
                             >
                               {step.label}
@@ -1377,6 +1409,10 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           </div>
         </motion.div>
       )}
+      <EmailDomainInfoModal
+        isOpen={isEmailInfoModalOpen}
+        onClose={() => setIsEmailInfoModalOpen(false)}
+      />
     </div>
   );
 }
@@ -1914,8 +1950,8 @@ function CustomSelect({
                       setIsOpen(false);
                     }}
                     className={`w-full px-3 py-1.5 text-xs text-left flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ${isSelected
-                        ? "bg-indigo-50/80 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
-                        : "text-slate-700 dark:text-slate-200"
+                      ? "bg-indigo-50/80 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold"
+                      : "text-slate-700 dark:text-slate-200"
                       }`}
                   >
                     <span>{opt}</span>
@@ -2069,9 +2105,22 @@ function ProfileCompletionStep({
                 </div>
               )}
 
+              {/* Admin Approval Notice Banner for Teachers */}
+              {isTeacher && (
+                <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+                  <Clock size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-amber-950 dark:text-amber-100 text-[11.5px]">Admin Approval Required</p>
+                    <p className="text-[11px] opacity-90 leading-relaxed mt-0.5">
+                      Upon completing registration, your teacher account will be queued for administrator review before sign-in is activated.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
-                  Personal &amp; Family
+                  Personal &amp; Family Details
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="space-y-1">
@@ -2141,7 +2190,7 @@ function ProfileCompletionStep({
                   />
 
                   <CustomSelect
-                    label="Gender"
+                    label={isTeacher ? "Gender *" : "Gender"}
                     icon={User}
                     value={gender}
                     onChange={setGender}
@@ -2149,39 +2198,43 @@ function ProfileCompletionStep({
                     placeholder="Select Gender"
                   />
 
-                  <div className="space-y-1">
-                    <label className={labelClass}>Guardian Phone</label>
-                    <div className="relative group">
-                      <div className={iconWrapClass}>
-                        <Phone size={14} />
+                  {!isTeacher && (
+                    <>
+                      <div className="space-y-1">
+                        <label className={labelClass}>Guardian Phone</label>
+                        <div className="relative group">
+                          <div className={iconWrapClass}>
+                            <Phone size={14} />
+                          </div>
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            maxLength={11}
+                            value={guardianPhone}
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                              if (val.length > 0) {
+                                if (val[0] !== "0") val = "0" + val.slice(1);
+                                if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
+                              }
+                              setGuardianPhone(val);
+                            }}
+                            placeholder="01712345678"
+                            className={inputClass}
+                          />
+                        </div>
                       </div>
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        maxLength={11}
-                        value={guardianPhone}
-                        onChange={(e) => {
-                          let val = e.target.value.replace(/\D/g, "").slice(0, 11);
-                          if (val.length > 0) {
-                            if (val[0] !== "0") val = "0" + val.slice(1);
-                            if (val.length > 1 && val[1] !== "1") val = "01" + val.slice(2);
-                          }
-                          setGuardianPhone(val);
-                        }}
-                        placeholder="01712345678"
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
 
-                  <CustomSelect
-                    label="Guardian Relationship"
-                    icon={Users}
-                    value={guardianRelation}
-                    onChange={setGuardianRelation}
-                    options={GUARDIAN_RELATION_OPTIONS}
-                    placeholder="Select Relationship"
-                  />
+                      <CustomSelect
+                        label="Guardian Relationship"
+                        icon={Users}
+                        value={guardianRelation}
+                        onChange={setGuardianRelation}
+                        options={GUARDIAN_RELATION_OPTIONS}
+                        placeholder="Select Relationship"
+                      />
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-1 mt-2">
@@ -2245,7 +2298,7 @@ function ProfileCompletionStep({
                         required={isTeacher}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        placeholder="Present address: e.g. Dhaka, Bangladesh"
+                        placeholder="Present address e.g. Dhaka, Bangladesh"
                         className={inputClass}
                       />
                     </div>
@@ -2260,7 +2313,7 @@ function ProfileCompletionStep({
                 {isTeacher ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <CustomSelect
-                      label="Department"
+                      label="Department *"
                       icon={Building2}
                       value={department}
                       onChange={setDepartment}
@@ -2269,7 +2322,7 @@ function ProfileCompletionStep({
                     />
 
                     <CustomSelect
-                      label="Education Qualification"
+                      label="Education Qualification *"
                       icon={Award}
                       value={qualification}
                       onChange={setQualification}
@@ -2548,11 +2601,10 @@ function RegistrationSuccessView({
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 dark:text-slate-400 font-medium">Registered Role:</span>
-            <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${
-              isTeacher
+            <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${isTeacher
                 ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
                 : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-            }`}>
+              }`}>
               {roleDisplay}
             </span>
           </div>
@@ -2671,13 +2723,12 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
         {/* Role & Details Badges */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <span
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold border ${
-              isTeacher
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold border ${isTeacher
                 ? "bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-500/20"
                 : isStudent
                   ? "bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20"
                   : "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20"
-            }`}
+              }`}
           >
             {isTeacher ? (
               <Briefcase size={12} />
@@ -2758,5 +2809,140 @@ function AlreadyLoggedInView({ session }: AlreadyLoggedInProps) {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+interface EmailDomainInfoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function EmailDomainInfoModal({ isOpen, onClose }: EmailDomainInfoModalProps) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-7 flex flex-col my-auto"
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer z-10"
+              aria-label="Close modal"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4 pr-6">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/25 shrink-0">
+                <Info size={20} />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                  Allowed Email Domains
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  EduNexus Institutional Registration Rule
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+              EduNexus strictly requires an official institutional email address to register. Your role is automatically set by your email domain suffix:
+            </p>
+
+            {/* Domain Cards */}
+            <div className="space-y-3 mb-4">
+              {/* Student Card */}
+              <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-800/50">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span className="text-xs font-bold text-blue-950 dark:text-blue-200">
+                      Student Account
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-md">
+                    Student Suffix
+                  </span>
+                </div>
+                <div className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 my-1 bg-white dark:bg-slate-950 px-2.5 py-1 rounded border border-blue-100 dark:border-blue-900/40 inline-block">
+                  @edunexus.std.com
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mt-1">
+                  Grants access to student dashboard, routine, attendance, and exam results.
+                </p>
+              </div>
+
+              {/* Teacher Card */}
+              <div className="p-3.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/50">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <Briefcase size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                      Teacher Account
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/60 px-2 py-0.5 rounded-md">
+                    Teacher Suffix
+                  </span>
+                </div>
+                <div className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 my-1 bg-white dark:bg-slate-950 px-2.5 py-1 rounded border border-indigo-100 dark:border-indigo-900/40 inline-block">
+                  @edunexus.tchr.com
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mt-1">
+                  Grants access to teacher portal, attendance entry, grade input, and notices. Requires admin approval.
+                </p>
+              </div>
+            </div>
+
+            {/* How to get your email card */}
+            <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/50 flex items-start gap-2.5 mb-3 text-emerald-900 dark:text-emerald-200 text-xs">
+              <School size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-bold text-emerald-950 dark:text-emerald-100 text-[11.5px]">
+                  Where do you get this email?
+                </p>
+                <p className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  You will get your official institutional email address directly from your school administration office. Contact your school admin if you have not been assigned one yet.
+                </p>
+              </div>
+            </div>
+
+            {/* Warning Box */}
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 flex items-start gap-2 mb-4 text-amber-900 dark:text-amber-200 text-[11px]">
+              <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                Personal emails (<code className="font-mono font-semibold">@gmail.com</code>, <code className="font-mono font-semibold">@yahoo.com</code>, etc.) will be rejected during signup.
+              </p>
+            </div>
+
+            {/* Action Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer mt-auto"
+            >
+              <CheckCircle2 size={15} />
+              <span>Understand &amp; Close</span>
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
