@@ -385,6 +385,7 @@ export default function ProfilePage() {
     }
 
     if (
+      !isTeacher &&
       guardianPhone.trim() &&
       (!guardianPhone.trim().startsWith("01") ||
         guardianPhone.trim().length !== 11)
@@ -396,6 +397,7 @@ export default function ProfilePage() {
     }
 
     if (
+      !isTeacher &&
       phone.trim() &&
       guardianPhone.trim() &&
       phone.trim() === guardianPhone.trim()
@@ -1270,61 +1272,64 @@ export default function ProfilePage() {
                         </div>
                       )}
 
-                      {/* Guardian Phone */}
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                          Guardian Phone Number
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="tel"
-                            inputMode="numeric"
-                            disabled={!isEditing}
-                            maxLength={11}
-                            value={guardianPhone}
-                            onChange={(e) => {
-                              let val = e.target.value
-                                .replace(/\D/g, "")
-                                .slice(0, 11);
-                              if (val.length > 0) {
-                                if (val[0] !== "0") val = "0" + val.slice(1);
-                                if (val.length > 1 && val[1] !== "1")
-                                  val = "01" + val.slice(2);
-                              }
-                              setGuardianPhone(val);
-                            }}
-                            placeholder="01712345678"
-                            className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
-                          />
-                          <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
-                        </div>
-                      </div>
-
-                      {/* Guardian Relationship */}
-                      {isEditing ? (
-                        <ProfileCustomSelect
-                          label="Guardian Relationship"
-                          icon={Users}
-                          value={guardianRelation}
-                          onChange={setGuardianRelation}
-                          options={GUARDIAN_RELATION_OPTIONS}
-                          placeholder="Select Relationship"
-                        />
-                      ) : (
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                            Guardian Relationship
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              disabled
-                              value={guardianRelation || "Not specified"}
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
-                            />
-                            <Users className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                      {/* Guardian Phone & Relationship (Student Only) */}
+                      {!isTeacher && (
+                        <>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                              Guardian Phone Number
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                disabled={!isEditing}
+                                maxLength={11}
+                                value={guardianPhone}
+                                onChange={(e) => {
+                                  let val = e.target.value
+                                    .replace(/\D/g, "")
+                                    .slice(0, 11);
+                                  if (val.length > 0) {
+                                    if (val[0] !== "0") val = "0" + val.slice(1);
+                                    if (val.length > 1 && val[1] !== "1")
+                                      val = "01" + val.slice(2);
+                                  }
+                                  setGuardianPhone(val);
+                                }}
+                                placeholder="01712345678"
+                                className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-500 disabled:opacity-80"
+                              />
+                              <Phone className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                            </div>
                           </div>
-                        </div>
+
+                          {isEditing ? (
+                            <ProfileCustomSelect
+                              label="Guardian Relationship"
+                              icon={Users}
+                              value={guardianRelation}
+                              onChange={setGuardianRelation}
+                              options={GUARDIAN_RELATION_OPTIONS}
+                              placeholder="Select Relationship"
+                            />
+                          ) : (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                                Guardian Relationship
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  disabled
+                                  value={guardianRelation || "Not specified"}
+                                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/60 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-medium"
+                                />
+                                <Users className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-400 pointer-events-none" />
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
