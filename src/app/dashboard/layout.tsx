@@ -28,6 +28,7 @@ import {
   User,
   UserCheck,
   Loader2,
+  BookAIcon,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
@@ -43,6 +44,7 @@ const adminRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { label: "Teachers", href: "/dashboard/admin/teachers", icon: Users },
   { label: "Students", href: "/dashboard/admin/students", icon: GraduationCap },
+  {label:"Subjects", href: "/dashboard/admin/subjects",icon:BookAIcon},
   { label: "Classes", href: "/dashboard/admin/classes", icon: BookOpen },
   { label: "Results", href: "/dashboard/admin/results", icon: Award },
   { label: "Fees", href: "/dashboard/admin/fees", icon: CreditCard },
@@ -240,16 +242,16 @@ export default function DashboardLayout({
         },
         {
           title: "People & Classes",
-          items: [adminRoutes[1], adminRoutes[2], adminRoutes[3]],
+          items: [adminRoutes[1], adminRoutes[2], adminRoutes[3],adminRoutes[4]],
         },
         {
           title: "Academics & Management",
           items: [
-            adminRoutes[4],
             adminRoutes[5],
             adminRoutes[6],
             adminRoutes[7],
             adminRoutes[8],
+            adminRoutes[9],
           ],
         },
       ];
@@ -479,7 +481,7 @@ export default function DashboardLayout({
           className="relative flex items-center gap-2.5 p-1.5 rounded-lg bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700/60 hover:bg-slate-100/70 dark:hover:bg-slate-800/80 shadow-xs transition-all cursor-pointer group"
         >
           <div className="relative shrink-0">
-            <div className="h-7.5 w-7.5 overflow-hidden rounded-md bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-sm group-hover:scale-105 transition-transform">
+            <div className="h-7.5 w-7.5 overflow-hidden rounded-md bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-sm group-hover:scale-105 transition-transform">
               {session?.user?.image ? (
                 <Image
                   src={session.user.image}
@@ -705,7 +707,7 @@ export default function DashboardLayout({
               title="View & Edit Profile"
               className="relative flex items-center gap-2.5 p-1 px-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group"
             >
-              <div className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+              <div className="h-8 w-8 overflow-hidden rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
                 {session?.user?.image ? (
                   <Image
                     src={session.user.image}
@@ -745,7 +747,7 @@ export default function DashboardLayout({
       {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutModal && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-10000 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -758,7 +760,7 @@ export default function DashboardLayout({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 16 }}
               transition={{ type: "spring", duration: 0.35 }}
-              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center z-[10001] my-auto"
+              className="relative w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center z-10001 my-auto"
             >
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 shadow-inner">
                 <LogOut className="h-7 w-7" />
@@ -784,7 +786,7 @@ export default function DashboardLayout({
                   type="button"
                   disabled={isLoggingOut}
                   onClick={handleLogoutConfirm}
-                  className="flex-1 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  className="flex-1 rounded-xl bg-linear-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 py-2.5 px-4 text-xs sm:text-sm font-semibold text-white shadow-md shadow-rose-500/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isLoggingOut ? (
                     <>
@@ -811,7 +813,7 @@ function DashboardLayoutSkeleton() {
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row font-sans">
       {/* Sidebar Skeleton */}
-      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200/90 dark:border-slate-800 shrink-0 flex flex-col">
+      <aside className="hidden lg:block w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200/90 dark:border-slate-800 shrink-0 flex-col">
         <div className="h-16 px-4 border-b border-slate-200/90 dark:border-slate-800 flex items-center gap-3 shrink-0">
           <div className="h-8.5 w-8.5 rounded-xl skeleton-shimmer shrink-0" />
           <div className="h-4 w-32 rounded-md skeleton-shimmer" />
