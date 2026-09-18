@@ -1,553 +1,402 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
   BookOpen,
   Plus,
-  Search,
-  Users,
+  Loader2,
   Layers,
-  ArrowUpRight,
-  BookmarkCheck,
-  Building2,
-  GraduationCap,
-  UserCheck,
-  Filter,
-  AlertCircle,
-  X,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  Search,
+  ChevronRight,
+  ChevronDown,
+  Settings2,
+  Users,
 } from "lucide-react";
+import SectionDetailDrawer from "@/components/shared/SectionDetailDrawer";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
-function authedFetch(path: string, init?: RequestInit) {
-  return fetch(`${SERVER_URL}${path}`, {
-    ...init,
-    credentials: "include",
-    cache: "no-store",
-  });
-}
-
-interface ClassItem {
+type Section = {
   id: string;
   name: string;
-  teacher: string;
-  students: number;
-  capacity: number;
-  subjects: number;
-  room: string;
-  shift: string;
-}
+  capacity?: number | null;
+};
+
+type SchoolClass = {
+  id: string;
+  name: string;
+  order?: number;
+  sessionYear?: string | null;
+  sections: Section[];
+};
 
 export default function AdminClassesPage() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedShift, setSelectedShift] = useState("All");
+  const [classes, setClasses] = useState<SchoolClass[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [savingClass, setSavingClass] = useState(false);
+  const [savingSection, setSavingSection] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
-  const [classesList, setClassesList] = useState<ClassItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [className, setClassName] = useState("");
+  const [sectionName, setSectionName] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState("");
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+  const [search, setSearch] = useState("");
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [openSectionId, setOpenSectionId] = useState<string | null>(null);
 
-  // New Class form state
-  const [newClassName, setNewClassName] = useState("");
-  const [newTeacher, setNewTeacher] = useState("");
-  const [newRoom, setNewRoom] = useState("");
-  const [newShift, setNewShift] = useState("Morning");
-  const [newCapacity, setNewCapacity] = useState("40");
-
-  const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${SERVER}/api/admin/classes`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load classes");
+      setClasses(data.classes || []);
+      if (!selectedClassId && data.classes?.[0]?.id) {
+        setSelectedClassId(data.classes[0].id);
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load classes");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedClassId]);
 
   useEffect(() => {
-    if (!isPending) {
-      if (!session?.user) {
-        router.replace("/");
-      } else if (rawRole !== "admin") {
-        router.replace("/unauthorized");
-      }
-    }
-  }, [session, rawRole, isPending, router]);
-
-  const loadDatabaseClasses = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // Fetch live teachers & active requests from DB to construct dynamic class overview
-      const [teachersRes, requestsRes] = await Promise.all([
-        authedFetch("/api/admin/teachers"),
-        authedFetch("/api/teacher/requests"),
-      ]);
-
-      const teachersData = await teachersRes.json();
-      const requestsData = await requestsRes.json();
-
-      const liveTeachers = teachersData.teachers || [];
-      const liveRequests = (requestsData.requests || []).filter((r: any) => r.status === "APPROVED");
-
-      const dynamicClasses: ClassItem[] = [
-        { id: "CLS-01", name: "Grade 8 A", teacher: liveTeachers[0]?.name || "Faculty Instructor", students: 38, capacity: 40, subjects: 6, room: "Room 201", shift: "Morning" },
-        { id: "CLS-02", name: "Grade 8 B", teacher: liveTeachers[1]?.name || "Faculty Instructor", students: 35, capacity: 40, subjects: 6, room: "Room 202", shift: "Morning" },
-        { id: "CLS-03", name: "Grade 9 A", teacher: liveTeachers[2]?.name || "Faculty Instructor", students: 42, capacity: 45, subjects: 7, room: "Room 301", shift: "Day" },
-        { id: "CLS-04", name: "Grade 10 A", teacher: liveTeachers[3]?.name || "Faculty Instructor", students: 40, capacity: 40, subjects: 8, room: "Room 401", shift: "Morning" },
-      ];
-
-      // Merge approved DB requests into dynamic class list
-      liveRequests.forEach((req: any, index: number) => {
-        dynamicClasses.push({
-          id: `CLS-REQ-${index + 1}`,
-          name: `${req.grade} ${req.section}`,
-          teacher: req.teacherName || "Approved Teacher",
-          students: 30,
-          capacity: 40,
-          subjects: 6,
-          room: req.room || "Room 105",
-          shift: "Morning",
-        });
-      });
-
-      setClassesList(dynamicClasses);
-    } catch (err) {
-      console.error("Failed to load DB classes", err);
-    } fontally: {
-      setIsLoading(false);
-    }
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (session?.user && rawRole === "admin") {
-      loadDatabaseClasses();
-    }
-  }, [session, rawRole, loadDatabaseClasses]);
-
-  const handleCreateClass = (e: React.FormEvent) => {
+  const createClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClassName.trim() || !newTeacher.trim()) {
-      toast.error("Please fill in class name and teacher.");
-      return;
+    if (!className.trim()) return;
+    setSavingClass(true);
+    try {
+      const res = await fetch(`${SERVER}/api/admin/classes`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: className.trim(),
+          order: Number(className.replace(/\D/g, "")) || 0,
+          sessionYear: new Date().getFullYear().toString(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Create failed");
+      toast.success("Class created");
+      setClassName("");
+      await load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSavingClass(false);
     }
-
-    const created: ClassItem = {
-      id: `CLS-0${classesList.length + 1}`,
-      name: newClassName.trim(),
-      teacher: newTeacher.trim(),
-      students: 0,
-      capacity: parseInt(newCapacity) || 40,
-      subjects: 6,
-      room: newRoom.trim() || "Room 101",
-      shift: newShift,
-    };
-
-    setClassesList((prev) => [created, ...prev]);
-    toast.success(`Class "${created.name}" created successfully!`);
-    setShowCreateModal(false);
-    setNewClassName("");
-    setNewTeacher("");
-    setNewRoom("");
   };
 
-  if (isPending) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-      </div>
-    );
-  }
+  const createSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedClassId) {
+      toast.error("Select a class first");
+      return;
+    }
+    if (!sectionName.trim()) return;
+    setSavingSection(true);
+    try {
+      const res = await fetch(
+        `${SERVER}/api/admin/classes/${selectedClassId}/sections`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: sectionName.trim() }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Create failed");
+      toast.success("Section added");
+      setSectionName("");
+      await load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSavingSection(false);
+    }
+  };
 
-  if (!session?.user || rawRole !== "admin") {
-    return null;
-  }
+  const seed = async () => {
+    setSeeding(true);
+    try {
+      const res = await fetch(`${SERVER}/api/admin/classes/seed`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Seed failed");
+      toast.success("Class 6–10 with Section A & B ready");
+      await load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
-  const filteredClasses = classesList.filter((cls) => {
-    const matchesSearch =
-      cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.room.toLowerCase().includes(searchTerm.toLowerCase());
+  const totalSections = classes.reduce((n, c) => n + (c.sections?.length || 0), 0);
 
-    const matchesShift = selectedShift === "All" || cls.shift === selectedShift;
-
-    return matchesSearch && matchesShift;
-  });
+  const filteredClasses = classes.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
+    <div className="p-5 sm:p-6 lg:p-8 space-y-6">
+      {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4"
       >
-        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 text-amber-600 dark:text-amber-400 shadow-sm">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">
-              LIVE DATABASE ACADEMICS
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+              <BookOpen className="h-5 w-5" />
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Class &amp; Section Overview
-            </h1>
-          </div>
+            Classes & sections
+          </h1>
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Click any section to see its roster, class teacher, and substitute.
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer"
+            type="button"
+            onClick={load}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Create New Class
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            Refresh
           </button>
-
           <button
-            onClick={loadDatabaseClasses}
-            disabled={isLoading}
-            className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
-            title="Refresh Classes"
+            type="button"
+            onClick={() => setSetupOpen((v) => !v)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition-colors"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-amber-500" : ""}`} />
+            <Settings2 className="h-3.5 w-3.5" />
+            Setup
+            {setupOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           </button>
         </div>
       </motion.div>
 
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 mb-2">
-            <BookOpen className="w-5 h-5" />
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60">Total</span>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Classes</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{classesList.length}</h3>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 max-w-md">
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Classes</p>
+          <p className="mt-1 text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">{classes.length}</p>
         </div>
-
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 mb-2">
-            <Layers className="w-5 h-5" />
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60">Sections</span>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Sections</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{classesList.length * 2}</h3>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-2">
-            <BookmarkCheck className="w-5 h-5" />
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60">Modules</span>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Subjects</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">24</h3>
-          </div>
-        </div>
-
-        <div className="col-span-2 sm:col-span-1 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-4 shadow-lg flex flex-col justify-between">
-          <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 mb-2">
-            <Users className="w-5 h-5" />
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60">Capacity</span>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Avg. Class Size</p>
-            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">38 Students</h3>
-          </div>
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Sections</p>
+          <p className="mt-1 text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{totalSections}</p>
         </div>
       </div>
 
-      {/* Search and Shift Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search class, teacher or room..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition-all shadow-sm backdrop-blur-xl"
-          />
-        </div>
-
-        {/* Shift Filter Tabs */}
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          {["All", "Morning", "Day"].map((shift) => (
-            <button
-              key={shift}
-              onClick={() => setSelectedShift(shift)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${selectedShift === shift
-                  ? "bg-amber-600 text-white border-amber-600 shadow-amber-500/25"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-                }`}
-            >
-              {shift} Shift
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Classes Grid Section */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="h-44 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-          ))}
-        </div>
-      ) : filteredClasses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {filteredClasses.map((cls) => {
-            const occupancyRate = Math.round((cls.students / cls.capacity) * 100);
-            return (
-              <motion.div
-                key={cls.id}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-5 relative overflow-hidden"
+      {/* Collapsible setup panel — forms tucked away, not the first thing you see */}
+      <AnimatePresence>
+        {setupOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="grid md:grid-cols-2 gap-4 pt-1">
+              <form
+                onSubmit={createClass}
+                className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 shadow-md space-y-4"
               >
-                {/* Top Row */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-amber-500/25">
-                      <BookOpen className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                        {cls.name}
-                      </h3>
-                      <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 mt-0.5">
-                        <Building2 className="w-3.5 h-3.5" />
-                        <span>{cls.room}</span>
-                        <span className="text-slate-300 dark:text-slate-700">•</span>
-                        <span className="text-slate-500 dark:text-slate-400">{cls.shift} Shift</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 shadow-sm">
-                    {cls.subjects} Subjects
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600">
+                    <Plus className="h-4 w-4" />
                   </span>
-                </div>
-
-                {/* Middle Section */}
-                <div className="py-3 border-y border-slate-100 dark:border-slate-800/80 text-xs space-y-3">
-                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                    <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                      <UserCheck className="w-4 h-4 text-slate-400" /> Class Teacher:
-                    </span>
-                    <span className="font-bold text-slate-900 dark:text-white">{cls.teacher}</span>
-                  </div>
-
-                  {/* Student Capacity & Progress Bar */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                      <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                        <GraduationCap className="w-4 h-4 text-amber-500" /> Capacity:
-                      </span>
-                      <span className="font-bold text-amber-600 dark:text-amber-400">
-                        {cls.students} / {cls.capacity} Students ({occupancyRate}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${occupancyRate >= 95 ? "bg-rose-500" : occupancyRate >= 80 ? "bg-amber-500" : "bg-emerald-500"
-                          }`}
-                        style={{ width: `${occupancyRate}%` }}
-                      />
-                    </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">Add class</h2>
+                    <p className="text-[11px] text-slate-500">e.g. Class 6</p>
                   </div>
                 </div>
+                <input
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  placeholder="Class name"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={savingClass}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer transition-colors"
+                >
+                  {savingClass ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Create class
+                </button>
+              </form>
 
-                {/* Bottom Row */}
-                <div className="flex items-center justify-end pt-1">
-                  <button
-                    onClick={() => setSelectedClass(cls)}
-                    className="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-600 hover:text-white text-amber-600 dark:text-amber-400 font-bold text-xs transition-all duration-200 cursor-pointer border border-amber-100 dark:border-amber-900/30 shadow-sm flex items-center gap-1.5"
-                  >
-                    <span>Class Details</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
+              <form
+                onSubmit={createSection}
+                className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 shadow-md space-y-4"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600">
+                    <Layers className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">Add section</h2>
+                    <p className="text-[11px] text-slate-500">Under a class</p>
+                  </div>
                 </div>
-              </motion.div>
-            );
-          })}
+                <select
+                  value={selectedClassId}
+                  onChange={(e) => setSelectedClassId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  required
+                >
+                  <option value="">Select class</option>
+                  {classes.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <input
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                  placeholder="Section A"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={savingSection}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50 cursor-pointer transition-colors"
+                >
+                  {savingSection ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Create section
+                </button>
+              </form>
+            </div>
+
+            <button
+              type="button"
+              onClick={seed}
+              disabled={seeding}
+              className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 disabled:opacity-50 cursor-pointer transition-colors"
+            >
+              {seeding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              Seed Class 6–10 + Section A/B
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search classes..."
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 pl-9 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/30"
+        />
+      </div>
+
+      {/* Class cards */}
+      {loading ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-40 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+          ))}
+        </div>
+      ) : filteredClasses.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-14 text-center shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-400">
+            <BookOpen className="h-5 w-5" />
+          </div>
+          <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
+            {classes.length === 0 ? "No classes yet" : "No classes match your search"}
+          </h3>
+          <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+            {classes.length === 0
+              ? "Open Setup above to create a class manually, or seed Class 6–10 with Section A & B in one click."
+              : "Try a different search term."}
+          </p>
         </div>
       ) : (
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-12 text-center shadow-xl backdrop-blur-xl flex flex-col items-center justify-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Classes Found</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-            We couldn't find any classes matching your search criteria.
-          </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredClasses.map((c, i) => (
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.03 * i }}
+              className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-base font-extrabold text-slate-900 dark:text-white">{c.name}</p>
+                  {c.sessionYear && (
+                    <p className="text-[11px] text-slate-500 mt-0.5">Session {c.sessionYear}</p>
+                  )}
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-1 text-[10px] font-bold text-slate-500">
+                  <Layers className="h-3 w-3" />
+                  {c.sections?.length || 0}
+                </span>
+              </div>
+
+              {(c.sections || []).length === 0 ? (
+                <p className="text-xs text-slate-400 italic">No sections yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {c.sections.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setOpenSectionId(s.id)}
+                      className="w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-left hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors group cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 text-[10px] font-bold">
+                          {s.name.replace(/[^A-Za-z0-9]/g, "").slice(-1) || "S"}
+                        </span>
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{s.name}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 text-slate-400 group-hover:text-indigo-600 transition-colors">
+                        {s.capacity && (
+                          <span className="flex items-center gap-1 text-[10px] font-semibold">
+                            <Users className="h-3 w-3" />
+                            {s.capacity}
+                          </span>
+                        )}
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          ))}
         </div>
       )}
 
-      {/* Create New Class Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative"
-            >
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-amber-600" /> Create New Class
-              </h3>
-
-              <form onSubmit={handleCreateClass} className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Class / Grade Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Grade 11 Science"
-                    value={newClassName}
-                    onChange={(e) => setNewClassName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Class Teacher Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Prof. Alamgir Hossain"
-                    value={newTeacher}
-                    onChange={(e) => setNewTeacher(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Room No
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Room 501"
-                      value={newRoom}
-                      onChange={(e) => setNewRoom(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Shift
-                    </label>
-                    <select
-                      value={newShift}
-                      onChange={(e) => setNewShift(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
-                    >
-                      <option value="Morning">Morning</option>
-                      <option value="Day">Day</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-all shadow-md shadow-amber-500/20"
-                  >
-                    Save Class
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Class Details Modal */}
-      <AnimatePresence>
-        {selectedClass && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
-            >
-              <button
-                onClick={() => setSelectedClass(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    {selectedClass.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    ID: {selectedClass.id} • {selectedClass.shift} Shift
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-y border-slate-100 dark:border-slate-800 py-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Teacher:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedClass.teacher}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Location:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedClass.room}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Enrolled Students:</span>
-                  <span className="font-bold text-amber-600">{selectedClass.students} / {selectedClass.capacity}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedClass(null)}
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs"
-              >
-                Close Details
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {openSectionId && (
+        <SectionDetailDrawer
+          sectionId={openSectionId}
+          onClose={() => setOpenSectionId(null)}
+        />
+      )}
     </div>
   );
 }
