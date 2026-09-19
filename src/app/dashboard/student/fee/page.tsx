@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import SubmitFeePaymentModal from "@/components/shared/SubmitFeePaymentModal";
 
-
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
 type FeeStatus = "PAID" | "PARTIAL" | "DUE";
@@ -40,6 +39,36 @@ type FeeData = {
 };
 
 export default function StudentFeePage() {
+  
+  function StatusPill({ status }: { status: FeeStatus }) {
+    const map = {
+      PAID: {
+        icon: CheckCircle2,
+        cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
+        label: "Paid",
+      },
+      PARTIAL: {
+        icon: AlertCircle,
+        cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+        label: "Partial",
+      },
+      DUE: {
+        icon: XCircle,
+        cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
+        label: "Due",
+      },
+    }[status];
+    const Icon = map.icon;
+
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${map.cls}`}
+      >
+        <Icon className="h-3 w-3" />
+        {map.label}
+      </span>
+    );
+  }
   const [data, setData] = useState<FeeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{
@@ -317,35 +346,5 @@ export default function StudentFeePage() {
         />
       )}
     </div>
-  );
-}
-
-function StatusPill({ status }: { status: FeeStatus }) {
-  const map = {
-    PAID: {
-      icon: CheckCircle2,
-      cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-      label: "Paid",
-    },
-    PARTIAL: {
-      icon: AlertCircle,
-      cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
-      label: "Partial",
-    },
-    DUE: {
-      icon: XCircle,
-      cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-      label: "Due",
-    },
-  }[status];
-  const Icon = map.icon;
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${map.cls}`}
-    >
-      <Icon className="h-3 w-3" />
-      {map.label}
-    </span>
   );
 }
