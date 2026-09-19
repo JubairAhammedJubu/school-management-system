@@ -29,6 +29,8 @@ import {
   UserCheck,
   Loader2,
   BookAIcon,
+  TimerIcon,
+  BookAlert,
 } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 
@@ -44,8 +46,14 @@ const adminRoutes: RouteItem[] = [
   { label: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { label: "Teachers", href: "/dashboard/admin/teachers", icon: Users },
   { label: "Students", href: "/dashboard/admin/students", icon: GraduationCap },
-  {label:"Subjects", href: "/dashboard/admin/subjects",icon:BookAIcon},
+  { label: "Subjects", href: "/dashboard/admin/subjects", icon: BookAIcon },
   { label: "Classes", href: "/dashboard/admin/classes", icon: BookOpen },
+  { label: "Class periods", href: "/dashboard/admin/period", icon: TimerIcon },
+  {
+    label: "Subject Requests",
+    href: "/dashboard/admin/subject-requests",
+    icon: BookAlert,
+  },
   { label: "Results", href: "/dashboard/admin/results", icon: Award },
   { label: "Fees", href: "/dashboard/admin/fees", icon: CreditCard },
   { label: "Notices", href: "/dashboard/admin/notices", icon: Bell },
@@ -72,9 +80,14 @@ const teacherRoutes: RouteItem[] = [
     icon: FileText,
   },
   {
-    label: "Class & Subject Requests",
-    href: "/dashboard/teacher/my-classes",
+    label: "Subject Requests",
+    href: "/dashboard/teacher/subject-requests",
     icon: BookOpen,
+  },
+  {
+    label: "My classes",
+    href: "/dashboard/teacher/my-class",
+    icon: GraduationCap,
   },
   {
     label: "Students",
@@ -242,7 +255,12 @@ export default function DashboardLayout({
         },
         {
           title: "People & Classes",
-          items: [adminRoutes[1], adminRoutes[2], adminRoutes[3],adminRoutes[4]],
+          items: [
+            adminRoutes[1],
+            adminRoutes[2],
+            adminRoutes[3],
+            adminRoutes[4],
+          ],
         },
         {
           title: "Academics & Management",
@@ -252,6 +270,8 @@ export default function DashboardLayout({
             adminRoutes[7],
             adminRoutes[8],
             adminRoutes[9],
+            adminRoutes[10],
+            adminRoutes[11],
           ],
         },
       ];
@@ -272,7 +292,7 @@ export default function DashboardLayout({
         },
         {
           title: "Students & Communication",
-          items: [teacherRoutes[5], teacherRoutes[6], teacherRoutes[7]],
+          items: [teacherRoutes[5], teacherRoutes[6], teacherRoutes[7],teacherRoutes[8]],
         },
       ];
     } else {
