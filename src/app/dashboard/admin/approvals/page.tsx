@@ -38,21 +38,6 @@ interface PendingUser {
   createdAt: string;
 }
 
-interface TeacherClassRequest {
-  id: string;
-  teacherEmail: string;
-  teacherName: string;
-  grade: string;
-  section: string;
-  subject: string;
-  subjectCode?: string;
-  room?: string;
-  schedule?: string;
-  time?: string;
-  reason?: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  createdAt: string;
-}
 
 function roleBadge(role: string) {
   const normalized = role.toLowerCase();
@@ -83,9 +68,7 @@ export default function AdminApprovalsPage() {
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
   // State for teacher requests
-  const [teacherRequests, setTeacherRequests] = useState<TeacherClassRequest[]>([]);
-  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
-  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
+ 
 
   useEffect(() => {
     if (!isPending) {
@@ -112,29 +95,13 @@ export default function AdminApprovalsPage() {
     }
   }, []);
 
-  const loadTeacherRequests = useCallback(async () => {
-    setIsLoadingRequests(true);
-    try {
-      const response = await authedFetch("/api/teacher/requests", {
-        credentials: "include",
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setTeacherRequests(result.requests ?? []);
-      }
-    } catch {
-      console.error("Could not load teacher requests");
-    } finally {
-      setIsLoadingRequests(false);
-    }
-  }, []);
-
+ 
   useEffect(() => {
     if (session?.user && rawRole === "admin") {
       loadPendingUsers();
-      loadTeacherRequests();
+      
     }
-  }, [session, rawRole, loadPendingUsers, loadTeacherRequests]);
+  }, [session, rawRole, loadPendingUsers, ]);
 
   const handleApproveUser = async (user: PendingUser) => {
     if (approvingId) return;
@@ -159,41 +126,8 @@ export default function AdminApprovalsPage() {
     }
   };
 
-  const handleUpdateRequestStatus = async (requestId: string, status: "APPROVED" | "REJECTED") => {
-    setProcessingRequestId(requestId);
-    try {
-      const res = await authedFetch(`/api/admin/requests/${requestId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update request status.");
+  
 
-      toast.success(`Teacher request has been ${status.toLowerCase()}!`);
-      setTeacherRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status } : r))
-      );
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update request status.");
-    } finally {
-      setProcessingRequestId(null);
-    }
-  };
-
-  if (isPending) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-      </div>
-    );
-  }
-
-  if (!session?.user || rawRole !== "admin") return null;
-
-  const pendingRequestsCount = teacherRequests.filter(r => r.status === "PENDING").length;
 
   return (
     <div className="space-y-6 pb-10">
@@ -225,12 +159,12 @@ export default function AdminApprovalsPage() {
             type="button"
             onClick={() => {
               loadPendingUsers();
-              loadTeacherRequests();
+             
             }}
-            disabled={isLoadingUsers || isLoadingRequests}
+            disabled={isLoadingUsers }
             className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-60 cursor-pointer"
           >
-            <RefreshCw size={13} className={isLoadingUsers || isLoadingRequests ? "animate-spin text-blue-500" : ""} />
+            <RefreshCw size={13} className={isLoadingUsers  ? "animate-spin text-blue-500" : ""} />
             Sync Approvals
           </button>
         </div>
@@ -250,17 +184,7 @@ export default function AdminApprovalsPage() {
           <span>User Registrations ({pendingUsers.length})</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab("requests")}
-          className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
-            activeTab === "requests"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          <span>Teacher Class/Subject Requests ({pendingRequestsCount} Pending)</span>
-        </button>
+       
       </div>
 
       {/* Tab 1: User Account Registration Approvals */}
@@ -347,85 +271,7 @@ export default function AdminApprovalsPage() {
         </motion.div>
       )}
 
-      {/* Tab 2: Teacher Class & Subject Requests */}
-      {activeTab === "requests" && (
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xl"
-        >
-          {isLoadingRequests ? (
-            <div className="space-y-3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="h-20 rounded-2xl bg-slate-100 dark:bg-slate-800/60 animate-pulse" />
-              ))}
-            </div>
-          ) : teacherRequests.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center py-10 gap-2">
-              <BookOpen className="w-10 h-10 text-slate-400" />
-              <p className="text-sm font-bold text-slate-900 dark:text-white">No Teacher Requests</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">There are no class or subject assignment requests from teachers right now.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {teacherRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-extrabold text-slate-900 dark:text-white text-base">
-                        {req.teacherName}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-500">({req.teacherEmail})</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        req.status === "APPROVED" ? "bg-emerald-100 text-emerald-700" :
-                        req.status === "REJECTED" ? "bg-rose-100 text-rose-700" :
-                        "bg-amber-100 text-amber-700"
-                      }`}>
-                        {req.status}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-2 pt-1">
-                      <span>Requested: {req.subject} ({req.grade} - Section {req.section})</span>
-                      <span>• Room: {req.room || "TBD"}</span>
-                    </p>
-
-                    {req.reason && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 italic pt-1">
-                        Reason: &quot;{req.reason}&quot;
-                      </p>
-                    )}
-                  </div>
-
-                  {req.status === "PENDING" && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleUpdateRequestStatus(req.id, "APPROVED")}
-                        disabled={processingRequestId === req.id}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleUpdateRequestStatus(req.id, "REJECTED")}
-                        disabled={processingRequestId === req.id}
-                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-rose-500/20 cursor-pointer disabled:opacity-50"
-                      >
-                        <XCircle className="w-4 h-4" />
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      )}
+     
     </div>
   );
 }
