@@ -49,6 +49,7 @@ const adminRoutes: RouteItem[] = [
   { label: "Subjects", href: "/dashboard/admin/subjects", icon: BookAIcon },
   { label: "Classes", href: "/dashboard/admin/classes", icon: BookOpen },
   { label: "Class periods", href: "/dashboard/admin/period", icon: TimerIcon },
+  { label: "Routines", href: "/dashboard/admin/routine", icon: CalendarDays },
   {
     label: "Subject Requests",
     href: "/dashboard/admin/subject-requests",
@@ -120,6 +121,7 @@ const studentRoutes: RouteItem[] = [
     href: "/dashboard/student/subjects",
     icon: BookOpen, // make sure BookOpen is imported from lucide-react
   },
+  { label: "Routine", href: "/dashboard/student/routine", icon: CalendarDays },
   { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
   { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
 ];
@@ -309,11 +311,12 @@ export default function DashboardLayout({
             studentRoutes[3],
             studentRoutes[4],
             studentRoutes[5],
+            studentRoutes[6]
           ],
         },
         {
           title: "Finance & Alerts",
-          items: [studentRoutes[6], studentRoutes[7]],
+          items: [ studentRoutes[7],studentRoutes[8]],
         },
       ];
     }
