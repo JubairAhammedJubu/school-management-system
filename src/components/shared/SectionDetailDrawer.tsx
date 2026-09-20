@@ -51,9 +51,7 @@ export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
     }[]
   >([]);
   const [addSubjectId, setAddSubjectId] = useState("");
-  const [subjectTeacherPick, setSubjectTeacherPick] = useState<
-    Record<string, string>
-  >({});
+  
   const [loading, setLoading] = useState(true);
   const [savingTeacher, setSavingTeacher] = useState(false);
   const [savingSubstitute, setSavingSubstitute] = useState(false);
@@ -261,12 +259,7 @@ export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
             </div>
           ) : (
             <div className="p-5 space-y-6">
-              <Link
-                href={`/dashboard/admin/routine/${sectionId}`}
-                className="flex items-center justify-center gap-2 w-full rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-bold py-2.5 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
-              >
-                📅 View / Edit Weekly Routine
-              </Link>
+             
               {/* Class teacher */}
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
                 <div className="flex items-center gap-2 mb-3">
