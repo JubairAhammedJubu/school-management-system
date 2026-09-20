@@ -252,7 +252,15 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
     if (!isLogin || !email.trim() || typeof window === "undefined") {
       return null;
     }
-    const stored = localStorage.getItem(lockoutStorageKey(email));
+    const trimmed = email.trim().toLowerCase();
+    if (
+      trimmed === "demostudent@edunexus.std.com" ||
+      trimmed === "demoteacher@edunexus.tchr.com"
+    ) {
+      localStorage.removeItem(lockoutStorageKey(trimmed));
+      return null;
+    }
+    const stored = localStorage.getItem(lockoutStorageKey(trimmed));
     const storedUntil = stored ? Number(stored) : null;
     return storedUntil && storedUntil > now ? storedUntil : null;
   })();
@@ -1142,9 +1150,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       type="button"
                       disabled={isDemoStudentFilled}
                       onClick={() => {
-                        setEmail("demostudent@edunexus.std.com");
+                        const demoEmail = "demostudent@edunexus.std.com";
+                        setEmail(demoEmail);
                         setPassword("demostudent1234");
                         setError("");
+                        if (typeof window !== "undefined") {
+                          localStorage.removeItem(lockoutStorageKey(demoEmail));
+                        }
                         toast.success("Welcome back! Demo Student credentials filled.");
                       }}
                       className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${isDemoStudentFilled
@@ -1176,9 +1188,13 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                       type="button"
                       disabled={isDemoTeacherFilled}
                       onClick={() => {
-                        setEmail("demoteacher@edunexus.tchr.com");
+                        const demoEmail = "demoteacher@edunexus.tchr.com";
+                        setEmail(demoEmail);
                         setPassword("demoteacher1234");
                         setError("");
+                        if (typeof window !== "undefined") {
+                          localStorage.removeItem(lockoutStorageKey(demoEmail));
+                        }
                         toast.success("Welcome back! Demo Teacher credentials filled.");
                       }}
                       className={`flex flex-col items-start p-2 text-left rounded-xl border transition-all duration-200 group ${isDemoTeacherFilled
