@@ -85,6 +85,7 @@ const teacherRoutes: RouteItem[] = [
     href: "/dashboard/teacher/subject-requests",
     icon: BookOpen,
   },
+  { label: "Routine", href: "/dashboard/teacher/routine", icon: CalendarDays },
   {
     label: "My classes",
     href: "/dashboard/teacher/my-class",
@@ -294,7 +295,12 @@ export default function DashboardLayout({
         },
         {
           title: "Students & Communication",
-          items: [teacherRoutes[5], teacherRoutes[6], teacherRoutes[7],teacherRoutes[8]],
+          items: [
+            teacherRoutes[5],
+            teacherRoutes[6],
+            teacherRoutes[7],
+            teacherRoutes[8],
+          ],
         },
       ];
     } else {
@@ -311,12 +317,12 @@ export default function DashboardLayout({
             studentRoutes[3],
             studentRoutes[4],
             studentRoutes[5],
-            studentRoutes[6]
+            studentRoutes[6],
           ],
         },
         {
           title: "Finance & Alerts",
-          items: [ studentRoutes[7],studentRoutes[8]],
+          items: [studentRoutes[7], studentRoutes[8]],
         },
       ];
     }
@@ -592,7 +598,7 @@ export default function DashboardLayout({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="lg:hidden sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-950/90 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between backdrop-blur-md"
+        className="lg:hidden no-print sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-950/90 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between backdrop-blur-md"
       >
         <div className="flex items-center gap-3">
           <button
@@ -652,14 +658,14 @@ export default function DashboardLayout({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs"
+              className="lg:hidden no-print fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs"
             />
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
-              className="lg:hidden fixed inset-y-0 left-0 z-50 w-64 max-w-[80vw] h-full shadow-2xl"
+              className="lg:hidden no-print fixed inset-y-0 left-0 z-50 w-64 max-w-[80vw] h-full shadow-2xl"
             >
               <div className="relative h-full">
                 <button
