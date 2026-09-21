@@ -133,16 +133,16 @@ export default function TeacherRoutinePage() {
           className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-md overflow-hidden"
         >
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left border-collapse">
+            <table className="w-full min-w-180 text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50">
-                  <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[100px]">
+                  <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-25">
                     Period
                   </th>
                   {DAYS.map((d) => (
                     <th
                       key={d}
-                      className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[120px]"
+                      className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-30"
                     >
                       {DAY_LABEL[d]}
                     </th>
@@ -181,7 +181,7 @@ export default function TeacherRoutinePage() {
                       if (!cell) {
                         return (
                           <td key={day} className="px-1.5 py-1.5">
-                            <div className="min-h-[52px] rounded-lg border border-dashed border-slate-100 dark:border-slate-800" />
+                            <div className="min-h-13 rounded-lg border border-dashed border-slate-100 dark:border-slate-800" />
                           </td>
                         );
                       }
@@ -189,7 +189,7 @@ export default function TeacherRoutinePage() {
                       return (
                         <td key={day} className="px-1.5 py-1.5 align-top">
                           <div
-                            className={`min-h-[52px] rounded-lg border px-2 py-1.5 ${
+                            className={`min-h-13 rounded-lg border px-2 py-1.5 ${
                               isSub
                                 ? "border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-950/30"
                                 : "border-indigo-100 bg-indigo-50/80 dark:border-indigo-900/50 dark:bg-indigo-950/30"
