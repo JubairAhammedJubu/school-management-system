@@ -204,16 +204,16 @@ export default function StudentRoutinePage() {
 
         {/* Grid */}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left border-collapse">
+          <table className="w-full min-w-180 text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/40 print:bg-slate-50">
-                <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[100px] print:static print:bg-slate-50">
+                <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-25 print:static print:bg-slate-50">
                   Period
                 </th>
                 {DAYS.map((d) => (
                   <th
                     key={d}
-                    className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[120px]"
+                    className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-30"
                   >
                     {DAY_SHORT[d]}
                   </th>
@@ -252,7 +252,7 @@ export default function StudentRoutinePage() {
                     if (!cell) {
                       return (
                         <td key={day} className="px-1.5 py-1.5">
-                          <div className="min-h-[52px] rounded-lg border border-dashed border-slate-100 dark:border-slate-800 flex items-center justify-center text-[11px] text-slate-300 print:border-slate-200">
+                          <div className="min-h-13 rounded-lg border border-dashed border-slate-100 dark:border-slate-800 flex items-center justify-center text-[11px] text-slate-300 print:border-slate-200">
                             —
                           </div>
                         </td>
@@ -260,7 +260,7 @@ export default function StudentRoutinePage() {
                     }
                     return (
                       <td key={day} className="px-1.5 py-1.5 align-top">
-                        <div className="min-h-[52px] rounded-lg border border-indigo-100 bg-indigo-50/80 dark:border-indigo-900/50 dark:bg-indigo-950/30 px-2 py-1.5 print:border-indigo-200 print:bg-indigo-50">
+                        <div className="min-h-13 rounded-lg border border-indigo-100 bg-indigo-50/80 dark:border-indigo-900/50 dark:bg-indigo-950/30 px-2 py-1.5 print:border-indigo-200 print:bg-indigo-50">
                           <p className="text-[11px] font-extrabold text-slate-900 dark:text-white leading-tight print:text-slate-900">
                             {cell.subject}
                           </p>
