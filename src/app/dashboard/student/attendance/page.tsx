@@ -13,6 +13,8 @@ import {
   AlertTriangle,
   Award,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface AttendanceRecord {
@@ -34,6 +36,8 @@ interface AttendanceSummary {
   absent: number;
   attendanceRate: number;
 }
+
+const ATTENDANCE_PAGE_SIZE = 10;
 
 const statusConfig = {
   PRESENT: {
@@ -73,6 +77,7 @@ export default function StudentAttendancePage() {
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "PRESENT" | "LATE" | "ABSENT"
   >("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Debounce search input (300ms)
   useEffect(() => {
@@ -123,6 +128,17 @@ export default function StudentAttendancePage() {
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, debouncedSearch]);
+
+  const totalPages = Math.max(1, Math.ceil(records.length / ATTENDANCE_PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const pageStart = (page - 1) * ATTENDANCE_PAGE_SIZE;
+  const paginatedRecords = records.slice(pageStart, pageStart + ATTENDANCE_PAGE_SIZE);
+  const rangeStart = records.length === 0 ? 0 : pageStart + 1;
+  const rangeEnd = pageStart + paginatedRecords.length;
 
   // Safe Date Formatting
   const formatDate = useCallback((dateStr: string) => {
@@ -279,7 +295,7 @@ export default function StudentAttendancePage() {
               Attendance History
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Showing {records.length} records
+              Showing {rangeStart}–{rangeEnd} of {records.length} records
             </p>
           </div>
 
@@ -366,7 +382,7 @@ export default function StudentAttendancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {records.map((record) => {
+                {paginatedRecords.map((record) => {
                   const config =
                     statusConfig[record.status] || statusConfig.PRESENT;
                   const Icon = config.icon;
@@ -420,6 +436,38 @@ export default function StudentAttendancePage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {records.length > 0 && (
+          <div className="sticky bottom-3 z-20 mx-3 mb-3 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:mx-6 dark:border-slate-700 dark:bg-slate-900/95">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Page{" "}
+              <span className="font-extrabold text-slate-900 dark:text-white">{page}</span>{" "}
+              of{" "}
+              <span className="font-extrabold text-slate-900 dark:text-white">{totalPages}</span>{" "}
+              ({records.length} records · {ATTENDANCE_PAGE_SIZE} per page)
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={page <= 1 || isLoading}
+                onClick={() => setCurrentPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={page >= totalPages || isLoading}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, Math.min(prev, totalPages) + 1))}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </motion.section>

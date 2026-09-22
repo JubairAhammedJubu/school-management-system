@@ -19,6 +19,7 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  Wand2,
 } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -70,6 +71,7 @@ export default function NoticeBoard({
   const [isCategorySelectOpen, setIsCategorySelectOpen] = useState(false);
   const [formDetail, setFormDetail] = useState("");
   const [formIsPinned, setFormIsPinned] = useState(false);
+  const [isDraftingCreate, setIsDraftingCreate] = useState(false);
 
   // Edit Modal State
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
@@ -80,6 +82,7 @@ export default function NoticeBoard({
   const [editFormDetail, setEditFormDetail] = useState("");
   const [editFormIsPinned, setEditFormIsPinned] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDraftingEdit, setIsDraftingEdit] = useState(false);
 
   // Delete Confirmation Modal State
   const [deletingNotice, setDeletingNotice] = useState<Notice | null>(null);
@@ -110,6 +113,41 @@ export default function NoticeBoard({
   useEffect(() => {
     fetchNotices();
   }, []);
+
+  const polishNotice = async (
+    notes: string,
+    category: Notice["category"],
+    apply: (title: string, detail: string) => void,
+    setBusy: (busy: boolean) => void,
+  ) => {
+    if (notes.trim().length < 8) {
+      toast.error("Add a few words of rough notes in the detail box first.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notices/draft`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes: notes.trim(), category }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Could not draft this notice.");
+      }
+      apply(data.title, data.detail);
+      toast.success("Draft ready. Edit it, then publish — nothing is posted yet.");
+    } catch (error: any) {
+      toast.error(error?.message || "Could not draft this notice.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // Create Notice Handler
   const handleCreateNotice = async (e: React.FormEvent) => {
@@ -575,18 +613,46 @@ export default function NoticeBoard({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Notice Detail *
-                  </label>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Notice Detail *
+                    </label>
+                    <button
+                      type="button"
+                      disabled={isSubmitting || isDraftingCreate}
+                      onClick={() =>
+                        polishNotice(
+                          formDetail,
+                          formCategory,
+                          (title, detail) => {
+                            setFormTitle(title);
+                            setFormDetail(detail);
+                          },
+                          setIsDraftingCreate,
+                        )
+                      }
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:text-indigo-300 dark:hover:bg-indigo-950/40 cursor-pointer"
+                    >
+                      {isDraftingCreate ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-3.5 w-3.5" />
+                      )}
+                      Polish with AI
+                    </button>
+                  </div>
                   <textarea
                     required
                     rows={3}
-                    disabled={isSubmitting}
-                    placeholder="Enter announcement details..."
+                    disabled={isSubmitting || isDraftingCreate}
+                    placeholder="Rough notes are fine, e.g. exam monday, bring calculator"
                     value={formDetail}
                     onChange={(e) => setFormDetail(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-50"
                   />
+                  <p className="mt-1 text-[10px] text-slate-400">
+                    Polish fills a draft you can edit. It is not posted until you click Publish.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">
@@ -756,18 +822,46 @@ export default function NoticeBoard({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Notice Detail *
-                  </label>
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Notice Detail *
+                    </label>
+                    <button
+                      type="button"
+                      disabled={isUpdating || isDraftingEdit}
+                      onClick={() =>
+                        polishNotice(
+                          editFormDetail,
+                          editFormCategory,
+                          (title, detail) => {
+                            setEditFormTitle(title);
+                            setEditFormDetail(detail);
+                          },
+                          setIsDraftingEdit,
+                        )
+                      }
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:text-indigo-300 dark:hover:bg-indigo-950/40 cursor-pointer"
+                    >
+                      {isDraftingEdit ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-3.5 w-3.5" />
+                      )}
+                      Polish with AI
+                    </button>
+                  </div>
                   <textarea
                     required
                     rows={3}
-                    disabled={isUpdating}
-                    placeholder="Enter announcement details..."
+                    disabled={isUpdating || isDraftingEdit}
+                    placeholder="Rough notes are fine, e.g. exam monday, bring calculator"
                     value={editFormDetail}
                     onChange={(e) => setEditFormDetail(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:opacity-50"
                   />
+                  <p className="mt-1 text-[10px] text-slate-400">
+                    Polish fills a draft you can edit. It is not posted until you save.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">
