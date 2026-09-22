@@ -285,8 +285,11 @@ export default function DashboardLayout({
             adminRoutes[8],
             adminRoutes[9],
             adminRoutes[10],
-            adminRoutes[11],
           ],
+        },
+        {
+          title: "Administration & Security",
+          items: [adminRoutes[11], adminRoutes[12]],
         },
       ];
     } else if (role === "teacher") {
@@ -311,6 +314,7 @@ export default function DashboardLayout({
             teacherRoutes[6],
             teacherRoutes[7],
             teacherRoutes[8],
+            teacherRoutes[9],
           ],
         },
       ];
