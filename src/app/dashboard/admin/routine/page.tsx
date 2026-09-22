@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -12,6 +12,8 @@ import {
   RefreshCw,
   Layers,
   BookOpen,
+  Clock3,
+  AlertCircle,
 } from "lucide-react";
 
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
@@ -78,6 +80,7 @@ export default function AdminRoutinePage() {
   );
   const [apiGroups, setApiGroups] = useState<string[]>([]);
   const [loadingGrid, setLoadingGrid] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [picking, setPicking] = useState<{
     day: string;
     periodId: string;
@@ -94,6 +97,24 @@ export default function AdminRoutinePage() {
       : activeClass?.groups?.length
         ? activeClass.groups
         : FALLBACK_GROUPS;
+
+  const teachingPeriods = useMemo(
+    () =>
+      [...periods]
+        .filter((p) => !p.isBreak)
+        .sort((a, b) => a.periodNumber - b.periodNumber),
+    [periods],
+  );
+
+  const filledCount = useMemo(() => {
+    let n = 0;
+    for (const day of DAYS) {
+      for (const p of teachingPeriods) {
+        if (grid[day]?.[p.id]) n += 1;
+      }
+    }
+    return n;
+  }, [grid, teachingPeriods]);
 
   const loadShell = useCallback(async () => {
     setLoadingShell(true);
@@ -149,6 +170,7 @@ export default function AdminRoutinePage() {
       if (!res.ok) throw new Error(data.error || "Failed to load routine");
       setGrid(data.grid || {});
       setAvailableSubjects(data.availableSubjects || []);
+      if (data.periods?.length) setPeriods(data.periods);
       if (data.class?.groups?.length) setApiGroups(data.class.groups);
     } catch (e: any) {
       toast.error(e.message);
@@ -171,10 +193,12 @@ export default function AdminRoutinePage() {
     if (cls?.hasGroups) {
       setActiveGroup(cls.groups?.[0] || FALLBACK_GROUPS[0]);
     }
+    setGrid({});
   };
 
   const setSlot = async (classSubjectId: string) => {
-    if (!picking || !activeSectionId) return;
+    if (!picking || !activeSectionId || saving) return;
+    setSaving(true);
     try {
       const res = await fetch(
         `${SERVER}/api/admin/routine/sections/${activeSectionId}/slot`,
@@ -191,16 +215,24 @@ export default function AdminRoutinePage() {
         },
       );
       const data = await res.json();
+      if (res.status === 409) {
+        toast.error(data.error || "Teacher already has a class at this time");
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Failed to set slot");
       toast.success("Slot saved");
       setPicking(null);
       await loadGrid();
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      setSaving(false);
     }
   };
 
   const clearSlot = async (slotId: string) => {
+    if (saving) return;
+    setSaving(true);
     try {
       const res = await fetch(`${SERVER}/api/admin/routine/slots/${slotId}`, {
         method: "DELETE",
@@ -212,15 +244,53 @@ export default function AdminRoutinePage() {
       await loadGrid();
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      setSaving(false);
     }
   };
 
+  /* ── Skeleton ───────────────────────────────────────── */
   if (loadingShell) {
     return (
-      <div className="p-5 sm:p-6 lg:p-8 space-y-4">
-        <div className="h-14 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
-        <div className="h-24 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
-        <div className="h-72 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+      <div className="p-5 sm:p-6 lg:p-8 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="h-10 w-10 rounded-xl skeleton-shimmer" />
+            <div className="h-7 w-48 rounded-lg skeleton-shimmer" />
+            <div className="h-4 w-64 rounded-md skeleton-shimmer-subtle" />
+          </div>
+          <div className="h-9 w-24 rounded-xl skeleton-shimmer" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-20 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-950/60 p-3"
+            >
+              <div className="h-3 w-16 rounded skeleton-shimmer-subtle" />
+              <div className="mt-3 h-7 w-10 rounded skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
+          <div className="p-5 space-y-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="h-3 w-12 rounded skeleton-shimmer-subtle" />
+            <div className="flex gap-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-9 w-20 rounded-xl skeleton-shimmer" />
+              ))}
+            </div>
+            <div className="h-3 w-14 rounded skeleton-shimmer-subtle" />
+            <div className="flex gap-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="h-9 w-24 rounded-xl skeleton-shimmer" />
+              ))}
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="h-64 w-full rounded-xl skeleton-shimmer-subtle" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -238,7 +308,8 @@ export default function AdminRoutinePage() {
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Build weekly timetable per class
-            {hasGroups ? " and stream" : ""}.
+            {hasGroups ? " and stream" : ""}. Teachers cannot clash on the same
+            period.
           </p>
         </div>
         <button
@@ -247,16 +318,36 @@ export default function AdminRoutinePage() {
             loadShell();
             loadGrid();
           }}
-          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 cursor-pointer"
+          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh
         </button>
       </div>
 
+      {/* Mini stats */}
+      {classes.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <MiniStat label="Classes" value={classes.length} />
+          <MiniStat label="Periods" value={teachingPeriods.length} />
+          <MiniStat
+            label="Filled cells"
+            value={filledCount}
+            accent="text-indigo-600 dark:text-indigo-400"
+          />
+          <MiniStat
+            label="Subjects"
+            value={availableSubjects.length}
+            accent="text-emerald-600 dark:text-emerald-400"
+          />
+        </div>
+      )}
+
       {classes.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-12 text-center">
-          <BookOpen className="mx-auto h-8 w-8 text-slate-300" />
+        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 px-6 py-14 text-center bg-white dark:bg-slate-950">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-400">
+            <BookOpen className="h-6 w-6" />
+          </div>
           <p className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
             No classes yet
           </p>
@@ -267,8 +358,12 @@ export default function AdminRoutinePage() {
       )}
 
       {periods.length === 0 && classes.length > 0 && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
-          No periods configured — open Periods and seed/create a schedule first.
+        <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-200">
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>
+            No periods configured — open Periods and seed/create a schedule
+            first.
+          </span>
         </div>
       )}
 
@@ -276,21 +371,20 @@ export default function AdminRoutinePage() {
         <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm overflow-hidden">
           {/* Toolbar */}
           <div className="p-4 sm:p-5 space-y-4 border-b border-slate-100 dark:border-slate-800">
-            {/* Class */}
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
                 Class
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-0.5">
+              <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-thin">
                 {classes.map((c) => (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => pickClass(c.id)}
-                    className={`shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer ${
+                    className={`shrink-0 rounded-xl px-3.5 py-2 text-xs font-bold transition-all cursor-pointer ${
                       c.id === activeClassId
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
-                        : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/25 scale-[1.02]"
+                        : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-800"
                     }`}
                   >
                     {c.name}
@@ -302,7 +396,7 @@ export default function AdminRoutinePage() {
                             : "text-indigo-500"
                         }`}
                       >
-                        · 3 streams
+                        · streams
                       </span>
                     )}
                   </button>
@@ -310,7 +404,6 @@ export default function AdminRoutinePage() {
               </div>
             </div>
 
-            {/* Section */}
             {activeClass && activeClass.sections.length > 0 && (
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1">
@@ -324,8 +417,8 @@ export default function AdminRoutinePage() {
                       onClick={() => setActiveSectionId(s.id)}
                       className={`rounded-xl px-3.5 py-2 text-xs font-bold cursor-pointer transition-colors ${
                         s.id === activeSectionId
-                          ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
-                          : "bg-slate-100 dark:bg-slate-900 text-slate-600 hover:bg-slate-200/80"
+                          ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm"
+                          : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80"
                       }`}
                     >
                       {s.name}
@@ -335,11 +428,11 @@ export default function AdminRoutinePage() {
               </div>
             )}
 
-            {/* Groups — separate strip, only 9–10 */}
             {hasGroups && (
-              <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/60 dark:bg-indigo-950/20 p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600/80 mb-2">
-                  Stream (separate routine)
+              <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-gradient-to-br from-indigo-50/90 to-white dark:from-indigo-950/30 dark:to-slate-950 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1">
+                  <Layers className="h-3 w-3" />
+                  Stream — separate routine each
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {groups.map((g) => (
@@ -347,10 +440,10 @@ export default function AdminRoutinePage() {
                       key={g}
                       type="button"
                       onClick={() => setActiveGroup(g)}
-                      className={`rounded-xl px-3.5 py-2 text-xs font-bold cursor-pointer transition-colors ${
+                      className={`rounded-xl px-3.5 py-2 text-xs font-bold cursor-pointer transition-all ${
                         activeGroup === g
-                          ? "bg-indigo-600 text-white shadow-sm"
-                          : "bg-white dark:bg-slate-950 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50"
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                          : "bg-white dark:bg-slate-950 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
                       }`}
                     >
                       {g}
@@ -360,60 +453,62 @@ export default function AdminRoutinePage() {
               </div>
             )}
 
-            {/* Context pill */}
             {activeSection && (
               <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                <span className="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 font-bold text-slate-600 dark:text-slate-300">
-                  {activeClass?.name}
-                </span>
-                <span className="text-slate-300">/</span>
-                <span className="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 font-bold text-slate-600">
-                  {activeSection.name}
-                </span>
+                <ContextChip icon={BookOpen} label={activeClass?.name || "—"} />
+                <span className="text-slate-300 dark:text-slate-600">/</span>
+                <ContextChip icon={Layers} label={activeSection.name} />
                 {hasGroups && (
                   <>
-                    <span className="text-slate-300">/</span>
-                    <span className="rounded-full bg-indigo-100 dark:bg-indigo-950/50 px-2.5 py-1 font-bold text-indigo-700 dark:text-indigo-300">
-                      {activeGroup}
-                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">/</span>
+                    <ContextChip icon={Layers} label={activeGroup} accent />
                   </>
                 )}
+                <ContextChip
+                  icon={Clock3}
+                  label={`${teachingPeriods.length} periods`}
+                />
               </div>
             )}
           </div>
 
           {/* Grid */}
-          <div className="p-3 sm:p-4">
+          <div className="p-3 sm:p-4 relative">
             {!activeSectionId ? (
-              <p className="text-center text-xs text-slate-500 py-10">
-                Select a section
+              <p className="text-center text-xs text-slate-500 py-12">
+                Select a section to edit the timetable
               </p>
             ) : periods.length === 0 ? null : loadingGrid ? (
-              <div className="py-16 flex justify-center">
-                <Loader2 className="h-7 w-7 animate-spin text-indigo-600" />
-              </div>
+              <GridSkeleton />
             ) : (
               <>
                 {availableSubjects.length === 0 && (
-                  <p className="mb-3 text-xs text-slate-500 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-3">
-                    No subjects linked to this section
-                    {hasGroups ? ` · ${activeGroup}` : ""}. Add subjects from
-                    Classes → section drawer first.
-                  </p>
+                  <div className="mb-3 flex items-start gap-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
+                    <span>
+                      No subjects linked to this section
+                      {hasGroups ? ` · ${activeGroup}` : ""}. Add subjects from
+                      Classes → section drawer first.
+                    </span>
+                  </div>
                 )}
+
                 <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
-                  <table className="w-full min-w-180 border-collapse">
+                  <table className="w-full min-w-[720px] border-collapse">
                     <thead>
                       <tr className="bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800">
-                        <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-25">
+                        <th className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[100px]">
                           Period
                         </th>
                         {DAYS.map((d) => (
                           <th
                             key={d}
-                            className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-30"
+                            className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 min-w-[120px]"
                           >
-                            {DAY_SHORT[d]}
+                            <span className="sm:hidden">{DAY_SHORT[d]}</span>
+                            <span className="hidden sm:inline">
+                              {DAY_FULL[d]}
+                            </span>
                           </th>
                         ))}
                       </tr>
@@ -432,7 +527,7 @@ export default function AdminRoutinePage() {
                               {p.startTime}–{p.endTime}
                             </p>
                             {p.isBreak && (
-                              <span className="mt-0.5 inline-block text-[10px] font-bold text-amber-600">
+                              <span className="mt-0.5 inline-block rounded-md bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
                                 Break
                               </span>
                             )}
@@ -442,7 +537,7 @@ export default function AdminRoutinePage() {
                               return (
                                 <td
                                   key={day}
-                                  className="px-1.5 py-1.5 bg-amber-50/50 dark:bg-amber-950/10"
+                                  className="px-1.5 py-1.5 bg-amber-50/40 dark:bg-amber-950/10"
                                 />
                               );
                             }
@@ -455,8 +550,10 @@ export default function AdminRoutinePage() {
                                     onClick={() =>
                                       setPicking({ day, periodId: p.id })
                                     }
-                                    disabled={availableSubjects.length === 0}
-                                    className="flex w-full min-h-14 items-center justify-center gap-1 rounded-lg border border-dashed border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 disabled:opacity-40 cursor-pointer transition-colors"
+                                    disabled={
+                                      availableSubjects.length === 0 || saving
+                                    }
+                                    className="flex w-full min-h-[56px] items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/10 disabled:opacity-40 cursor-pointer transition-colors"
                                   >
                                     <Plus className="h-3.5 w-3.5" />
                                     Add
@@ -465,22 +562,25 @@ export default function AdminRoutinePage() {
                               );
                             }
                             return (
-                              <td
-                                key={day}
-                                className="px-1.5 py-1.5 align-top"
-                              >
-                                <div className="relative group min-h-14 rounded-lg border border-indigo-100 bg-indigo-50/90 dark:border-indigo-900/50 dark:bg-indigo-950/30 px-2.5 py-2">
+                              <td key={day} className="px-1.5 py-1.5 align-top">
+                                <div className="relative group min-h-[56px] rounded-xl border border-indigo-100 bg-indigo-50/90 dark:border-indigo-900/50 dark:bg-indigo-950/30 px-2.5 py-2 shadow-sm">
                                   <p className="text-[11px] font-extrabold text-slate-900 dark:text-white pr-5 leading-tight">
                                     {cell.subject}
                                   </p>
                                   <p className="text-[10px] text-slate-500 mt-0.5">
                                     {cell.teacherName}
                                   </p>
+                                  {cell.room && (
+                                    <p className="text-[10px] text-slate-400">
+                                      Room {cell.room}
+                                    </p>
+                                  )}
                                   <button
                                     type="button"
                                     title="Clear"
+                                    disabled={saving}
                                     onClick={() => clearSlot(cell.id)}
-                                    className="absolute top-1.5 right-1.5 rounded-md p-0.5 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-all"
+                                    className="absolute top-1.5 right-1.5 rounded-md p-0.5 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer transition-all disabled:opacity-30"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
@@ -499,7 +599,7 @@ export default function AdminRoutinePage() {
         </div>
       )}
 
-      {/* Subject picker modal */}
+      {/* Subject picker */}
       <AnimatePresence>
         {picking && (
           <motion.div
@@ -507,10 +607,10 @@ export default function AdminRoutinePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm p-0 sm:p-4"
-            onClick={() => setPicking(null)}
+            onClick={() => !saving && setPicking(null)}
           >
             <motion.div
-              initial={{ y: 24, opacity: 0 }}
+              initial={{ y: 28, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 16, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
@@ -528,6 +628,7 @@ export default function AdminRoutinePage() {
                 </div>
                 <button
                   type="button"
+                  disabled={saving}
                   onClick={() => setPicking(null)}
                   className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer"
                 >
@@ -547,8 +648,9 @@ export default function AdminRoutinePage() {
                     <button
                       key={s.classSubjectId}
                       type="button"
+                      disabled={saving}
                       onClick={() => setSlot(s.classSubjectId)}
-                      className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-3 text-left hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-3 text-left hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
                         {s.name}
@@ -560,10 +662,76 @@ export default function AdminRoutinePage() {
                   ))
                 )}
               </div>
+              {saving && (
+                <div className="mt-3 flex justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  accent = "text-slate-900 dark:text-white",
+}: {
+  label: string;
+  value: number;
+  accent?: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-3.5 shadow-sm">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <p className={`mt-1 text-xl font-extrabold ${accent}`}>{value}</p>
+    </div>
+  );
+}
+
+function ContextChip({
+  icon: Icon,
+  label,
+  accent,
+}: {
+  icon: React.ElementType;
+  label: string;
+  accent?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-bold ${
+        accent
+          ? "bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300"
+          : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300"
+      }`}
+    >
+      <Icon className="h-3 w-3 opacity-70" />
+      {label}
+    </span>
+  );
+}
+
+function GridSkeleton() {
+  return (
+    <div className="space-y-2 animate-pulse">
+      <div className="h-10 w-full rounded-xl skeleton-shimmer-subtle" />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex gap-2">
+          <div className="h-14 w-24 shrink-0 rounded-lg skeleton-shimmer" />
+          {Array.from({ length: 5 }).map((_, j) => (
+            <div
+              key={j}
+              className="h-14 flex-1 rounded-xl skeleton-shimmer-subtle"
+            />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
