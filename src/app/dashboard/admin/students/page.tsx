@@ -39,8 +39,10 @@ import {
   Download,
   FileText,
 } from "lucide-react";
+import { log } from "console";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 function authedFetch(path: string, init?: RequestInit) {
   return fetch(`${SERVER_URL}${path}`, {
@@ -113,7 +115,10 @@ function CustomSelect({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -130,13 +135,16 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between pl-3 pr-2.5 py-2 rounded-xl border text-xs sm:text-sm transition-all cursor-pointer ${isOpen
-          ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-          : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600"
-          }`}
+        className={`w-full flex items-center justify-between pl-3 pr-2.5 py-2 rounded-xl border text-xs sm:text-sm transition-all cursor-pointer ${
+          isOpen
+            ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+            : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600"
+        }`}
       >
         <div className="flex items-center gap-2 truncate pr-1 min-w-0">
-          {Icon && <Icon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+          {Icon && (
+            <Icon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+          )}
           {selectedOpt && selectedOpt.value !== "" ? (
             <span className="font-medium text-slate-900 dark:text-white truncate">
               {selectedOpt.label}
@@ -153,8 +161,9 @@ function CustomSelect({
           )}
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
-            }`}
+          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
+            isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
+          }`}
         />
       </button>
 
@@ -177,10 +186,11 @@ function CustomSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs sm:text-sm text-left transition-colors cursor-pointer ${isSelected
-                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80"
-                    }`}
+                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs sm:text-sm text-left transition-colors cursor-pointer ${
+                    isSelected
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold"
+                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                  }`}
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     <span className="truncate">{opt.label}</span>
@@ -190,7 +200,9 @@ function CustomSelect({
                       </span>
                     )}
                   </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+                  {isSelected && (
+                    <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                  )}
                 </button>
               );
             })}
@@ -210,15 +222,21 @@ export default function AdminStudentsPage() {
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
 
   // Academic Placement Filter States (Defaults to Class 10, Section A, Science)
-  const [selectedClassFilter, setSelectedClassFilter] = useState<string>("Class 10");
-  const [selectedSectionFilter, setSelectedSectionFilter] = useState<string>("Section A");
-  const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>("Science");
+  const [selectedClassFilter, setSelectedClassFilter] =
+    useState<string>("Class 10");
+  const [selectedSectionFilter, setSelectedSectionFilter] =
+    useState<string>("Section A");
+  const [selectedGroupFilter, setSelectedGroupFilter] =
+    useState<string>("Science");
 
   // Modal Action State
   const [modal, setModal] = useState<ModalAction>(null);
 
   // Helper to restrict phone input (starts with 01, max 11 digits)
-  const handleBDPhoneChange = (input: string, setter: (val: string) => void) => {
+  const handleBDPhoneChange = (
+    input: string,
+    setter: (val: string) => void,
+  ) => {
     let digits = input.replace(/\D/g, "");
     if (digits.length > 0) {
       if (!digits.startsWith("0")) {
@@ -270,7 +288,9 @@ export default function AdminStudentsPage() {
         day: "numeric",
       });
       doc.text(`Issued Date: ${currentDate}`, 15, 49);
-      const refId = student.id ? student.id.substring(0, 8).toUpperCase() : "NEW";
+      const refId = student.id
+        ? student.id.substring(0, 8).toUpperCase()
+        : "NEW";
       doc.text(`Ref ID: STD-${refId}`, 145, 49);
 
       // Main Credentials Box
@@ -291,11 +311,36 @@ export default function AdminStudentsPage() {
       const placementInfo = `${student.studentClass || "Class 10"} (${student.studentSection || "Section A"})${student.group ? ` • Group: ${student.group}` : ""}`;
 
       const rows = [
-        { label: "Student Full Name:", value: student.name, isPassword: false, isEmail: false },
-        { label: "Email Address:", value: student.email, isPassword: false, isEmail: true },
-        { label: "Temporary Password:", value: tempPass, isPassword: true, isEmail: false },
-        { label: "Academic Placement:", value: placementInfo, isPassword: false, isEmail: false },
-        { label: "Account Status:", value: student.isApproved ? "Approved & Active" : "Pending Access", isPassword: false, isEmail: false },
+        {
+          label: "Student Full Name:",
+          value: student.name,
+          isPassword: false,
+          isEmail: false,
+        },
+        {
+          label: "Email Address:",
+          value: student.email,
+          isPassword: false,
+          isEmail: true,
+        },
+        {
+          label: "Temporary Password:",
+          value: tempPass,
+          isPassword: true,
+          isEmail: false,
+        },
+        {
+          label: "Academic Placement:",
+          value: placementInfo,
+          isPassword: false,
+          isEmail: false,
+        },
+        {
+          label: "Account Status:",
+          value: student.isApproved ? "Approved & Active" : "Pending Access",
+          isPassword: false,
+          isEmail: false,
+        },
       ];
 
       let currentY = 82;
@@ -330,10 +375,26 @@ export default function AdminStudentsPage() {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
       doc.setTextColor(30, 64, 175);
-      doc.text("1. Go to the EduNexus Student Portal at https://school-management-system-psi-ten.vercel.app/login", 23, 168);
-      doc.text("2. Log in using the Email Address and Temporary Password generated above.", 23, 175);
-      doc.text("3. You will be prompted to change your temporary password on your initial login.", 23, 182);
-      doc.text("4. Keep this credential slip safe and confidential. Do not share your login details.", 23, 189);
+      doc.text(
+        "1. Go to the EduNexus Student Portal at https://school-management-system-psi-ten.vercel.app/login",
+        23,
+        168,
+      );
+      doc.text(
+        "2. Log in using the Email Address and Temporary Password generated above.",
+        23,
+        175,
+      );
+      doc.text(
+        "3. You will be prompted to change your temporary password on your initial login.",
+        23,
+        182,
+      );
+      doc.text(
+        "4. Keep this credential slip safe and confidential. Do not share your login details.",
+        23,
+        189,
+      );
 
       // Footer
       doc.setDrawColor(borderSlate[0], borderSlate[1], borderSlate[2]);
@@ -342,7 +403,11 @@ export default function AdminStudentsPage() {
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
       doc.setTextColor(148, 163, 184);
-      doc.text("This document is automatically generated by EduNexus School Management System.", 15, 273);
+      doc.text(
+        "This document is automatically generated by EduNexus School Management System.",
+        15,
+        273,
+      );
       doc.text("Authorized Admin Seal / Signature", 138, 273);
 
       // File Save
@@ -387,7 +452,9 @@ export default function AdminStudentsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actingStudentId, setActingStudentId] = useState<string | null>(null);
 
-  const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+  const rawRole = (
+    session?.user as { role?: string } | undefined
+  )?.role?.toLowerCase();
 
   useEffect(() => {
     if (!isPending) {
@@ -404,17 +471,37 @@ export default function AdminStudentsPage() {
     try {
       const res = await authedFetch("/api/admin/users?role=student&limit=100");
       const result = await res.json();
-      if (res.ok && result.users) {
-        setStudents(result.users);
+      if (res.ok && Array.isArray(result.users)) {
+        const list = result.users
+          .filter(
+            (u: any) => u && typeof u === "object" && typeof u.id === "string",
+          )
+          .map((u: any) => ({
+            id: u.id,
+            name: u.name ?? "",
+            email: u.email ?? "",
+            image: u.image,
+            phone: u.phone,
+            studentClass: u.studentClass ?? "",
+            studentSection: u.studentSection ?? "",
+            group: u.group ?? u.department ?? "",
+            rollNumber: u.rollNumber ?? u.roll,
+            isApproved: Boolean(u.isApproved),
+            twoFactorEnabled: Boolean(u.twoFactorEnabled),
+            createdAt: u.createdAt ?? new Date().toISOString(),
+          }));
+        setStudents(list);
+      } else {
+        setStudents([]);
       }
     } catch (err) {
       console.error("Failed to load students", err);
       toast.error("Failed to load students list.");
+      setStudents([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
-
   useEffect(() => {
     if (session?.user && rawRole === "admin") {
       loadStudents();
@@ -422,26 +509,71 @@ export default function AdminStudentsPage() {
   }, [session, rawRole, loadStudents]);
 
   // Parse Class string into Class number, Group, Section
-  const parseStudentClassInfo = (rawClass?: string, rawSec?: string, rawGroup?: string, rawDept?: string) => {
+  const parseStudentClassInfo = (
+    rawClass?: string,
+    rawSec?: string,
+    rawGroup?: string,
+    rawDept?: string,
+  ) => {
     let c = rawClass || "Class 10";
     let g = rawGroup || rawDept || "";
     let s = rawSec || "Section A";
 
     if (rawClass) {
-      if (rawClass.includes("Class 10") || rawClass.includes("Grade 10") || rawClass.includes("10")) c = "Class 10";
-      else if (rawClass.includes("Class 9") || rawClass.includes("Grade 9") || rawClass.includes("9")) c = "Class 9";
-      else if (rawClass.includes("Class 8") || rawClass.includes("Grade 8") || rawClass.includes("8")) c = "Class 8";
-      else if (rawClass.includes("Class 7") || rawClass.includes("Grade 7") || rawClass.includes("7")) c = "Class 7";
-      else if (rawClass.includes("Class 6") || rawClass.includes("Grade 6") || rawClass.includes("6")) c = "Class 6";
+      if (
+        rawClass.includes("Class 10") ||
+        rawClass.includes("Grade 10") ||
+        rawClass.includes("10")
+      )
+        c = "Class 10";
+      else if (
+        rawClass.includes("Class 9") ||
+        rawClass.includes("Grade 9") ||
+        rawClass.includes("9")
+      )
+        c = "Class 9";
+      else if (
+        rawClass.includes("Class 8") ||
+        rawClass.includes("Grade 8") ||
+        rawClass.includes("8")
+      )
+        c = "Class 8";
+      else if (
+        rawClass.includes("Class 7") ||
+        rawClass.includes("Grade 7") ||
+        rawClass.includes("7")
+      )
+        c = "Class 7";
+      else if (
+        rawClass.includes("Class 6") ||
+        rawClass.includes("Grade 6") ||
+        rawClass.includes("6")
+      )
+        c = "Class 6";
 
       if (!g) {
         if (rawClass.includes("Science")) g = "Science";
-        else if (rawClass.includes("Business Studies") || rawClass.includes("Commerce")) g = "Business Studies";
-        else if (rawClass.includes("Humanities") || rawClass.includes("Arts")) g = "Humanities";
+        else if (
+          rawClass.includes("Business Studies") ||
+          rawClass.includes("Commerce")
+        )
+          g = "Business Studies";
+        else if (rawClass.includes("Humanities") || rawClass.includes("Arts"))
+          g = "Humanities";
       }
 
-      if (rawClass.includes("Section B") || rawClass.includes("Sec B") || rawClass.includes("(B)")) s = "Section B";
-      else if (rawClass.includes("Section A") || rawClass.includes("Sec A") || rawClass.includes("(A)")) s = "Section A";
+      if (
+        rawClass.includes("Section B") ||
+        rawClass.includes("Sec B") ||
+        rawClass.includes("(B)")
+      )
+        s = "Section B";
+      else if (
+        rawClass.includes("Section A") ||
+        rawClass.includes("Sec A") ||
+        rawClass.includes("(A)")
+      )
+        s = "Section A";
     }
 
     if (!g && (c === "Class 9" || c === "Class 10")) {
@@ -455,46 +587,76 @@ export default function AdminStudentsPage() {
   const getClassStudentCount = useCallback(
     (classNum: string) => {
       return students.filter((s) => {
-        const parsed = parseStudentClassInfo(s.studentClass, s.studentSection, s.group, (s as any).department);
+        if (!s) return false;
+        const parsed = parseStudentClassInfo(
+          s.studentClass,
+          s.studentSection,
+          s.group,
+          (s as any).department,
+        );
         if (classNum !== "all" && parsed.c !== classNum) return false;
         return true;
       }).length;
     },
-    [students]
+    [students],
   );
 
   const getSectionStudentCount = useCallback(
     (secName: string) => {
-      const isClass9or10 = selectedClassFilter.includes("9") || selectedClassFilter.includes("10");
+      const isClass9or10 =
+        selectedClassFilter.includes("9") || selectedClassFilter.includes("10");
       return students.filter((s) => {
-        const parsed = parseStudentClassInfo(s.studentClass, s.studentSection, s.group, (s as any).department);
-        if (selectedClassFilter !== "all" && parsed.c !== selectedClassFilter) return false;
+        if (!s) return false;
+        const parsed = parseStudentClassInfo(
+          s.studentClass,
+          s.studentSection,
+          s.group,
+          (s as any).department,
+        );
+        if (selectedClassFilter !== "all" && parsed.c !== selectedClassFilter)
+          return false;
         if (secName !== "all" && parsed.s !== secName) return false;
-        if (isClass9or10 && selectedGroupFilter !== "all" && parsed.g !== selectedGroupFilter) return false;
+        if (
+          isClass9or10 &&
+          selectedGroupFilter !== "all" &&
+          parsed.g !== selectedGroupFilter
+        )
+          return false;
         return true;
       }).length;
     },
-    [students, selectedClassFilter, selectedGroupFilter]
+    [students, selectedClassFilter, selectedGroupFilter],
   );
 
   const getGroupStudentCount = useCallback(
     (groupName: string) => {
       return students.filter((s) => {
-        const parsed = parseStudentClassInfo(s.studentClass, s.studentSection, s.group, (s as any).department);
-        if (selectedClassFilter !== "all" && parsed.c !== selectedClassFilter) return false;
-        if (selectedSectionFilter !== "all" && parsed.s !== selectedSectionFilter) return false;
+        if (!s) return false;
+        const parsed = parseStudentClassInfo(
+          s.studentClass,
+          s.studentSection,
+          s.group,
+          (s as any).department,
+        );
+        if (selectedClassFilter !== "all" && parsed.c !== selectedClassFilter)
+          return false;
+        if (
+          selectedSectionFilter !== "all" &&
+          parsed.s !== selectedSectionFilter
+        )
+          return false;
         if (groupName !== "all" && parsed.g !== groupName) return false;
         return true;
       }).length;
     },
-    [students, selectedClassFilter, selectedSectionFilter]
+    [students, selectedClassFilter, selectedSectionFilter],
   );
 
   // 1-Click Toggle Approval
   const handleToggleApprove = async (student: StudentUser) => {
     setActingStudentId(student.id);
     const nextApproved = !student.isApproved;
-
+    console.log(nextApproved);
     try {
       const res = await authedFetch(`/api/admin/users/${student.id}`, {
         method: "PATCH",
@@ -504,9 +666,15 @@ export default function AdminStudentsPage() {
 
       if (res.ok) {
         setStudents((prev) =>
-          prev.map((s) => (s.id === student.id ? { ...s, isApproved: nextApproved } : s))
+          prev.map((s) =>
+            s.id === student.id ? { ...s, isApproved: nextApproved } : s,
+          ),
         );
-        toast.success(nextApproved ? `Approved ${student.name}'s account!` : `Revoked access for ${student.name}`);
+        toast.success(
+          nextApproved
+            ? `Approved ${student.name}'s account!`
+            : `Revoked access for ${student.name}`,
+        );
         setModal(null);
       } else {
         const data = await res.json().catch(() => ({}));
@@ -529,8 +697,7 @@ export default function AdminStudentsPage() {
     await handleToggleApprove(modal.student);
   };
 
-  // Add New Student - Persisted POST API
-  const handleAddStudent = async (e: React.FormEvent) => {
+    const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addName.trim() || !addEmail.trim()) {
       toast.error("Name and Email are required.");
@@ -546,22 +713,31 @@ export default function AdminStudentsPage() {
       return;
     }
 
-    if (addPhone.trim() && (addPhone.length !== 11 || !addPhone.startsWith("01"))) {
-      toast.error("Student Phone Number must start with 01 and be exactly 11 digits.");
+    if (
+      addPhone.trim() &&
+      (addPhone.length !== 11 || !addPhone.startsWith("01"))
+    ) {
+      toast.error(
+        "Student Phone Number must start with 01 and be exactly 11 digits.",
+      );
       return;
     }
-    if (addGuardianPhone.trim() && (addGuardianPhone.length !== 11 || !addGuardianPhone.startsWith("01"))) {
-      toast.error("Guardian Phone Number must start with 01 and be exactly 11 digits.");
+    if (
+      addGuardianPhone.trim() &&
+      (addGuardianPhone.length !== 11 || !addGuardianPhone.startsWith("01"))
+    ) {
+      toast.error(
+        "Guardian Phone Number must start with 01 and be exactly 11 digits.",
+      );
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const isClass9or10 = addClassNum.includes("9") || addClassNum.includes("10");
-      const groupPart = isClass9or10 && addGroup ? ` - ${addGroup}` : "";
-      const sectionPart = addSection ? ` (${addSection})` : "";
-      const fullClass = `${addClassNum}${groupPart}${sectionPart}`;
+      const isClass9or10 =
+        addClassNum.includes("9") || addClassNum.includes("10");
+      const fullClass = addClassNum;
 
       let formattedEmail = addEmail.trim().toLowerCase();
       if (!formattedEmail.includes("@")) {
@@ -592,16 +768,58 @@ export default function AdminStudentsPage() {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create student account.");
+      const data = await res.json().catch(() => ({}));
 
-      setStudents((prev) => [data.user, ...prev]);
-      toast.success(`Student ${data.user.name} created and enrolled successfully!`);
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create student account.");
+      }
 
-      const createdStudent = data.user;
-      const returnedPassword = data.temporaryPassword || finalPassword;
+      const raw = data.user ?? data.student ?? data.data ?? null;
 
-      // Clear Form Fields
+      if (!raw?.id) {
+        toast.success("Student created. Refreshing list…");
+        await loadStudents();
+        setAddName("");
+        setAddEmail("");
+        setAddPassword("");
+        setAddPhone("");
+        setAddFatherName("");
+        setAddMotherName("");
+        setAddGuardianPhone("");
+        setAddDob("");
+        setAddAddress("");
+        setModal(null);
+        return;
+      }
+
+      const createdStudent: StudentUser = {
+        id: raw.id,
+        name: raw.name ?? addName.trim(),
+        email: raw.email ?? formattedEmail,
+        image: raw.image,
+        phone: raw.phone ?? (addPhone.trim() || undefined),
+        studentClass: raw.studentClass ?? fullClass,
+        studentSection: raw.studentSection ?? addSection,
+        group: raw.group ?? (isClass9or10 ? addGroup : undefined),
+        rollNumber: raw.rollNumber ?? raw.roll,
+        isApproved: raw.isApproved !== false,
+        twoFactorEnabled: Boolean(raw.twoFactorEnabled),
+        createdAt: raw.createdAt ?? new Date().toISOString(),
+      };
+
+      const returnedPassword = String(
+        data.temporaryPassword ?? data.password ?? finalPassword,
+      );
+
+      setStudents((prev) => [
+        createdStudent,
+        ...prev.filter((s) => s && s.id !== createdStudent.id),
+      ]);
+
+      toast.success(
+        `Student ${createdStudent.name} created and enrolled successfully!`,
+      );
+
       setAddName("");
       setAddEmail("");
       setAddPassword("");
@@ -612,19 +830,17 @@ export default function AdminStudentsPage() {
       setAddDob("");
       setAddAddress("");
 
-      // Open Credentials Modal
       setModal({
         type: "credentials_created",
         student: createdStudent,
         tempPass: returnedPassword,
       });
     } catch (err: any) {
-      toast.error(err.message || "Failed to add new student.");
+      toast.error(err?.message || "Failed to add new student.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
   // Update Student Profile & Class Assignment
   const handleUpdateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -632,7 +848,8 @@ export default function AdminStudentsPage() {
     setIsSubmitting(true);
 
     try {
-      const isClass9or10 = editClassNum.includes("9") || editClassNum.includes("10");
+      const isClass9or10 =
+        editClassNum.includes("9") || editClassNum.includes("10");
       const groupPart = isClass9or10 && editGroup ? ` - ${editGroup}` : "";
       const sectionPart = editSection ? ` (${editSection})` : "";
       const fullClass = `${editClassNum}${groupPart}${sectionPart}`;
@@ -659,16 +876,16 @@ export default function AdminStudentsPage() {
         prev.map((s) =>
           s.id === modal.student.id
             ? {
-              ...s,
-              name: editName.trim(),
-              phone: editPhone.trim(),
-              studentClass: fullClass,
-              studentSection: editSection,
-              group: isClass9or10 ? editGroup : undefined,
-              isApproved: editIsApproved,
-            }
-            : s
-        )
+                ...s,
+                name: editName.trim(),
+                phone: editPhone.trim(),
+                studentClass: fullClass,
+                studentSection: editSection,
+                group: isClass9or10 ? editGroup : undefined,
+                isApproved: editIsApproved,
+              }
+            : s,
+        ),
       );
 
       toast.success(`Updated ${editName.trim()}'s details!`);
@@ -695,7 +912,8 @@ export default function AdminStudentsPage() {
         method: "DELETE",
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error ?? "Failed to delete student account.");
+      if (!res.ok)
+        throw new Error(result.error ?? "Failed to delete student account.");
       toast.success("Student account deleted successfully.");
       setStudents((prev) => prev.filter((s) => s.id !== modal.student.id));
       setModal(null);
@@ -711,7 +929,11 @@ export default function AdminStudentsPage() {
     setEditName(student.name);
     setEditPhone(student.phone || "");
 
-    const parsed = parseStudentClassInfo(student.studentClass, student.studentSection, student.group);
+    const parsed = parseStudentClassInfo(
+      student.studentClass,
+      student.studentSection,
+      student.group,
+    );
     setEditClassNum(parsed.c);
     setEditGroup(parsed.g);
     setEditSection(parsed.s);
@@ -731,11 +953,18 @@ export default function AdminStudentsPage() {
     return null;
   }
 
-  const isClass9or10 = selectedClassFilter.includes("9") || selectedClassFilter.includes("10");
+  const isClass9or10 =
+    selectedClassFilter.includes("9") || selectedClassFilter.includes("10");
 
   // 1. Academic Placement Filtered Roster (Class, Section, Group)
   const placementStudents = students.filter((student) => {
-    const parsed = parseStudentClassInfo(student.studentClass, student.studentSection, student.group, (student as any).department);
+    if (!student) return false;
+    const parsed = parseStudentClassInfo(
+      student.studentClass,
+      student.studentSection,
+      student.group,
+      (student as any).department,
+    );
 
     if (selectedClassFilter !== "all" && parsed.c !== selectedClassFilter) {
       return false;
@@ -743,34 +972,46 @@ export default function AdminStudentsPage() {
     if (selectedSectionFilter !== "all" && parsed.s !== selectedSectionFilter) {
       return false;
     }
-    if (isClass9or10 && selectedGroupFilter !== "all" && parsed.g !== selectedGroupFilter) {
+    if (
+      isClass9or10 &&
+      selectedGroupFilter !== "all" &&
+      parsed.g !== selectedGroupFilter
+    ) {
       return false;
     }
     return true;
   });
-
   // Metrics calculated from placementStudents for consistent counts across tabs
   const totalStudents = placementStudents.length;
-  const approvedStudents = placementStudents.filter((s) => s.isApproved).length;
-  const pendingStudents = placementStudents.filter((s) => !s.isApproved).length;
-  const twoFactorCount = placementStudents.filter((s) => s.twoFactorEnabled).length;
+  const approvedStudents = placementStudents.filter(
+    (s) => s?.isApproved,
+  ).length;
+  const pendingStudents = placementStudents.filter(
+    (s) => s && !s.isApproved,
+  ).length;
+  const twoFactorCount = placementStudents.filter(
+    (s) => s?.twoFactorEnabled,
+  ).length;
 
   // 2. Roster List filtered by Tab & Search Term
   const filteredStudents = placementStudents.filter((student) => {
+    if (!student) return false;
+
+    const name = (student.name ?? "").toLowerCase();
+    const email = (student.email ?? "").toLowerCase();
+    const cls = (student.studentClass ?? "").toLowerCase();
+    const q = searchTerm.toLowerCase();
+
     const matchesSearch =
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (student.studentClass && student.studentClass.toLowerCase().includes(searchTerm.toLowerCase()));
+      name.includes(q) || email.includes(q) || cls.includes(q);
 
     if (!matchesSearch) return false;
-
     if (activeTab === "pending" && student.isApproved) return false;
     if (activeTab === "approved" && !student.isApproved) return false;
     if (activeTab === "2fa" && !student.twoFactorEnabled) return false;
 
     return true;
   });
-
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header Banner */}
@@ -801,7 +1042,8 @@ export default function AdminStudentsPage() {
               Students Overview
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-              Manage student enrollments, approve accounts &amp; assign class sections.
+              Manage student enrollments, approve accounts &amp; assign class
+              sections.
             </p>
           </div>
         </div>
@@ -832,7 +1074,9 @@ export default function AdminStudentsPage() {
             className="flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all disabled:opacity-60 cursor-pointer shadow-xs"
             title="Refresh Roster"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-indigo-600 dark:text-indigo-400" : ""}`} />
+            <RefreshCw
+              className={`w-4 h-4 ${isLoading ? "animate-spin text-indigo-600 dark:text-indigo-400" : ""}`}
+            />
             <span>Refresh</span>
           </button>
         </div>
@@ -846,7 +1090,8 @@ export default function AdminStudentsPage() {
             label: "Total Enrolled",
             value: totalStudents,
             icon: Users,
-            color: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-100 dark:border-indigo-900/40",
+            color:
+              "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-100 dark:border-indigo-900/40",
           },
           {
             tabKey: "pending" as FilterTab,
@@ -854,21 +1099,24 @@ export default function AdminStudentsPage() {
             value: pendingStudents,
             icon: UserX,
             badge: pendingStudents > 0,
-            color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-100 dark:border-amber-900/40",
+            color:
+              "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-100 dark:border-amber-900/40",
           },
           {
             tabKey: "approved" as FilterTab,
             label: "Active Students",
             value: approvedStudents,
             icon: CheckCircle2,
-            color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-100 dark:border-emerald-900/40",
+            color:
+              "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-100 dark:border-emerald-900/40",
           },
           {
             tabKey: "2fa" as FilterTab,
             label: "2FA Protection",
             value: twoFactorCount,
             icon: ShieldCheck,
-            color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 border-purple-100 dark:border-purple-900/40",
+            color:
+              "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 border-purple-100 dark:border-purple-900/40",
           },
         ].map((card) => {
           const Icon = card.icon;
@@ -878,13 +1126,16 @@ export default function AdminStudentsPage() {
             <button
               key={card.tabKey}
               onClick={() => setActiveTab(card.tabKey)}
-              className={`text-left rounded-2xl border ${isSelected
-                ? "border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-lg"
-                : "border-slate-200/80 dark:border-slate-800"
-                } bg-white/90 dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-xl transition-all hover:scale-[1.01] cursor-pointer flex flex-col justify-between relative overflow-hidden`}
+              className={`text-left rounded-2xl border ${
+                isSelected
+                  ? "border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-lg"
+                  : "border-slate-200/80 dark:border-slate-800"
+              } bg-white/90 dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-xl transition-all hover:scale-[1.01] cursor-pointer flex flex-col justify-between relative overflow-hidden`}
             >
               <div className="flex items-center justify-between mb-2">
-                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${card.color}`}>
+                <div
+                  className={`w-9 h-9 rounded-xl border flex items-center justify-center ${card.color}`}
+                >
                   <Icon className="w-4 h-4" />
                 </div>
                 {card.badge && (
@@ -894,7 +1145,9 @@ export default function AdminStudentsPage() {
                 )}
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{card.label}</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {card.label}
+                </p>
                 <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">
                   {isLoading ? (
                     <span className="inline-block h-6 w-10 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />
@@ -914,8 +1167,17 @@ export default function AdminStudentsPage() {
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm overflow-x-auto no-scrollbar">
           {[
             { id: "all", label: "All Students", count: totalStudents },
-            { id: "pending", label: "Pending Access", count: pendingStudents, alert: pendingStudents > 0 },
-            { id: "approved", label: "Active Students", count: approvedStudents },
+            {
+              id: "pending",
+              label: "Pending Access",
+              count: pendingStudents,
+              alert: pendingStudents > 0,
+            },
+            {
+              id: "approved",
+              label: "Active Students",
+              count: approvedStudents,
+            },
             { id: "2fa", label: "2FA Secured", count: twoFactorCount },
           ].map((tab) => {
             const isTabActive = activeTab === tab.id;
@@ -923,19 +1185,21 @@ export default function AdminStudentsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as FilterTab)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${isTabActive
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                  }`}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  isTabActive
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold ${isTabActive
-                    ? "bg-white/20 text-white"
-                    : tab.alert
-                      ? "bg-amber-500 text-white"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                    }`}
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold ${
+                    isTabActive
+                      ? "bg-white/20 text-white"
+                      : tab.alert
+                        ? "bg-amber-500 text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
                 >
                   {tab.count}
                 </span>
@@ -977,14 +1241,17 @@ export default function AdminStudentsPage() {
                 Select Class, Section &amp; Group
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Choose a specific class, section, and group to view student roster records.
+                Choose a specific class, section, and group to view student
+                roster records.
               </p>
             </div>
           </div>
 
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
             {selectedClassFilter} • {selectedSectionFilter}
-            {(selectedClassFilter.includes("9") || selectedClassFilter.includes("10")) && ` • ${selectedGroupFilter}`}
+            {(selectedClassFilter.includes("9") ||
+              selectedClassFilter.includes("10")) &&
+              ` • ${selectedGroupFilter}`}
           </span>
         </div>
 
@@ -1002,11 +1269,31 @@ export default function AdminStudentsPage() {
                 setSelectedGroupFilter("Science");
               }}
               options={[
-                { value: "Class 6", label: "Class 6", subLabel: `${getClassStudentCount("Class 6")} students` },
-                { value: "Class 7", label: "Class 7", subLabel: `${getClassStudentCount("Class 7")} students` },
-                { value: "Class 8", label: "Class 8", subLabel: `${getClassStudentCount("Class 8")} students` },
-                { value: "Class 9", label: "Class 9", subLabel: `${getClassStudentCount("Class 9")} students` },
-                { value: "Class 10", label: "Class 10", subLabel: `${getClassStudentCount("Class 10")} students` },
+                {
+                  value: "Class 6",
+                  label: "Class 6",
+                  subLabel: `${getClassStudentCount("Class 6")} students`,
+                },
+                {
+                  value: "Class 7",
+                  label: "Class 7",
+                  subLabel: `${getClassStudentCount("Class 7")} students`,
+                },
+                {
+                  value: "Class 8",
+                  label: "Class 8",
+                  subLabel: `${getClassStudentCount("Class 8")} students`,
+                },
+                {
+                  value: "Class 9",
+                  label: "Class 9",
+                  subLabel: `${getClassStudentCount("Class 9")} students`,
+                },
+                {
+                  value: "Class 10",
+                  label: "Class 10",
+                  subLabel: `${getClassStudentCount("Class 10")} students`,
+                },
               ]}
               icon={BookOpen}
               placeholder="Select Class"
@@ -1022,8 +1309,16 @@ export default function AdminStudentsPage() {
               value={selectedSectionFilter}
               onChange={setSelectedSectionFilter}
               options={[
-                { value: "Section A", label: "Section A", subLabel: `${getSectionStudentCount("Section A")} students` },
-                { value: "Section B", label: "Section B", subLabel: `${getSectionStudentCount("Section B")} students` },
+                {
+                  value: "Section A",
+                  label: "Section A",
+                  subLabel: `${getSectionStudentCount("Section A")} students`,
+                },
+                {
+                  value: "Section B",
+                  label: "Section B",
+                  subLabel: `${getSectionStudentCount("Section B")} students`,
+                },
               ]}
               icon={Layers}
               placeholder="Select Section"
@@ -1036,23 +1331,39 @@ export default function AdminStudentsPage() {
               <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
                 Select Group
               </label>
-              {selectedClassFilter.includes("9") || selectedClassFilter.includes("10") ? (
+              {selectedClassFilter.includes("9") ||
+              selectedClassFilter.includes("10") ? (
                 <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-extrabold bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-900/40">
                   Class 9 &amp; 10 Only
                 </span>
               ) : (
-                <span className="text-[10px] text-slate-400">Not Applicable</span>
+                <span className="text-[10px] text-slate-400">
+                  Not Applicable
+                </span>
               )}
             </div>
 
-            {selectedClassFilter.includes("9") || selectedClassFilter.includes("10") ? (
+            {selectedClassFilter.includes("9") ||
+            selectedClassFilter.includes("10") ? (
               <CustomSelect
                 value={selectedGroupFilter}
                 onChange={setSelectedGroupFilter}
                 options={[
-                  { value: "Science", label: "Science", subLabel: `${getGroupStudentCount("Science")} students` },
-                  { value: "Business Studies", label: "Business Studies", subLabel: `${getGroupStudentCount("Business Studies")} students` },
-                  { value: "Humanities", label: "Humanities", subLabel: `${getGroupStudentCount("Humanities")} students` },
+                  {
+                    value: "Science",
+                    label: "Science",
+                    subLabel: `${getGroupStudentCount("Science")} students`,
+                  },
+                  {
+                    value: "Business Studies",
+                    label: "Business Studies",
+                    subLabel: `${getGroupStudentCount("Business Studies")} students`,
+                  },
+                  {
+                    value: "Humanities",
+                    label: "Humanities",
+                    subLabel: `${getGroupStudentCount("Humanities")} students`,
+                  },
                 ]}
                 icon={GraduationCap}
                 placeholder="Select Group"
@@ -1071,13 +1382,18 @@ export default function AdminStudentsPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-56 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+            <div
+              key={i}
+              className="h-56 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse"
+            />
           ))}
         </div>
       ) : filteredStudents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 text-center rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm">
           <UserX className="w-12 h-12 text-slate-400" />
-          <p className="text-base font-bold text-slate-900 dark:text-white">No students found</p>
+          <p className="text-base font-bold text-slate-900 dark:text-white">
+            No students found
+          </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
             {searchTerm
               ? `No results matching "${searchTerm}"`
@@ -1111,8 +1427,11 @@ export default function AdminStudentsPage() {
                           {student.name.charAt(0).toUpperCase()}
                         </div>
                         <span
-                          className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 ${student.isApproved ? "bg-emerald-500" : "bg-amber-500"
-                            }`}
+                          className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 ${
+                            student.isApproved
+                              ? "bg-emerald-500"
+                              : "bg-amber-500"
+                          }`}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -1134,10 +1453,11 @@ export default function AdminStudentsPage() {
                     </div>
 
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold border flex-shrink-0 ${student.isApproved
-                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
-                        : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
-                        }`}
+                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold border flex-shrink-0 ${
+                        student.isApproved
+                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
+                          : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
+                      }`}
                     >
                       {student.isApproved ? "Approved" : "Pending Access"}
                     </span>
@@ -1151,7 +1471,9 @@ export default function AdminStudentsPage() {
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <CalendarDays className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                      <span>Section: {student.studentSection || "Section A"}</span>
+                      <span>
+                        Section: {student.studentSection || "Section A"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <Phone className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
@@ -1161,8 +1483,16 @@ export default function AdminStudentsPage() {
                       <ShieldCheck className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
                       <span>
                         2FA:{" "}
-                        <strong className={student.twoFactorEnabled ? "text-purple-600 dark:text-purple-400 font-bold" : "text-slate-500"}>
-                          {student.twoFactorEnabled ? "TOTP Authenticator Protection" : "Disabled (Standard)"}
+                        <strong
+                          className={
+                            student.twoFactorEnabled
+                              ? "text-purple-600 dark:text-purple-400 font-bold"
+                              : "text-slate-500"
+                          }
+                        >
+                          {student.twoFactorEnabled
+                            ? "TOTP Authenticator Protection"
+                            : "Disabled (Standard)"}
                         </strong>
                       </span>
                     </div>
@@ -1235,7 +1565,11 @@ export default function AdminStudentsPage() {
                         }
                       }}
                       className="p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 hover:text-rose-700 dark:hover:text-rose-300 transition-all cursor-pointer shadow-xs"
-                      title={isDemo ? "Protected Demo Account" : "Delete Student Account"}
+                      title={
+                        isDemo
+                          ? "Protected Demo Account"
+                          : "Delete Student Account"
+                      }
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1299,7 +1633,10 @@ export default function AdminStudentsPage() {
                 {/* 2. Email Address */}
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    2. Email Address * <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-normal">(@edunexus.std.com)</span>
+                    2. Email Address *{" "}
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-normal">
+                      (@edunexus.std.com)
+                    </span>
                   </label>
                   <input
                     type="email"
@@ -1315,12 +1652,16 @@ export default function AdminStudentsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">
-                      3. Custom Password * <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">(Admin must enter password, min 8 chars)</span>
+                      3. Custom Password *{" "}
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                        (Admin must enter password, min 8 chars)
+                      </span>
                     </label>
                     <button
                       type="button"
                       onClick={() => {
-                        const rand = "std" + Math.random().toString(36).substring(2, 7);
+                        const rand =
+                          "std" + Math.random().toString(36).substring(2, 7);
                         setAddPassword(rand);
                         setShowPassword(true);
                       }}
@@ -1344,7 +1685,11 @@ export default function AdminStudentsPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {showPassword ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1352,13 +1697,18 @@ export default function AdminStudentsPage() {
                 {/* 4. Phone Number */}
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    4. Phone Number <span className="text-[10px] text-indigo-500 font-normal">(Starts with 01, max 11 digits)</span>
+                    4. Phone Number{" "}
+                    <span className="text-[10px] text-indigo-500 font-normal">
+                      (Starts with 01, max 11 digits)
+                    </span>
                   </label>
                   <input
                     type="text"
                     placeholder="01700000000"
                     value={addPhone}
-                    onChange={(e) => handleBDPhoneChange(e.target.value, setAddPhone)}
+                    onChange={(e) =>
+                      handleBDPhoneChange(e.target.value, setAddPhone)
+                    }
                     maxLength={11}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
                   />
@@ -1373,7 +1723,8 @@ export default function AdminStudentsPage() {
                     value={addClassNum}
                     onChange={(val) => {
                       setAddClassNum(val);
-                      if (!val.includes("9") && !val.includes("10")) setAddGroup("");
+                      if (!val.includes("9") && !val.includes("10"))
+                        setAddGroup("");
                     }}
                     options={[
                       { value: "Class 6", label: "Class 6" },
@@ -1389,14 +1740,20 @@ export default function AdminStudentsPage() {
                 {(addClassNum.includes("9") || addClassNum.includes("10")) && (
                   <div>
                     <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                      6. Select Group <span className="text-[10px] text-indigo-500 font-normal">(Class 9-10 Only)</span>
+                      6. Select Group{" "}
+                      <span className="text-[10px] text-indigo-500 font-normal">
+                        (Class 9-10 Only)
+                      </span>
                     </label>
                     <CustomSelect
                       value={addGroup}
                       onChange={setAddGroup}
                       options={[
                         { value: "Science", label: "Science" },
-                        { value: "Business Studies", label: "Business Studies" },
+                        {
+                          value: "Business Studies",
+                          label: "Business Studies",
+                        },
                         { value: "Humanities", label: "Humanities" },
                       ]}
                     />
@@ -1449,13 +1806,18 @@ export default function AdminStudentsPage() {
                 {/* 10. Guardian Phone */}
                 <div>
                   <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    10. Guardian Phone <span className="text-[10px] text-indigo-500 font-normal">(Starts with 01, max 11 digits)</span>
+                    10. Guardian Phone{" "}
+                    <span className="text-[10px] text-indigo-500 font-normal">
+                      (Starts with 01, max 11 digits)
+                    </span>
                   </label>
                   <input
                     type="text"
                     placeholder="01700000000"
                     value={addGuardianPhone}
-                    onChange={(e) => handleBDPhoneChange(e.target.value, setAddGuardianPhone)}
+                    onChange={(e) =>
+                      handleBDPhoneChange(e.target.value, setAddGuardianPhone)
+                    }
                     maxLength={11}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
                   />
@@ -1557,7 +1919,11 @@ export default function AdminStudentsPage() {
                     disabled={isSubmitting}
                     className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/25 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Student"}
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Save Student"
+                    )}
                   </button>
                 </div>
               </form>
@@ -1600,26 +1966,39 @@ export default function AdminStudentsPage() {
               {/* Box displaying generated student credentials */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">Student Name:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{modal.student.name}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Student Name:
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {modal.student.name}
+                  </span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs pt-1">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">Email Address:</span>
-                  <span className="font-bold font-mono text-indigo-600 dark:text-indigo-400">{modal.student.email}</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Email Address:
+                  </span>
+                  <span className="font-bold font-mono text-indigo-600 dark:text-indigo-400">
+                    {modal.student.email}
+                  </span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs pt-1">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">Temporary Password:</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Temporary Password:
+                  </span>
                   <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                     {modal.tempPass}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs pt-1">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">Academic Class:</span>
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">
+                    Academic Class:
+                  </span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">
-                    {modal.student.studentClass || "Class 10"} • {modal.student.studentSection || "Section A"}
+                    {modal.student.studentClass || "Class 10"} •{" "}
+                    {modal.student.studentSection || "Section A"}
                   </span>
                 </div>
               </div>
@@ -1635,12 +2014,18 @@ export default function AdminStudentsPage() {
                   }}
                   className="w-full sm:flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
                 >
-                  {copiedCredentials ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedCredentials ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
                   <span>{copiedCredentials ? "Copied!" : "Copy Info"}</span>
                 </button>
 
                 <button
-                  onClick={() => handleDownloadPDF(modal.student, modal.tempPass)}
+                  onClick={() =>
+                    handleDownloadPDF(modal.student, modal.tempPass)
+                  }
                   className="w-full sm:flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -1687,12 +2072,18 @@ export default function AdminStudentsPage() {
                     Edit Student Profile
                   </h3>
                   <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">
-                    {modal.student.name} • <span className="font-mono text-slate-400">{modal.student.email}</span>
+                    {modal.student.name} •{" "}
+                    <span className="font-mono text-slate-400">
+                      {modal.student.email}
+                    </span>
                   </p>
                 </div>
               </div>
 
-              <form onSubmit={handleUpdateStudent} className="space-y-3 relative overflow-visible">
+              <form
+                onSubmit={handleUpdateStudent}
+                className="space-y-3 relative overflow-visible"
+              >
                 <div className="space-y-2.5 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60">
                   <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
@@ -1734,10 +2125,11 @@ export default function AdminStudentsPage() {
                   </div>
 
                   <div
-                    className={`grid gap-2.5 transition-all ${editClassNum.includes("9") || editClassNum.includes("10")
-                      ? "grid-cols-1 sm:grid-cols-3"
-                      : "grid-cols-1 sm:grid-cols-2"
-                      }`}
+                    className={`grid gap-2.5 transition-all ${
+                      editClassNum.includes("9") || editClassNum.includes("10")
+                        ? "grid-cols-1 sm:grid-cols-3"
+                        : "grid-cols-1 sm:grid-cols-2"
+                    }`}
                   >
                     <div>
                       <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
@@ -1747,7 +2139,8 @@ export default function AdminStudentsPage() {
                         value={editClassNum}
                         onChange={(val) => {
                           setEditClassNum(val);
-                          if (!val.includes("9") && !val.includes("10")) setEditGroup("");
+                          if (!val.includes("9") && !val.includes("10"))
+                            setEditGroup("");
                         }}
                         options={[
                           { value: "Class 6", label: "Class 6" },
@@ -1759,17 +2152,24 @@ export default function AdminStudentsPage() {
                       />
                     </div>
 
-                    {(editClassNum.includes("9") || editClassNum.includes("10")) && (
+                    {(editClassNum.includes("9") ||
+                      editClassNum.includes("10")) && (
                       <div>
                         <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1">
-                          Group <span className="text-[10px] text-indigo-500 font-normal">(Class 9-10)</span>
+                          Group{" "}
+                          <span className="text-[10px] text-indigo-500 font-normal">
+                            (Class 9-10)
+                          </span>
                         </label>
                         <CustomSelect
                           value={editGroup}
                           onChange={setEditGroup}
                           options={[
                             { value: "Science", label: "Science" },
-                            { value: "Business Studies", label: "Business Studies" },
+                            {
+                              value: "Business Studies",
+                              label: "Business Studies",
+                            },
                             { value: "Humanities", label: "Humanities" },
                           ]}
                         />
@@ -1804,10 +2204,11 @@ export default function AdminStudentsPage() {
                   <button
                     type="button"
                     onClick={() => setEditIsApproved(!editIsApproved)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer border transition-all ${editIsApproved
-                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                      : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-                      }`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer border transition-all ${
+                      editIsApproved
+                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+                        : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                    }`}
                   >
                     {editIsApproved ? "Approved" : "Pending"}
                   </button>
@@ -1827,7 +2228,11 @@ export default function AdminStudentsPage() {
                     disabled={isSubmitting}
                     className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/25 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                    {isSubmitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Save Changes"
+                    )}
                   </button>
                 </div>
               </form>
@@ -1871,23 +2276,34 @@ export default function AdminStudentsPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Class &amp; Section:</span>
                   <span className="font-bold text-slate-900 dark:text-white">
-                    {modal.student.studentClass || "Class 10"} • {modal.student.studentSection || "Section A"}
+                    {modal.student.studentClass || "Class 10"} •{" "}
+                    {modal.student.studentSection || "Section A"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Phone Contact:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{modal.student.phone || "Not set"}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {modal.student.phone || "Not set"}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Approval Status:</span>
-                  <span className={`font-bold ${modal.student.isApproved ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                    {modal.student.isApproved ? "Approved Active Student" : "Pending Approval"}
+                  <span
+                    className={`font-bold ${modal.student.isApproved ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}
+                  >
+                    {modal.student.isApproved
+                      ? "Approved Active Student"
+                      : "Pending Approval"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Account Protection:</span>
-                  <span className={`font-bold ${modal.student.twoFactorEnabled ? "text-purple-600 dark:text-purple-400" : "text-slate-500"}`}>
-                    {modal.student.twoFactorEnabled ? "2FA TOTP Active" : "Standard Password"}
+                  <span
+                    className={`font-bold ${modal.student.twoFactorEnabled ? "text-purple-600 dark:text-purple-400" : "text-slate-500"}`}
+                  >
+                    {modal.student.twoFactorEnabled
+                      ? "2FA TOTP Active"
+                      : "Standard Password"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -1946,7 +2362,8 @@ export default function AdminStudentsPage() {
                 Revoke Access for {modal.student.name}?
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-5 leading-relaxed">
-                This student will no longer be able to log in or access student portal tools until re-approved by an admin.
+                This student will no longer be able to log in or access student
+                portal tools until re-approved by an admin.
               </p>
               <div className="flex gap-2">
                 <button
@@ -1961,7 +2378,11 @@ export default function AdminStudentsPage() {
                   disabled={actingStudentId === modal.student.id}
                   className="flex-1 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-600/25"
                 >
-                  {actingStudentId === modal.student.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Revoke Access"}
+                  {actingStudentId === modal.student.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Revoke Access"
+                  )}
                 </button>
               </div>
             </motion.div>
@@ -1994,7 +2415,8 @@ export default function AdminStudentsPage() {
                 Delete {modal.student.name}?
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">
-                This action will permanently remove this student account from the database.
+                This action will permanently remove this student account from
+                the database.
               </p>
 
               <div className="flex gap-2">
@@ -2010,7 +2432,11 @@ export default function AdminStudentsPage() {
                   disabled={isSubmitting}
                   className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-rose-500/20"
                 >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Account"}
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Delete Account"
+                  )}
                 </button>
               </div>
             </motion.div>
@@ -2042,7 +2468,13 @@ export default function AdminStudentsPage() {
                 Protected Demo Account
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-5 leading-relaxed">
-                The Demo Student account (<span className="font-semibold text-slate-800 dark:text-slate-200">{modal.student.email}</span>) is protected and cannot be deleted or have its access revoked. This account is reserved for platform demonstrations and system testing.
+                The Demo Student account (
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {modal.student.email}
+                </span>
+                ) is protected and cannot be deleted or have its access revoked.
+                This account is reserved for platform demonstrations and system
+                testing.
               </p>
               <button
                 onClick={() => setModal(null)}

@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import { adminClient ,inferAdditionalFields } from "better-auth/client/plugins";
 import { twoFactorClient } from "better-auth/client/plugins";
 
 // Points at the Express API's Better Auth routes (server/src/routes/auth.routes.ts).
@@ -43,6 +43,7 @@ export const authClient = createAuthClient({
     // sign-in response itself and renders the OTP/QR step inline instead of
     // navigating away.
     twoFactorClient(),
+      adminClient()  
   ],
 });
 
