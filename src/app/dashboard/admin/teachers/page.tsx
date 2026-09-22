@@ -154,7 +154,7 @@ function CustomSelect({
     (value ? { value, label: value } : undefined);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${isOpen ? "z-[60]" : "z-10"}`} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -193,7 +193,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 4, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.12 }}
-            className="absolute z-50 left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl p-1 space-y-0.5"
+            className="absolute z-[70] left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-1 space-y-0.5"
           >
             {options.map((opt, idx) => {
               const isSelected = opt.value === value;
@@ -588,7 +588,7 @@ export default function AdminTeachersPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3">
           <button
             onClick={loadTeachers}
             disabled={isLoading}
@@ -776,9 +776,9 @@ export default function AdminTeachersPage() {
                             }`}
                         />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="text-base font-bold text-slate-900 dark:text-white truncate">
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white break-words">
                             {teacher.name}
                           </h3>
                           {isDemo && (

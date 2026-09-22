@@ -359,8 +359,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
 
     try {
       const { data, error: signInError } = await signIn.email({
-        email,
-        password,
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
       });
       if (signInError) {
         // Backend "ACCOUNT_LOCKED" code shoho lockedUntil (ISO timestamp)
@@ -476,8 +476,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
         // sign this session back out right away, so a bad OTP never leaves
         // the user logged in.
         const { error: reSignInError } = await signIn.email({
-          email,
-          password,
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
         });
         if (reSignInError) {
           throw new Error(
