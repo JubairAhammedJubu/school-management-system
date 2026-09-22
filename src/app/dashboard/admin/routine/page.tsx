@@ -14,7 +14,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY"] as const;
 const DAY_SHORT: Record<string, string> = {
