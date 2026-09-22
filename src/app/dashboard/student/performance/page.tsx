@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   HeartPulse,
   Sparkles,
-  AlertTriangle,
   CalendarCheck,
   Award,
   FileText,
@@ -14,43 +13,41 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
-type PerformanceStatus = "LOW" | "MEDIUM" | "HIGH" | "INSUFFICIENT_DATA";
+type StudentPace = "ON_TRACK" | "BUILDING" | "GROWING" | "GETTING_STARTED";
 
 interface PerformanceSnapshot {
   studentName: string;
-  riskLevel: PerformanceStatus;
+  pace: StudentPace;
   attendanceRate: number | null;
   averageScorePercent: number | null;
   assignmentCompletionRate: number | null;
-  reasons: string[];
 }
 
-// Same underlying signal as the teacher's at-risk view, framed
-// positively for the student reading about themselves.
-const statusStyles: Record<
-  PerformanceStatus,
+// Same numbers the teacher sees, framed as encouragement. No risk labels.
+const paceStyles: Record<
+  StudentPace,
   { label: string; className: string; dot: string }
 > = {
-  LOW: {
-    label: "On Track",
+  ON_TRACK: {
+    label: "Going Strong",
     className:
       "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60",
     dot: "bg-emerald-500",
   },
-  MEDIUM: {
-    label: "Worth Watching",
+  BUILDING: {
+    label: "Keep Building",
     className:
-      "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60",
-    dot: "bg-amber-500",
+      "bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/60",
+    dot: "bg-sky-500",
   },
-  HIGH: {
-    label: "Needs Attention",
+  GROWING: {
+    label: "Room to Grow",
     className:
-      "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/60",
-    dot: "bg-rose-500",
+      "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60",
+    dot: "bg-indigo-500",
   },
-  INSUFFICIENT_DATA: {
-    label: "Not Enough Data Yet",
+  GETTING_STARTED: {
+    label: "Getting Started",
     className:
       "bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
     dot: "bg-slate-400",
@@ -142,8 +139,8 @@ export default function StudentPerformancePage() {
     }
   };
 
-  const status = snapshot ? statusStyles[snapshot.riskLevel] : null;
-  const canGenerate = snapshot && snapshot.riskLevel !== "INSUFFICIENT_DATA";
+  const status = snapshot ? paceStyles[snapshot.pace] : null;
+  const canGenerate = snapshot && snapshot.pace !== "GETTING_STARTED";
 
   return (
     <div className="space-y-6">
@@ -221,19 +218,10 @@ export default function StudentPerformancePage() {
               )}
             </div>
 
-            {snapshot.reasons.length > 0 && snapshot.riskLevel !== "LOW" && (
-              <ul className="mt-3 space-y-1">
-                {snapshot.reasons.map((reason, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400"
-                  >
-                    <AlertTriangle className="h-3 w-3 mt-0.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                    {reason}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+              These numbers are yours. The note below is a suggestion you can use — it does not
+              change a grade or your standing.
+            </p>
 
             <AnimatePresence>
               {insight && (
