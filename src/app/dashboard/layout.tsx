@@ -119,6 +119,11 @@ const studentRoutes: RouteItem[] = [
   },
   { label: "Results", href: "/dashboard/student/result", icon: Award },
   {
+    label: "My Performance",
+    href: "/dashboard/student/performance",
+    icon: HeartPulse,
+  },
+  {
     label: "Assignments",
     href: "/dashboard/student/assignment",
     icon: FileText,
