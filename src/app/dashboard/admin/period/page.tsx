@@ -13,7 +13,7 @@ import {
   Coffee,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 type Period = {
   id: string;

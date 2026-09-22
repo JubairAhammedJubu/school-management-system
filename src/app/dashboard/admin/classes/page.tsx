@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import SectionDetailDrawer from "@/components/shared/SectionDetailDrawer";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 type Section = {
   id: string;
