@@ -19,6 +19,8 @@ import {
   Compass,
   Calendar,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Check,
   Loader2,
   FileSpreadsheet,
@@ -50,6 +52,7 @@ const SECTION_FILTER_OPTIONS = ["All Sections", "Section A", "Section B"]; // St
 const GROUP_FILTER_OPTIONS = ["All Groups", "Science", "Business Studies", "Humanities"];
 const STATUS_FILTER_OPTIONS = ["All Status", "PRESENT", "LATE", "ABSENT", "NOT_MARKED", "AT_RISK"];
 const DATE_PRESET_OPTIONS = ["Single Day", "This Week", "This Month", "Custom Date Range"];
+const ATTENDANCE_PAGE_SIZE = 10;
 
 export type AttendanceRecordRow = {
   id: string;
@@ -100,6 +103,7 @@ export default function TeacherAttendancePage() {
   });
   const [customEndDate, setCustomEndDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [tableSearch, setTableSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [tableRecords, setTableRecords] = useState<AttendanceRecordRow[]>([]);
   const [isTableLoading, setIsTableLoading] = useState(true);
@@ -228,6 +232,17 @@ export default function TeacherAttendancePage() {
       return matchSearch && matchStatus;
     });
   }, [tableRecords, tableSearch, tableStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTableRecords.length / ATTENDANCE_PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const pageStart = (page - 1) * ATTENDANCE_PAGE_SIZE;
+  const paginatedRecords = filteredTableRecords.slice(pageStart, pageStart + ATTENDANCE_PAGE_SIZE);
+  const rangeStart = filteredTableRecords.length === 0 ? 0 : pageStart + 1;
+  const rangeEnd = pageStart + paginatedRecords.length;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [tableSearch, tableStatus, tableClass, tableSection, tableGroup, datePreset, tableDate, customStartDate, customEndDate]);
 
   // At-risk student count summary
   const atRiskCount = useMemo(() => {
@@ -1066,7 +1081,17 @@ export default function TeacherAttendancePage() {
           </div>
 
           <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-semibold self-end sm:self-center flex items-center gap-1.5">
-            <span>Showing <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{filteredTableRecords.length}</span> records</span>
+            <span>
+              Showing{" "}
+              <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
+                {rangeStart}–{rangeEnd}
+              </span>{" "}
+              of{" "}
+              <span className="font-extrabold text-indigo-600 dark:text-indigo-400">
+                {filteredTableRecords.length}
+              </span>{" "}
+              records
+            </span>
           </div>
         </div>
 
@@ -1152,7 +1177,7 @@ export default function TeacherAttendancePage() {
                   </td>
                 </tr>
               ) : (
-                filteredTableRecords.map((record) => {
+                paginatedRecords.map((record) => {
                   const initials = record.name
                     ? record.name
                       .split(" ")
@@ -1276,6 +1301,38 @@ export default function TeacherAttendancePage() {
             </tbody>
           </table>
         </div>
+
+        {filteredTableRecords.length > 0 && (
+          <div className="sticky bottom-3 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95">
+            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Page{" "}
+              <span className="font-extrabold text-slate-900 dark:text-white">{page}</span>{" "}
+              of{" "}
+              <span className="font-extrabold text-slate-900 dark:text-white">{totalPages}</span>{" "}
+              ({filteredTableRecords.length} records · {ATTENDANCE_PAGE_SIZE} per page)
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={page <= 1 || isTableLoading}
+                onClick={() => setCurrentPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span>Previous</span>
+              </button>
+              <button
+                type="button"
+                disabled={page >= totalPages || isTableLoading}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, Math.min(prev, totalPages) + 1))}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+              >
+                <span>Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </motion.section>
 
       {/* Mark Attendance Modal */}

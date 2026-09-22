@@ -281,7 +281,7 @@ const Banner = () => {
                       <p className="text-[8px] sm:text-[10px] font-semibold text-slate-500 dark:text-slate-400">Powered by</p>
                     </div>
                     <p className="text-[10px] sm:text-xs font-extrabold text-blue-600 dark:text-blue-400">
-                      AI At-Risk Prediction
+                      Performance Overview
                     </p>
                   </div>
                 </div>

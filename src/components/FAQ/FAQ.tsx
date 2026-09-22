@@ -38,9 +38,9 @@ const faqData: FAQItem[] = [
   },
   {
     id: "faq-3",
-    question: "How does the AI At-Risk Student Prediction engine work?",
+    question: "How does the student performance overview work?",
     answer:
-      "Our built-in AI model monitors real-time attendance trends, assignment submissions, and test score fluctuations. If a student shows signs of falling behind or attendance drop-offs, teachers and admins receive proactive early warnings before exams.",
+      "Attendance, published scores, and assignment completion are summarized with clear rules. Teachers can ask for a short note on any student, including those doing well and those who do not have enough history yet. The note describes the pattern. It never sets a grade.",
     icon: <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
   },
   {

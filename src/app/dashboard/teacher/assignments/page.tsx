@@ -419,6 +419,23 @@ const handleDelete = async (assignmentId: string) => {
         isOpen={Boolean(submissionsAssignment)}
         onClose={() => setSubmissionsAssignment(null)}
         assignment={submissionsAssignment}
+        onGraded={(submissionId, patch) => {
+          const assignmentId = submissionsAssignment?.id;
+          if (!assignmentId) return;
+
+          const applyPatch = (item: Assignment): Assignment =>
+            item.id !== assignmentId
+              ? item
+              : {
+                  ...item,
+                  submissions: item.submissions?.map((submission) =>
+                    submission.id === submissionId ? { ...submission, ...patch } : submission
+                  ),
+                };
+
+          setSubmissionsAssignment((current) => (current ? applyPatch(current) : current));
+          setAssignments((current) => current.map(applyPatch));
+        }}
       />
 
       {/* Custom Delete Confirmation Modal */}
