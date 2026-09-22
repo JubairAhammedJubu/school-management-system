@@ -1,206 +1,222 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
 import { toast } from "react-toastify";
+import { X, Loader2 } from "lucide-react";
+
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+
+const METHODS = [
+  { id: "bkash", label: "bKash" },
+  { id: "nagad", label: "Nagad" },
+  { id: "rocket", label: "Rocket" },
+  { id: "upay", label: "Upay" },
+  { id: "bank", label: "Bank" },
+  { id: "cash", label: "Cash" },
+];
+
+function monthKey() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
+}
 
 type Props = {
-  student: {
-    id: string;
-    name: string;
-    studentClass: string;
-  };
+  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  /** Optional: pre-select student from roster */
+  presetStudent?: { id: string; name: string; studentClass?: string | null };
 };
 
-const FEE_TYPES = ["MONTHLY", "EXAM", "REGISTRATION", "OTHER"] as const;
-const METHODS = ["CASH", "BANK", "MOBILE_BANKING"] as const;
+export default function RecordPaymentModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  presetStudent,
+}: Props) {
+  const year = new Date().getFullYear().toString();
+  const month = monthKey();
 
-export default function RecordFeePaymentModal({ student, onClose, onSuccess }: Props) {
-  const [feeType, setFeeType] = useState<(typeof FEE_TYPES)[number]>("MONTHLY");
-  const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<(typeof METHODS)[number]>("CASH");
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
-  const [examId, setExamId] = useState("");
-  const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [q, setQ] = useState("");
+  const [hits, setHits] = useState<any[]>([]);
+  const [studentId, setStudentId] = useState(presetStudent?.id || "");
+  const [studentLabel, setStudentLabel] = useState(
+    presetStudent
+      ? `${presetStudent.name} (${presetStudent.studentClass || "—"})`
+      : "",
+  );
+  const [feeType, setFeeType] = useState("MONTHLY");
+  const [method, setMethod] = useState("bkash");
+  const [trx, setTrx] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+  if (!isOpen) return null;
 
-  const handleSubmit = async () => {
-    if (!amount || Number(amount) <= 0) {
-      toast.error("Enter a valid amount");
-      return;
-    }
-    if (feeType === "EXAM" && !examId) {
-      toast.error("Exam ID is required for exam fee payments");
-      return;
-    }
-
-    setSubmitting(true);
+  const searchStudents = async (text: string) => {
+    setQ(text);
+    setStudentId("");
+    setStudentLabel("");
+    if (text.trim().length < 2) return setHits([]);
     try {
-      const res = await fetch(`${serverUrl}/api/admin/fees/payments`, {
+      const res = await fetch(
+        `${SERVER}/api/teacher/students?search=${encodeURIComponent(text)}&limit=8`,
+        { credentials: "include" },
+      );
+      const data = await res.json();
+      if (res.ok) setHits(data.students || []);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentId) {
+      toast.error("Select a student");
+      return;
+    }
+    if (trx.trim().length < 5) {
+      toast.error("Enter a valid TrxID");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${SERVER}/api/admin/fees/payments`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          studentId: student.id,
+          studentId,
           feeType,
-          amount: Number(amount),
           method,
-          sessionYear: new Date().getFullYear().toString(),
-          month: feeType === "MONTHLY" ? month : undefined,
-          examId: feeType === "EXAM" ? examId : undefined,
-          note: note || undefined,
+          transactionRef: trx.trim(),
+          sessionYear: year,
+          ...(feeType === "MONTHLY" ? { month } : {}),
         }),
       });
-
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to record payment");
 
-      if (!res.ok) {
-        if (res.status === 409) {
-          toast.error(`Already recorded — receipt ${data.existingReceiptNo}`);
-        } else {
-          toast.error(data.error ?? "Failed to record payment");
-        }
-        return;
+      toast.success(`Saved · ${data.payment?.receiptNo || "OK"}`);
+      setTrx("");
+      setQ("");
+      if (!presetStudent) {
+        setStudentId("");
+        setStudentLabel("");
       }
-
-      toast.success(`Payment recorded — receipt ${data.receiptNo}`);
       onSuccess();
-    } catch (err) {
-      toast.error("Something went wrong while recording the payment");
+      onClose();
+    } catch (err: any) {
+      toast.error(err.message || "Failed");
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 10 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 10 }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md rounded-2xl bg-background border border-foreground/10 p-6 shadow-xl"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-heading font-semibold">Record Payment</h2>
-            <button onClick={onClose} className="text-foreground/50 hover:text-foreground">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            Record payment
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-lg p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-          <p className="text-sm text-foreground/60 mb-4">
-            {student.name} · {student.studentClass}
-          </p>
-
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs font-medium text-foreground/60">Fee Type</label>
-              <select
-                value={feeType}
-                onChange={(e) => setFeeType(e.target.value as any)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-              >
-                {FEE_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="relative">
+            <label className="text-xs font-bold">Student</label>
+            <input
+              value={studentLabel || q}
+              onChange={(e) => searchStudents(e.target.value)}
+              placeholder="Search name or email"
+              disabled={Boolean(presetStudent)}
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm disabled:opacity-70"
+            />
+            {hits.length > 0 && !studentId && (
+              <div className="absolute z-10 mt-1 w-full rounded-xl border bg-white dark:bg-slate-900 shadow-lg max-h-40 overflow-auto">
+                {hits.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className="block w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
+                    onClick={() => {
+                      setStudentId(s.id);
+                      setStudentLabel(
+                        `${s.name} (${s.studentClass || "—"})`,
+                      );
+                      setHits([]);
+                    }}
+                  >
+                    {s.name} · {s.email}
+                  </button>
                 ))}
-              </select>
-            </div>
-
-            {feeType === "MONTHLY" && (
-              <div>
-                <label className="text-xs font-medium text-foreground/60">Month</label>
-                <input
-                  type="month"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-                />
               </div>
             )}
+          </div>
 
-            {feeType === "EXAM" && (
-              <div>
-                <label className="text-xs font-medium text-foreground/60">Exam ID</label>
-                <input
-                  value={examId}
-                  onChange={(e) => setExamId(e.target.value)}
-                  placeholder="Paste the exam's ID"
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-                />
-              </div>
+          <div>
+            <label className="text-xs font-bold">Fee type</label>
+            <select
+              value={feeType}
+              onChange={(e) => setFeeType(e.target.value)}
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+            >
+              <option value="MONTHLY">Monthly</option>
+              <option value="REGISTRATION">Registration</option>
+              <option value="EXAM">Exam</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold">Method</label>
+            <select
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+            >
+              {METHODS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold">TrxID</label>
+            <input
+              value={trx}
+              onChange={(e) => setTrx(e.target.value)}
+              placeholder="Transaction ID only"
+              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm font-mono"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save as paid"
             )}
-
-            <div>
-              <label className="text-xs font-medium text-foreground/60">Amount</label>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0"
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-foreground/60">Payment Method</label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value as any)}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-              >
-                {METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-foreground/60">Note (optional)</label>
-              <input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="e.g. cheque no., reference"
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-foreground/10 bg-background text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-foreground/70 hover:bg-foreground/5"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
-            >
-              {submitting ? "Saving..." : "Save Payment"}
-            </button>
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
