@@ -63,13 +63,13 @@ const steps: Step[] = [
   },
   {
     number: "04",
-    title: "AI Risk Prediction & Insights",
-    subtitle: "Data-driven decisions for student success",
+    title: "Insights, With a Teacher in Charge",
+    subtitle: "Describe the pattern. Never decide the outcome.",
     description:
-      "Our built-in AI engine analyzes attendance trends, grade fluctuations, and engagement to flag at-risk students before exams.",
-    tag: "AI Powered Engine",
+      "Attendance, scores, and assignment completion are scored with clear rules. A teacher can ask for a short supportive note — the system never sets a grade or standing on its own.",
+    tag: "Assistive Notes",
     icon: <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
-    highlights: ["Early At-Risk Flagging", "Automated Performance Reports", "Fee & Attendance Analytics"],
+    highlights: ["Rule-Based Signals", "On-Demand Teacher Notes", "Encouraging Student View"],
     roleTarget: "All",
   },
 ];

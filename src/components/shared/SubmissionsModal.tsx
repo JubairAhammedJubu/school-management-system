@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -17,7 +17,10 @@ import {
   Award,
   Layers,
   Sparkles,
+  Wand2,
+  Loader2,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 export type SubmissionStudent = {
   id: string;
@@ -37,6 +40,8 @@ export type SubmissionItem = {
   content?: string | null;
   attemptsUsed: number;
   status: string; // "SUBMITTED" | "GRADED" | "LATE"
+  marks?: number | null;
+  feedback?: string | null;
   submittedAt: string;
   createdAt?: string;
   updatedAt?: string;
@@ -61,20 +66,146 @@ type SubmissionsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   assignment: AssignmentForModal | null;
+  onGraded?: (
+    submissionId: string,
+    patch: { marks: number; feedback: string; status: string }
+  ) => void;
 };
+
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+
+type GradeFields = { marks: string; feedback: string };
 
 export default function SubmissionsModal({
   isOpen,
   onClose,
   assignment,
+  onGraded,
 }: SubmissionsModalProps) {
   const [activePreviewPdf, setActivePreviewPdf] = useState<{
     url: string;
     studentName: string;
     filename: string;
   } | null>(null);
+  const [gradeFields, setGradeFields] = useState<Record<string, GradeFields>>({});
+  const [draftingId, setDraftingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [gradeError, setGradeError] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const next: Record<string, GradeFields> = {};
+    for (const submission of assignment?.submissions ?? []) {
+      next[submission.id] = {
+        marks: submission.marks != null ? String(submission.marks) : "",
+        feedback: submission.feedback ?? "",
+      };
+    }
+    setGradeFields(next);
+    setGradeError({});
+  }, [assignment]);
 
   if (!isOpen || !assignment) return null;
+
+  const updateField = (submissionId: string, patch: Partial<GradeFields>) => {
+    setGradeFields((current) => ({
+      ...current,
+      [submissionId]: {
+        marks: current[submissionId]?.marks ?? "",
+        feedback: current[submissionId]?.feedback ?? "",
+        ...patch,
+      },
+    }));
+  };
+
+  const draftFeedback = async (submissionId: string) => {
+    const marksText = gradeFields[submissionId]?.marks?.trim() ?? "";
+    const marks = Number(marksText);
+    if (!Number.isInteger(marks) || marks < 0 || marks > assignment.totalMarks) {
+      setGradeError((current) => ({
+        ...current,
+        [submissionId]: `Enter a whole-number score from 0 to ${assignment.totalMarks} first. The draft will not choose a score.`,
+      }));
+      return;
+    }
+
+    setDraftingId(submissionId);
+    setGradeError((current) => ({ ...current, [submissionId]: "" }));
+    try {
+      const response = await fetch(
+        `${SERVER_URL}/api/teacher/assignments/${assignment.id}/submissions/${submissionId}/feedback-draft`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ marks }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Could not draft feedback.");
+      }
+      updateField(submissionId, { feedback: data.draft });
+      toast.success("Draft ready. Edit it, then save — nothing is sent until you save.");
+    } catch (error: any) {
+      setGradeError((current) => ({
+        ...current,
+        [submissionId]: error?.message || "Could not draft feedback.",
+      }));
+    } finally {
+      setDraftingId(null);
+    }
+  };
+
+  const saveGrade = async (submissionId: string) => {
+    const fields = gradeFields[submissionId];
+    const marks = Number(fields?.marks);
+    const feedback = fields?.feedback?.trim() ?? "";
+    if (!Number.isInteger(marks) || marks < 0 || marks > assignment.totalMarks) {
+      setGradeError((current) => ({
+        ...current,
+        [submissionId]: `Score must be a whole number from 0 to ${assignment.totalMarks}.`,
+      }));
+      return;
+    }
+    if (!feedback) {
+      setGradeError((current) => ({
+        ...current,
+        [submissionId]: "Write or edit a comment before saving. Students only see what you save.",
+      }));
+      return;
+    }
+
+    setSavingId(submissionId);
+    setGradeError((current) => ({ ...current, [submissionId]: "" }));
+    try {
+      const response = await fetch(
+        `${SERVER_URL}/api/teacher/assignments/${assignment.id}/submissions/${submissionId}/grade`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ marks, feedback }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Could not save this grade.");
+      }
+      onGraded?.(submissionId, {
+        marks: data.submission.marks,
+        feedback: data.submission.feedback,
+        status: data.submission.status,
+      });
+      toast.success("Grade saved.");
+    } catch (error: any) {
+      setGradeError((current) => ({
+        ...current,
+        [submissionId]: error?.message || "Could not save this grade.",
+      }));
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   const submissions = assignment.submissions || [];
   const totalSubmissions = submissions.length;
@@ -248,7 +379,7 @@ export default function SubmissionsModal({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.05 }}
-                      className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs transition-all duration-200 hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                      className="group relative flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3 sm:gap-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-xs transition-all duration-200 hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                     >
                       {/* Left: Student Info & Submission Details */}
                       <div className="flex items-start gap-2.5 sm:gap-3.5 min-w-0 flex-1">
@@ -323,6 +454,78 @@ export default function SubmissionsModal({
                           No file attached
                         </span>
                       )}
+
+                      <div className="w-full border-t border-slate-100 pt-3 dark:border-slate-800">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Score and comment
+                        </p>
+                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                          You enter the score. Draft feedback is a starting point — edit it, then save. Students only see what you save.
+                        </p>
+                        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
+                          <label className="sm:w-28 shrink-0">
+                            <span className="mb-1 block text-[10px] font-bold text-slate-500">
+                              Score / {assignment.totalMarks}
+                            </span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={assignment.totalMarks}
+                              step={1}
+                              value={gradeFields[submission.id]?.marks ?? ""}
+                              onChange={(event) =>
+                                updateField(submission.id, { marks: event.target.value })
+                              }
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            />
+                          </label>
+                          <label className="min-w-0 flex-1">
+                            <span className="mb-1 block text-[10px] font-bold text-slate-500">
+                              Feedback
+                            </span>
+                            <textarea
+                              rows={3}
+                              value={gradeFields[submission.id]?.feedback ?? ""}
+                              onChange={(event) =>
+                                updateField(submission.id, { feedback: event.target.value })
+                              }
+                              placeholder="Write a comment, or draft one from the score and assignment."
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            />
+                          </label>
+                        </div>
+                        {gradeError[submission.id] && (
+                          <p className="mt-1.5 text-[11px] text-rose-500">{gradeError[submission.id]}</p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => draftFeedback(submission.id)}
+                            disabled={draftingId === submission.id || savingId === submission.id}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:opacity-60 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300 cursor-pointer"
+                          >
+                            {draftingId === submission.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Wand2 className="h-3.5 w-3.5" />
+                            )}
+                            Draft feedback
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => saveGrade(submission.id)}
+                            disabled={savingId === submission.id || draftingId === submission.id}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60 cursor-pointer"
+                          >
+                            {savingId === submission.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                            )}
+                            Save grade
+                          </button>
+                        </div>
+                      </div>
                     </motion.div>
                   );
                 })
