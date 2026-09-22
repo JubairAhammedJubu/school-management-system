@@ -28,7 +28,7 @@ export default function DeleteConfirmationModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex min-h-full items-center justify-center p-3.5 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-100 flex min-h-full items-center justify-center p-3.5 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
