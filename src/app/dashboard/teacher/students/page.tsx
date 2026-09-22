@@ -55,7 +55,7 @@ export default function TeacherStudentsPage() {
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0,
     page: 1,
-    limit: 20,
+    limit: 10,
     totalPages: 1,
   });
 
@@ -80,7 +80,7 @@ export default function TeacherStudentsPage() {
       startTransition(async () => {
         const res = await getTeacherStudentsAction({
           page: pageNum,
-          limit: 20,
+          limit: 10,
           search: searchVal,
           studentClass: classVal,
         });
@@ -94,7 +94,7 @@ export default function TeacherStudentsPage() {
           setErrorMessage(null);
         } else {
           setStudents([]);
-          setPagination({ total: 0, page: 1, limit: 20, totalPages: 1 });
+          setPagination({ total: 0, page: 1, limit: 10, totalPages: 1 });
           setErrorMessage(res.error ?? "Failed to load students"); // NEW
         }
         setIsLoading(false);
@@ -437,7 +437,7 @@ export default function TeacherStudentsPage() {
             <span className="font-extrabold text-slate-900 dark:text-white">
               {pagination.totalPages}
             </span>{" "}
-            ({pagination.total} total students · 20 per page)
+            ({pagination.total} total students · 10 per page)
           </p>
 
           <div className="flex items-center gap-2">

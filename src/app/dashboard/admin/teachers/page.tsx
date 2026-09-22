@@ -164,7 +164,7 @@ function CustomSelect({
           }`}
       >
         <div className="flex items-center gap-2 truncate pr-1 min-w-0">
-          {Icon && <Icon className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />}
+          {Icon && <Icon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />}
           {selectedOpt && selectedOpt.value !== "" ? (
             <span className="font-medium text-slate-900 dark:text-white truncate">
               {selectedOpt.label}
@@ -181,7 +181,7 @@ function CustomSelect({
           )}
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180 text-indigo-500" : ""
+          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-indigo-500" : ""
             }`}
         />
       </button>
@@ -218,7 +218,7 @@ function CustomSelect({
                       </span>
                     )}
                   </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+                  {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />}
                 </button>
               );
             })}
@@ -564,7 +564,7 @@ export default function AdminTeachersPage() {
         <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-sky-600 text-white shadow-lg shadow-indigo-500/25">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-tr from-indigo-600 via-blue-600 to-sky-600 text-white shadow-lg shadow-indigo-500/25">
             <Users className="w-7 h-7" />
           </div>
           <div>
@@ -767,8 +767,8 @@ export default function AdminTeachersPage() {
                   {/* Top Info Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative flex-shrink-0">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-sky-500 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-indigo-500/20">
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-2xl bg-linear-to-tr from-indigo-600 via-blue-600 to-sky-500 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-indigo-500/20">
                           {teacher.name.charAt(0).toUpperCase()}
                         </div>
                         <span
@@ -788,14 +788,14 @@ export default function AdminTeachersPage() {
                           )}
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate mt-0.5">
-                          <Mail className="w-3 h-3 flex-shrink-0 text-slate-400" />
+                          <Mail className="w-3 h-3 shrink-0 text-slate-400" />
                           <span className="truncate">{teacher.email}</span>
                         </p>
                       </div>
                     </div>
 
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border flex-shrink-0 ${teacher.isApproved
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border shrink-0 ${teacher.isApproved
                           ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
                           : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
                         }`}
@@ -807,19 +807,19 @@ export default function AdminTeachersPage() {
                   {/* Info Details Grid (Shows real DB data or 'Unassigned') */}
                   <div className="grid grid-cols-2 gap-2 text-xs border-y border-slate-100 dark:border-slate-800/80 py-3">
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
-                      <BookOpen className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+                      <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                       <span className="truncate">Dept: {teacher.department || "Unassigned"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
-                      <Briefcase className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                      <Briefcase className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <span className="truncate">Subject: {teacher.assignedSubject || "Unassigned"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
-                      <GraduationCap className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      <GraduationCap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                       <span className="truncate">Class: {teacher.assignedClass || "Unassigned"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
-                      <Activity className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                      <Activity className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <span className="truncate">
                         Status:{" "}
                         <strong
@@ -943,8 +943,8 @@ export default function AdminTeachersPage() {
               </button>
 
               {/* Modal Header */}
-              <div className="flex items-center gap-3 pr-6 mb-3 sm:mb-4 flex-shrink-0">
-                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/25 flex-shrink-0">
+              <div className="flex items-center gap-3 pr-6 mb-3 sm:mb-4 shrink-0">
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-linear-to-tr from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/25 shrink-0">
                   <Edit className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
@@ -1128,7 +1128,7 @@ export default function AdminTeachersPage() {
                         Set whether faculty member is currently active or on leave
                       </p>
                     </div>
-                    <div className="w-32 sm:w-36 flex-shrink-0">
+                    <div className="w-32 sm:w-36 shrink-0">
                       <CustomSelect
                         value={editAvailability}
                         onChange={(val) => setEditAvailability(val as "Active" | "On Leave")}
@@ -1154,7 +1154,7 @@ export default function AdminTeachersPage() {
                   <button
                     type="submit"
                     disabled={isActing}
-                    className="flex-1 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/25 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                    className="flex-1 py-2 sm:py-2.5 rounded-xl bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-500/25 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                   >
                     {isActing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
                   </button>
@@ -1263,7 +1263,7 @@ export default function AdminTeachersPage() {
                     <button
                       onClick={handleRevoke}
                       disabled={isActing}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-500/25"
+                      className="flex-1 bg-linear-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs py-2.5 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-indigo-500/25"
                     >
                       {isActing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Revoke Access"}
                     </button>
@@ -1313,7 +1313,7 @@ export default function AdminTeachersPage() {
                             }`}
                         >
                           <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${isSelected
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all ${isSelected
                                 ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
                                 : "bg-slate-200/80 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300"
                               }`}
@@ -1325,7 +1325,7 @@ export default function AdminTeachersPage() {
                               <span className="text-xs font-bold text-slate-900 dark:text-white">
                                 {roleOpt.label}
                               </span>
-                              {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+                              {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
                             </div>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
                               {roleOpt.desc}
