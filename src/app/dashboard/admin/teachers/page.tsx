@@ -154,7 +154,7 @@ function CustomSelect({
     (value ? { value, label: value } : undefined);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${isOpen ? "z-[60]" : "z-10"}`} ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -193,7 +193,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 4, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.12 }}
-            className="absolute z-50 left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-xl p-1 space-y-0.5"
+            className="absolute z-[70] left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-1 space-y-0.5"
           >
             {options.map((opt, idx) => {
               const isSelected = opt.value === value;
@@ -588,7 +588,7 @@ export default function AdminTeachersPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3">
           <button
             onClick={loadTeachers}
             disabled={isLoading}
@@ -776,9 +776,9 @@ export default function AdminTeachersPage() {
                             }`}
                         />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="text-base font-bold text-slate-900 dark:text-white truncate">
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white break-words">
                             {teacher.name}
                           </h3>
                           {isDemo && (
@@ -787,15 +787,15 @@ export default function AdminTeachersPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 truncate mt-0.5">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 break-all mt-0.5">
                           <Mail className="w-3 h-3 flex-shrink-0 text-slate-400" />
-                          <span className="truncate">{teacher.email}</span>
+                          <span>{teacher.email}</span>
                         </p>
                       </div>
                     </div>
 
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border flex-shrink-0 ${teacher.isApproved
+                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold border flex-shrink-0 ${teacher.isApproved
                           ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
                           : "bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
                         }`}
@@ -805,22 +805,22 @@ export default function AdminTeachersPage() {
                   </div>
 
                   {/* Info Details Grid (Shows real DB data or 'Unassigned') */}
-                  <div className="grid grid-cols-2 gap-2 text-xs border-y border-slate-100 dark:border-slate-800/80 py-3">
-                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs border-y border-slate-100 dark:border-slate-800/80 py-3">
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <BookOpen className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-                      <span className="truncate">Dept: {teacher.department || "Unassigned"}</span>
+                      <span>Dept: {teacher.department || "Unassigned"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <Briefcase className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                      <span className="truncate">Subject: {teacher.assignedSubject || "Unassigned"}</span>
+                      <span>Subject: {teacher.assignedSubject || "Unassigned"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <GraduationCap className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                      <span className="truncate">Class: {teacher.assignedClass || "Unassigned"}</span>
+                      <span>Class: {teacher.assignedClass || "Unassigned"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 truncate">
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                       <Activity className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                      <span className="truncate">
+                      <span>
                         Status:{" "}
                         <strong
                           className={
