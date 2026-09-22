@@ -17,6 +17,7 @@ import {
   FileText,
   CalendarCheck,
   CalendarDays,
+  HeartPulse,
   Home,
   LogOut,
   Sun,
@@ -96,6 +97,11 @@ const teacherRoutes: RouteItem[] = [
     href: "/dashboard/teacher/students",
     icon: GraduationCap,
   },
+  {
+    label: "Performance Overview",
+    href: "/dashboard/teacher/performance",
+    icon: HeartPulse,
+  },
   { label: "Notices", href: "/dashboard/teacher/notices", icon: Bell },
 ];
 
@@ -112,6 +118,11 @@ const studentRoutes: RouteItem[] = [
     icon: CalendarDays,
   },
   { label: "Results", href: "/dashboard/student/result", icon: Award },
+  {
+    label: "My Performance",
+    href: "/dashboard/student/performance",
+    icon: HeartPulse,
+  },
   {
     label: "Assignments",
     href: "/dashboard/student/assignment",
