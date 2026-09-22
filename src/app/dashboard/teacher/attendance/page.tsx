@@ -52,7 +52,7 @@ const SECTION_FILTER_OPTIONS = ["All Sections", "Section A", "Section B"]; // St
 const GROUP_FILTER_OPTIONS = ["All Groups", "Science", "Business Studies", "Humanities"];
 const STATUS_FILTER_OPTIONS = ["All Status", "PRESENT", "LATE", "ABSENT", "NOT_MARKED", "AT_RISK"];
 const DATE_PRESET_OPTIONS = ["Single Day", "This Week", "This Month", "Custom Date Range"];
-const ATTENDANCE_PAGE_SIZE = 20;
+const ATTENDANCE_PAGE_SIZE = 10;
 
 export type AttendanceRecordRow = {
   id: string;
@@ -1303,7 +1303,7 @@ export default function TeacherAttendancePage() {
         </div>
 
         {filteredTableRecords.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+          <div className="sticky bottom-3 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95">
             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
               Page{" "}
               <span className="font-extrabold text-slate-900 dark:text-white">{page}</span>{" "}
