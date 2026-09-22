@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { BookOpen, Plus, Loader2, Layers, Trash2, Sparkles } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 type Group = { id: string; name: string };
 
