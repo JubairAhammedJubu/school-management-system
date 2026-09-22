@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CalendarDays,
   CheckCircle2,
@@ -13,8 +14,6 @@ import {
   AlertTriangle,
   Award,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 interface AttendanceRecord {
@@ -36,9 +35,14 @@ interface AttendanceSummary {
   absent: number;
   attendanceRate: number;
 }
-
-const ATTENDANCE_PAGE_SIZE = 10;
-
+interface Pagination {
+  page: number;
+  limit: number;
+  totalRecords: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
 const statusConfig = {
   PRESENT: {
     label: "Present",
@@ -61,6 +65,71 @@ const statusConfig = {
 };
 
 export default function StudentAttendancePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const urlStatus = searchParams.get("status");
+  const urlSearch = searchParams.get("search");
+  const urlPage = searchParams.get("page");
+  const [searchQuery, setSearchQuery] = useState(urlSearch || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(urlSearch || "");
+
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "PRESENT" | "LATE" | "ABSENT"
+  >(
+    urlStatus === "PRESENT" || urlStatus === "LATE" || urlStatus === "ABSENT"
+      ? urlStatus
+      : "ALL",
+  );
+
+  const [page, setPage] = useState(
+    Math.max(parseInt(urlPage || "1", 10) || 1, 1),
+  );
+ useEffect(() => {
+  const urlPage = Math.max(
+    parseInt(searchParams.get("page") || "1", 10) || 1,
+    1,
+  );
+
+  setPage(urlPage);
+}, [searchParams]);
+
+  const updateUrl = useCallback(
+    ({
+      status = statusFilter,
+      search = debouncedSearch,
+      page: nextPage = page,
+    }: {
+      status?: "ALL" | "PRESENT" | "LATE" | "ABSENT";
+      search?: string;
+      page?: number;
+    }) => {
+      const params = new URLSearchParams();
+
+      if (status !== "ALL") {
+        params.set("status", status);
+      }
+
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+
+      if (nextPage > 1) {
+        params.set("page", nextPage.toString());
+      }
+
+      const queryString = params.toString();
+
+      router.replace(
+        queryString
+          ? `/dashboard/student/attendance?${queryString}`
+          : "/dashboard/student/attendance",
+        { scroll: false },
+      );
+    },
+    [router, statusFilter, debouncedSearch, page],
+  );
+ 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [summary, setSummary] = useState<AttendanceSummary>({
     total: 0,
@@ -72,20 +141,46 @@ export default function StudentAttendancePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "PRESENT" | "LATE" | "ABSENT"
-  >("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 10,
+    totalRecords: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
 
+useEffect(() => {
+  const timer = setTimeout(() => {
+    if (searchQuery === debouncedSearch) return;
+
+    setDebouncedSearch(searchQuery);
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (searchQuery.trim()) {
+      params.set("search", searchQuery.trim());
+    } else {
+      params.delete("search");
+    }
+
+    // New search হলে page 1
+    params.delete("page");
+
+    router.replace(
+      params.toString()
+        ? `/dashboard/student/attendance?${params.toString()}`
+        : "/dashboard/student/attendance",
+      { scroll: false },
+    );
+
+    setPage(1);
+  }, 300);
+
+  return () => clearTimeout(timer);
+}, [searchQuery]);
   // Debounce search input (300ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+ 
 
   // Fetch data from API with server-side filters
   const fetchAttendance = useCallback(async () => {
@@ -94,21 +189,36 @@ export default function StudentAttendancePage() {
       setError(null);
 
       const params = new URLSearchParams();
-      if (statusFilter !== "ALL") params.append("status", statusFilter);
-      if (debouncedSearch.trim())
-        params.append("search", debouncedSearch.trim());
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/attendance?${params.toString()}`, {
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
+      params.append("page", page.toString());
+      params.append("limit", pagination.limit.toString());
+
+      if (statusFilter !== "ALL") {
+        params.append("status", statusFilter);
+      }
+
+      if (debouncedSearch.trim()) {
+        params.append("search", debouncedSearch.trim());
+      }
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/attendance?${params.toString()}`,
+        {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
 
       const data = await res.json();
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to fetch attendance data.");
       }
 
       setRecords(data.records || []);
+
       setSummary(
         data.summary || {
           total: 0,
@@ -118,27 +228,26 @@ export default function StudentAttendancePage() {
           attendanceRate: 100,
         },
       );
+
+      setPagination(
+        data.pagination || {
+          page: 1,
+          limit: 10,
+          totalRecords: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      );
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, debouncedSearch]);
-
+  }, [page, pagination.limit, statusFilter, debouncedSearch]);
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, debouncedSearch]);
-
-  const totalPages = Math.max(1, Math.ceil(records.length / ATTENDANCE_PAGE_SIZE));
-  const page = Math.min(currentPage, totalPages);
-  const pageStart = (page - 1) * ATTENDANCE_PAGE_SIZE;
-  const paginatedRecords = records.slice(pageStart, pageStart + ATTENDANCE_PAGE_SIZE);
-  const rangeStart = records.length === 0 ? 0 : pageStart + 1;
-  const rangeEnd = pageStart + paginatedRecords.length;
 
   // Safe Date Formatting
   const formatDate = useCallback((dateStr: string) => {
@@ -295,7 +404,7 @@ export default function StudentAttendancePage() {
               Attendance History
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Showing {rangeStart}–{rangeEnd} of {records.length} records
+              Showing {records.length} of {pagination.totalRecords} records
             </p>
           </div>
 
@@ -318,7 +427,15 @@ export default function StudentAttendancePage() {
                 <button
                   key={st}
                   type="button"
-                  onClick={() => setStatusFilter(st)}
+                  onClick={() => {
+                    setStatusFilter(st);
+                  
+
+                    updateUrl({
+                      status: st,
+                      page:page
+                    });
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                     statusFilter === st
                       ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs"
@@ -382,7 +499,7 @@ export default function StudentAttendancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {paginatedRecords.map((record) => {
+                {records.map((record) => {
                   const config =
                     statusConfig[record.status] || statusConfig.PRESENT;
                   const Icon = config.icon;
@@ -438,34 +555,92 @@ export default function StudentAttendancePage() {
             </table>
           </div>
         )}
-
-        {records.length > 0 && (
-          <div className="sticky bottom-3 z-20 mx-3 mb-3 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:mx-6 dark:border-slate-700 dark:bg-slate-900/95">
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+        {!isLoading && !error && pagination.totalRecords > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 px-5 sm:px-6 py-4">
+            {/* Result info */}
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Page{" "}
-              <span className="font-extrabold text-slate-900 dark:text-white">{page}</span>{" "}
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {pagination.page}
+              </span>{" "}
               of{" "}
-              <span className="font-extrabold text-slate-900 dark:text-white">{totalPages}</span>{" "}
-              ({records.length} records · {ATTENDANCE_PAGE_SIZE} per page)
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {pagination.totalPages}
+              </span>
             </p>
+
+            {/* Pagination controls */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                disabled={page <= 1 || isLoading}
-                onClick={() => setCurrentPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))}
-                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                disabled={!pagination.hasPreviousPage || isLoading}
+                onClick={() => {
+                  const nextPage = Math.max(page - 1, 1);
+
+                  setPage(nextPage);
+
+                  updateUrl({
+                    page: nextPage,
+                  });
+                }}
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 transition hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <ChevronLeft className="h-4 w-4" />
                 Previous
               </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from(
+                  { length: pagination.totalPages },
+                  (_, index) => index + 1,
+                )
+                  .filter((pageNumber) => {
+                    return (
+                      pageNumber === 1 ||
+                      pageNumber === pagination.totalPages ||
+                      Math.abs(pageNumber - pagination.page) <= 1
+                    );
+                  })
+                  .map((pageNumber, index, pages) => {
+                    const previousPage = pages[index - 1];
+
+                    return (
+                      <React.Fragment key={pageNumber}>
+                        {previousPage && pageNumber - previousPage > 1 && (
+                          <span className="px-1 text-xs text-slate-400">
+                            ...
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPage(pageNumber);
+                            updateUrl({ page: pageNumber });
+                          }}
+                          className={`h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition ${
+                            pagination.page === pageNumber
+                              ? "bg-indigo-600 text-white shadow-sm"
+                              : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          {pageNumber}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
               <button
                 type="button"
-                disabled={page >= totalPages || isLoading}
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, Math.min(prev, totalPages) + 1))}
-                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200/80 bg-white px-3.5 text-xs font-bold text-slate-700 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                disabled={!pagination.hasNextPage || isLoading}
+                onClick={() => {
+                  const nextPage = page + 1;
+                  setPage(nextPage);
+                  updateUrl({ page: nextPage });
+                }}
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 transition hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Next
-                <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>
