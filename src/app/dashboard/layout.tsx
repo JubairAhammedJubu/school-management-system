@@ -98,8 +98,8 @@ const teacherRoutes: RouteItem[] = [
     icon: GraduationCap,
   },
   {
-    label: "At-Risk Students",
-    href: "/dashboard/teacher/at-risk",
+    label: "Performance Overview",
+    href: "/dashboard/teacher/performance",
     icon: HeartPulse,
   },
   { label: "Notices", href: "/dashboard/teacher/notices", icon: Bell },

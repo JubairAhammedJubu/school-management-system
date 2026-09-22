@@ -77,7 +77,7 @@ const partners: PartnerInstitution[] = [
 const statsPills = [
   { label: "500+ Institutions Trust EduNexus", icon: <Users className="w-4 h-4 text-blue-500" /> },
   { label: "Real-time Attendance Sync", icon: <Zap className="w-4 h-4 text-amber-500" /> },
-  { label: "AI Student At-Risk Prediction", icon: <Sparkles className="w-4 h-4 text-purple-500" /> },
+  { label: "Student Performance Overview", icon: <Sparkles className="w-4 h-4 text-purple-500" /> },
   { label: "99.99% Server Reliability", icon: <ShieldCheck className="w-4 h-4 text-emerald-500" /> },
 ];
 

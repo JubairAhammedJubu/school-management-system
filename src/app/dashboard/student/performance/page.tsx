@@ -12,6 +12,18 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type StudentPace = "ON_TRACK" | "BUILDING" | "GROWING" | "GETTING_STARTED";
 
@@ -139,8 +151,17 @@ export default function StudentPerformancePage() {
     }
   };
 
-  const status = snapshot ? paceStyles[snapshot.pace] : null;
-  const canGenerate = snapshot && snapshot.pace !== "GETTING_STARTED";
+  const status = snapshot
+    ? paceStyles[snapshot.pace] ?? paceStyles.GETTING_STARTED
+    : null;
+
+  const chartRows = snapshot
+    ? [
+        { name: "Attendance", value: snapshot.attendanceRate, fill: "#6366f1" },
+        { name: "Avg. score", value: snapshot.averageScorePercent, fill: "#10b981" },
+        { name: "Assignments", value: snapshot.assignmentCompletionRate, fill: "#f59e0b" },
+      ].filter((row): row is { name: string; value: number; fill: string } => row.value !== null)
+    : [];
 
   return (
     <div className="space-y-6">
@@ -201,21 +222,19 @@ export default function StudentPerformancePage() {
                 </span>
               </div>
 
-              {canGenerate && (
-                <button
-                  type="button"
-                  onClick={handleGenerateInsight}
-                  disabled={isGenerating}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer shrink-0"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Wand2 className="h-3.5 w-3.5" />
-                  )}
-                  {insight ? "Regenerate My Insight" : "Generate My Insight"}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleGenerateInsight}
+                disabled={isGenerating}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-colors cursor-pointer shrink-0"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Wand2 className="h-3.5 w-3.5" />
+                )}
+                {insight ? "Regenerate My Insight" : "Generate My Insight"}
+              </button>
             </div>
 
             <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
@@ -252,13 +271,6 @@ export default function StudentPerformancePage() {
             {insightError && (
               <p className="mt-2 text-[11px] text-rose-500 dark:text-rose-400">{insightError}</p>
             )}
-
-            {!canGenerate && (
-              <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
-                Not enough attendance, result, or assignment history yet to generate a
-                personalized note.
-              </p>
-            )}
           </div>
 
           {/* Metrics */}
@@ -266,7 +278,9 @@ export default function StudentPerformancePage() {
             <StatCard
               icon={CalendarCheck}
               label="Attendance Rate"
-              value={snapshot.attendanceRate !== null ? `${snapshot.attendanceRate}%` : "—"}
+              value={
+                snapshot.attendanceRate !== null ? `${snapshot.attendanceRate}%` : "Not recorded"
+              }
             />
             <StatCard
               icon={Award}
@@ -274,7 +288,7 @@ export default function StudentPerformancePage() {
               value={
                 snapshot.averageScorePercent !== null
                   ? `${snapshot.averageScorePercent}%`
-                  : "—"
+                  : "Not recorded"
               }
             />
             <StatCard
@@ -283,9 +297,97 @@ export default function StudentPerformancePage() {
               value={
                 snapshot.assignmentCompletionRate !== null
                   ? `${snapshot.assignmentCompletionRate}%`
-                  : "—"
+                  : "Not recorded"
               }
             />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5 sm:p-6">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">Performance analysis</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Attendance, published exam scores, and assignment completion side by side.
+              </p>
+              {chartRows.length === 0 ? (
+                <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
+                  Your chart will fill in once attendance or a published result is on record.
+                </p>
+              ) : (
+                <div className="mt-4 h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartRows} barSize={36}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} unit="%" />
+                      <Tooltip formatter={(value) => [`${value}%`, "Rate"]} />
+                      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                        {chartRows.map((row) => (
+                          <Cell key={row.name} fill={row.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5 sm:p-6">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">Overall mix</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Same colors as the bars: attendance, average score, and assignments.
+              </p>
+              {chartRows.length === 0 ? (
+                <p className="mt-8 text-xs text-slate-500 dark:text-slate-400">
+                  Not enough recorded numbers for a mix yet.
+                </p>
+              ) : (
+                <div className="mt-2">
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartRows.map((row) => ({
+                            name: row.name,
+                            value: Math.max(row.value, 0.5),
+                            display: row.value,
+                            fill: row.fill,
+                          }))}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius={48}
+                          outerRadius={72}
+                          paddingAngle={3}
+                        >
+                          {chartRows.map((row) => (
+                            <Cell key={row.name} fill={row.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(_value, _name, item) => {
+                            const display = (item?.payload as { display?: number } | undefined)?.display;
+                            return [`${display ?? 0}%`, "Rate"];
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    {chartRows.map((row) => (
+                      <div
+                        key={row.name}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-800 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-100"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                          style={{ backgroundColor: row.fill }}
+                        />
+                        {row.name}: {row.value}%
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </>
       ) : null}

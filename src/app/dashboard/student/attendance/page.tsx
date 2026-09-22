@@ -37,7 +37,7 @@ interface AttendanceSummary {
   attendanceRate: number;
 }
 
-const ATTENDANCE_PAGE_SIZE = 20;
+const ATTENDANCE_PAGE_SIZE = 10;
 
 const statusConfig = {
   PRESENT: {
@@ -440,7 +440,7 @@ export default function StudentAttendancePage() {
         )}
 
         {records.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100 px-5 sm:px-6 py-4 dark:border-slate-800">
+          <div className="sticky bottom-3 z-20 mx-3 mb-3 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:mx-6 dark:border-slate-700 dark:bg-slate-900/95">
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               Page{" "}
               <span className="font-extrabold text-slate-900 dark:text-white">{page}</span>{" "}
