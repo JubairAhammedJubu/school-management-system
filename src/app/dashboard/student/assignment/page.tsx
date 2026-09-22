@@ -22,6 +22,9 @@ interface AssignmentRecord {
   dueDate: string;
   submitStatus: "PENDING" | "SUBMITTED" | "GRADED";
   grade?: string;
+  totalMarks?: number;
+  marks?: number | null;
+  feedback?: string | null;
   fileUrl?: string;
   attemptsUsed: number;
 }
@@ -132,6 +135,9 @@ export default function StudentAssignmentsPage() {
   ).length;
   const submittedAssignments = assignments.filter(
     (a) => a.submitStatus === "SUBMITTED",
+  );
+  const turnedInAssignments = assignments.filter(
+    (a) => a.submitStatus === "SUBMITTED" || a.submitStatus === "GRADED",
   );
   const submittedCount = submittedAssignments.length;
   const gradedCount = assignments.filter(
@@ -465,16 +471,16 @@ export default function StudentAssignmentsPage() {
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Submitted assignments
+                Your submissions
               </h2>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                After you submit a PDF, it appears here.
+                Scores and comments appear here after your teacher saves them.
               </p>
             </div>
           </div>
         </div>
 
-        {submittedAssignments.length === 0 ? (
+        {turnedInAssignments.length === 0 ? (
           <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
             You haven&apos;t submitted any assignments yet.
           </p>
@@ -499,12 +505,15 @@ export default function StudentAssignmentsPage() {
                     Attempts
                   </th>
                   <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Score
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     PDF
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {submittedAssignments.map((item, idx) => {
+                {turnedInAssignments.map((item, idx) => {
                   const style = statusStyles[item.submitStatus];
                   const StatusIcon = style?.icon || CheckCircle2;
                   const attemptsUsed = item.attemptsUsed ?? 0;
@@ -515,7 +524,12 @@ export default function StudentAssignmentsPage() {
                       className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
                     >
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {item.title}
+                        <div>{item.title}</div>
+                        {item.feedback ? (
+                          <p className="mt-1 max-w-sm text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                            {item.feedback}
+                          </p>
+                        ) : null}
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                         {item.subject}
@@ -535,6 +549,11 @@ export default function StudentAssignmentsPage() {
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
                         {attemptsUsed} / 2
+                      </td>
+                      <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        {item.marks != null
+                          ? `${item.marks}${item.totalMarks ? `/${item.totalMarks}` : ""}`
+                          : "—"}
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
                         {item.fileUrl && isSafePdfUrl(item.fileUrl) ? (

@@ -26,7 +26,7 @@ const roleDetails: RoleDetail[] = [
       "Fee structure & payments",
       "Role & permission management",
       "Institution branding setup",
-      "AI at-risk predictions",
+      "At-risk insights for staff",
       "Global campus notices",
     ],
   },
