@@ -284,12 +284,12 @@ export default function DashboardLayout({
             adminRoutes[7],
             adminRoutes[8],
             adminRoutes[9],
-            adminRoutes[10],
+          
           ],
         },
         {
           title: "Administration & Security",
-          items: [adminRoutes[11], adminRoutes[12]],
+          items:   [adminRoutes[10],adminRoutes[11], adminRoutes[12]],
         },
       ];
     } else if (role === "teacher") {
@@ -315,6 +315,7 @@ export default function DashboardLayout({
             teacherRoutes[7],
             teacherRoutes[8],
             teacherRoutes[9],
+            teacherRoutes[10]
           ],
         },
       ];
@@ -337,7 +338,7 @@ export default function DashboardLayout({
         },
         {
           title: "Finance & Alerts",
-          items: [studentRoutes[7], studentRoutes[8]],
+          items: [studentRoutes[7], studentRoutes[8],studentRoutes[9]],
         },
       ];
     }
