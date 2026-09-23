@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import About from "@/components/About/About";
 
 export const metadata: Metadata = {
-  title: "About Us | EduNexus - Next-Gen School Management Platform",
+  title: "About  | EduNexus - Next-Gen School Management Platform",
   description:
     "Learn about EduNexus, our vision to transform educational management, and how our role-based digital system empowers admins, teachers, and students worldwide.",
   keywords: [
