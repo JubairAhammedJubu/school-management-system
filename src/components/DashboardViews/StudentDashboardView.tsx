@@ -73,14 +73,17 @@ export default function StudentOverviewPage() {
         setIsLoading(true);
 
         const [assignRes, resultRes, subjectRes, feeRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`, {
-            credentials: "include",
-          }).catch(() => null),
           fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/results?studentEmail=${encodeURIComponent(
-              studentEmail
-            )}&status=PUBLISHED`,
-            { credentials: "include" }  
+            `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
+            {
+              credentials: "include",
+            },
+          ).catch(() => null),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/results?status=PUBLISHED`,
+            {
+              credentials: "include",
+            },
           ).catch(() => null),
           fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`, {
             credentials: "include",
@@ -121,8 +124,12 @@ export default function StudentOverviewPage() {
     fetchAll();
   }, [studentEmail]);
 
-  const pendingCount = assignments.filter((a) => a.submitStatus === "PENDING").length;
-  const submittedCount = assignments.filter((a) => a.submitStatus === "SUBMITTED").length;
+  const pendingCount = assignments.filter(
+    (a) => a.submitStatus === "PENDING",
+  ).length;
+  const submittedCount = assignments.filter(
+    (a) => a.submitStatus === "SUBMITTED",
+  ).length;
   const resultsCount = results.length;
   const subjectsCount = subjects.length;
 
@@ -149,19 +156,22 @@ export default function StudentOverviewPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-rose-600 dark:text-rose-400">
-                  Account Warning: Overdue Tuition Fees ({feeOverdue.unpaidMonthsCount} Months)
+                  Account Warning: Overdue Tuition Fees (
+                  {feeOverdue.unpaidMonthsCount} Months)
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold uppercase tracking-wider">
                   Privileges Suspended
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                You have exceeded the maximum allowed limit of 3 months overdue. Unpaid months:{" "}
+                You have exceeded the maximum allowed limit of 3 months overdue.
+                Unpaid months:{" "}
                 <strong className="text-rose-600 dark:text-rose-400">
                   {feeOverdue.unpaidMonths.map((m) => m.monthName).join(", ")}
                 </strong>{" "}
-                (Total: ৳{feeOverdue.cumulativeOverdue.toLocaleString()}). Examination admit slips and result
-                sheets are locked until dues are cleared.
+                (Total: ৳{feeOverdue.cumulativeOverdue.toLocaleString()}).
+                Examination admit slips and result sheets are locked until dues
+                are cleared.
               </p>
             </div>
           </div>
@@ -186,11 +196,15 @@ export default function StudentOverviewPage() {
             {studentName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Welcome back,</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Welcome back,
+            </p>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
               {studentName}
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">Here is your academic overview</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Here is your academic overview
+            </p>
           </div>
         </div>
       </motion.div>
@@ -236,7 +250,9 @@ export default function StudentOverviewPage() {
             className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 relative overflow-hidden"
           >
             <div className="flex items-center justify-between">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg}`}>
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.bg}`}
+              >
                 <item.icon className={`h-5 w-5 ${item.color}`} />
               </div>
               {item.badge && (
@@ -299,7 +315,8 @@ export default function StudentOverviewPage() {
                         {item.title}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {item.subject} • Due {new Date(item.dueDate).toLocaleDateString()}
+                        {item.subject} • Due{" "}
+                        {new Date(item.dueDate).toLocaleDateString()}
                       </p>
                     </div>
                     <span className="shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400">
@@ -346,7 +363,8 @@ export default function StudentOverviewPage() {
                   Results Access Temporarily Locked
                 </p>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  You have 3 or more months of unpaid tuition fees. Please clear pending fees to view grade cards.
+                  You have 3 or more months of unpaid tuition fees. Please clear
+                  pending fees to view grade cards.
                 </p>
                 <Link
                   href="/dashboard/student/fee"
@@ -362,7 +380,9 @@ export default function StudentOverviewPage() {
             ) : (
               <div className="space-y-3">
                 {recentResults.map((item) => {
-                  const percentage = Math.round((item.score / item.total) * 100);
+                  const percentage = Math.round(
+                    (item.score / item.total) * 100,
+                  );
                   return (
                     <div
                       key={item.id}
@@ -438,18 +458,44 @@ export default function StudentOverviewPage() {
             <SlidersHorizontal className="h-4 w-4 text-indigo-600" />
             Quick Navigation Hub
           </h2>
-          <span className="text-xs text-slate-500 font-medium">Direct Portal Access</span>
+          <span className="text-xs text-slate-500 font-medium">
+            Direct Portal Access
+          </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
-            { label: "Assignments", href: "/dashboard/student/assignment", icon: FileText },
-            { label: "Results", href: "/dashboard/student/result", icon: Trophy },
-            { label: "Attendance", href: "/dashboard/student/attendance", icon: CalendarCheck },
-            { label: "Routine", href: "/dashboard/student/routine", icon: CalendarDays },
+            {
+              label: "Notices",
+              href: "/dashboard/student/notices",
+              icon: Bell,
+            },
+            {
+              label: "Assignments",
+              href: "/dashboard/student/assignment",
+              icon: FileText,
+            },
+            {
+              label: "Results",
+              href: "/dashboard/student/result",
+              icon: Trophy,
+            },
+            {
+              label: "Attendance",
+              href: "/dashboard/student/attendance",
+              icon: CalendarCheck,
+            },
+            {
+              label: "Routine",
+              href: "/dashboard/student/routine",
+              icon: CalendarDays,
+            },
             { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
-            { label: "Subjects", href: "/dashboard/student/subjects", icon: BookOpen },
+            {
+              label: "Subjects",
+              href: "/dashboard/student/subjects",
+              icon: BookOpen,
+            },
           ].map((item) => {
             const Icon = item.icon;
             return (
