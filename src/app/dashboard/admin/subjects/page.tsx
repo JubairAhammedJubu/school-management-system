@@ -139,7 +139,7 @@ export default function AdminSubjectsPage() {
         animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/25">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
             <BookOpen className="h-5 w-5" />
           </span>
           Subjects
@@ -164,7 +164,7 @@ export default function AdminSubjectsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Mathematics"
-              className="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500/30"
               required
             />
           </div>
@@ -176,7 +176,7 @@ export default function AdminSubjectsPage() {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="MATH"
-              className="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="w-full mt-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500/30"
               required
             />
           </div>
@@ -192,7 +192,7 @@ export default function AdminSubjectsPage() {
               onClick={() => setType("core")}
               className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold border transition-colors ${
                 type === "core"
-                  ? "bg-blue-600 text-white border-blue-600"
+                  ? "bg-indigo-600 text-white border-indigo-600"
                   : "bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
               }`}
             >
@@ -203,7 +203,7 @@ export default function AdminSubjectsPage() {
               onClick={() => setType("group")}
               className={`flex-1 rounded-xl px-3 py-2 text-xs font-bold border transition-colors ${
                 type === "group"
-                  ? "bg-indigo-600 text-white border-indigo-600"
+                  ? "bg-violet-600 text-white border-violet-600"
                   : "bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
               }`}
             >
@@ -242,7 +242,7 @@ export default function AdminSubjectsPage() {
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           {saving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -252,11 +252,12 @@ export default function AdminSubjectsPage() {
           Add Subject
         </button>
       </form>
+
       <button
         type="button"
         onClick={seedCurriculum}
         disabled={seeding}
-        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-700 disabled:opacity-50"
+        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-violet-600 px-4 text-xs font-bold text-white shadow-lg shadow-violet-500/25 hover:bg-violet-700 disabled:opacity-50"
       >
         {seeding ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -265,10 +266,12 @@ export default function AdminSubjectsPage() {
         )}
         Seed BD Curriculum
       </button>
+
       {/* List */}
       {loading ? (
-        <div className="p-8 flex justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="h-48 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+          <div className="h-48 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
