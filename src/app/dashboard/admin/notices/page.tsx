@@ -1,17 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 import NoticeBoard from "@/components/NoticeBoard/NoticeBoard";
 import { Bell, Pin, Megaphone, ShieldCheck, Sparkles, Layers } from "lucide-react";
+import { getNoticesAction, NoticeItem } from "@/lib/actions/teacher.notice";
 
 export default function AdminNoticesPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
+
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const res = await getNoticesAction();
+      if (res.success && Array.isArray(res.notices)) {
+        setNotices(res.notices as NoticeItem[]);
+      }
+    } catch {
+      toast.error("Could not load notice statistics");
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isPending) {
@@ -22,6 +41,12 @@ export default function AdminNoticesPage() {
       }
     }
   }, [session, rawRole, isPending, router]);
+
+  useEffect(() => {
+    if (session?.user && rawRole === "admin") {
+      loadStats();
+    }
+  }, [session, rawRole, loadStats]);
 
   if (isPending) {
     return (
@@ -36,6 +61,17 @@ export default function AdminNoticesPage() {
     return null;
   }
 
+  const totalPublished = notices.length;
+  const pinnedCount = notices.filter((n) => n.isPinned).length;
+
+  const categoriesInUse = new Set(notices.map((n) => n.category));
+  const audienceLabel =
+    categoriesInUse.size === 0
+      ? "None yet"
+      : categoriesInUse.size >= 3
+      ? "All Users"
+      : Array.from(categoriesInUse).join(", ");
+
   return (
     <div className="space-y-8 pb-10">
       {/* Top Hero Banner with Gradient Glow */}
@@ -45,7 +81,6 @@ export default function AdminNoticesPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-emerald-50/30 to-white/90 dark:from-slate-900/90 dark:via-emerald-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
-        {/* Background Ambient Glows */}
         <div className="absolute -right-16 -top-16 w-72 h-72 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-teal-500/10 dark:bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -72,10 +107,10 @@ export default function AdminNoticesPage() {
         </div>
       </motion.div>
 
-      {/* Stats Summary Cards Row */}
+      {/* Stats Summary Cards Row — now real, from getNoticesAction */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Card 1 */}
-        <motion.div 
+        <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
@@ -83,9 +118,15 @@ export default function AdminNoticesPage() {
           <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Total Published</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white">24</h3>
+            {statsLoading ? (
+              <div className="h-9 w-16 rounded-lg skeleton-shimmer" />
+            ) : (
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">
+                {String(totalPublished).padStart(2, "0")}
+              </h3>
+            )}
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              <Layers className="w-3.5 h-3.5" /> Active this term
+              <Layers className="w-3.5 h-3.5" /> All notices on record
             </span>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
@@ -94,7 +135,7 @@ export default function AdminNoticesPage() {
         </motion.div>
 
         {/* Card 2 */}
-        <motion.div 
+        <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
@@ -102,7 +143,13 @@ export default function AdminNoticesPage() {
           <div className="absolute right-0 top-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Pinned Notices</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white">04</h3>
+            {statsLoading ? (
+              <div className="h-9 w-16 rounded-lg skeleton-shimmer" />
+            ) : (
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">
+                {String(pinnedCount).padStart(2, "0")}
+              </h3>
+            )}
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
               <Pin className="w-3.5 h-3.5" /> Highlighted on top
             </span>
@@ -113,7 +160,7 @@ export default function AdminNoticesPage() {
         </motion.div>
 
         {/* Card 3 */}
-        <motion.div 
+        <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
@@ -121,9 +168,15 @@ export default function AdminNoticesPage() {
           <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Target Audiences</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white">All Users</h3>
+            {statsLoading ? (
+              <div className="h-9 w-24 rounded-lg skeleton-shimmer" />
+            ) : (
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white truncate max-w-40">
+                {audienceLabel}
+              </h3>
+            )}
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
-              <Bell className="w-3.5 h-3.5" /> Staff, Students &amp; Parents
+              <Bell className="w-3.5 h-3.5" /> Based on active categories
             </span>
           </div>
           <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
