@@ -1098,7 +1098,7 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
                 whileTap={isLogin && approvalStatus === "pending" ? {} : { scale: 0.98 }}
                 className={`w-full font-bold text-xs sm:text-sm py-2.5 px-5 rounded-xl transition-all mt-2 flex items-center justify-center gap-2 cursor-pointer ${isLogin && approvalStatus === "pending"
                   ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none"
-                  : "bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-500/25 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                  : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-500/25 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
                   }`}
               >
                 {isSubmitting ? (
