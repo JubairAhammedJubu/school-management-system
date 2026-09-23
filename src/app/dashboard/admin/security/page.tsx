@@ -132,14 +132,14 @@ export default function AdminSecurityPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-900/90 dark:via-indigo-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
-        <div className="absolute -right-16 -top-16 w-72 h-72 bg-blue-500/15 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100/70 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 text-xs font-bold tracking-wide shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/70 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold tracking-wide shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             ACCOUNT SECURITY
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -164,7 +164,7 @@ export default function AdminSecurityPage() {
       >
         <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 group">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
               <Mail size={16} />
             </div>
             <input
@@ -173,7 +173,7 @@ export default function AdminSecurityPage() {
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
               placeholder="user@edunexus.std.com"
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 shadow-sm"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 shadow-sm"
             />
           </div>
           <motion.button
@@ -181,7 +181,7 @@ export default function AdminSecurityPage() {
             disabled={isLookingUp || !searchEmail.trim()}
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm py-2.5 px-5 rounded-xl shadow-lg shadow-blue-500/20 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm py-2.5 px-5 rounded-xl shadow-lg shadow-indigo-500/20 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLookingUp ? (
               <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
@@ -214,7 +214,7 @@ export default function AdminSecurityPage() {
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                     foundUser.twoFactorEnabled
-                      ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
+                      ? "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
                       : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                   }`}
                 >
@@ -234,7 +234,7 @@ export default function AdminSecurityPage() {
                   <p
                     className={`text-[11px] font-semibold mt-0.5 ${
                       foundUser.twoFactorEnabled
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-indigo-600 dark:text-indigo-400"
                         : "text-slate-500 dark:text-slate-400"
                     }`}
                   >

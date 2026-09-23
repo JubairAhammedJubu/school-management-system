@@ -136,15 +136,15 @@ export default function AdminApprovalsPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-white/90 via-blue-50/30 to-white/90 dark:from-slate-900/90 dark:via-blue-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-900/90 dark:via-indigo-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
-        <div className="absolute -right-16 -top-16 w-72 h-72 bg-blue-500/15 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100/70 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 text-xs font-bold tracking-wide shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/70 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold tracking-wide shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               CENTRAL APPROVALS &amp; REQUESTS
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -164,7 +164,7 @@ export default function AdminApprovalsPage() {
             disabled={isLoadingUsers }
             className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-60 cursor-pointer"
           >
-            <RefreshCw size={13} className={isLoadingUsers  ? "animate-spin text-blue-500" : ""} />
+            <RefreshCw size={13} className={isLoadingUsers  ? "animate-spin text-indigo-500" : ""} />
             Sync Approvals
           </button>
         </div>
@@ -176,7 +176,7 @@ export default function AdminApprovalsPage() {
           onClick={() => setActiveTab("users")}
           className={`px-5 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${
             activeTab === "users"
-              ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
               : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
           }`}
         >
@@ -202,7 +202,7 @@ export default function AdminApprovalsPage() {
             </div>
           ) : pendingUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-10 gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                 <Inbox size={20} />
               </div>
               <p className="text-sm font-bold text-slate-900 dark:text-white">All caught up</p>
@@ -223,7 +223,7 @@ export default function AdminApprovalsPage() {
                       className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-5"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-tr from-blue-600 to-indigo-500 text-white font-extrabold shadow-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-extrabold shadow-md">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
@@ -251,7 +251,7 @@ export default function AdminApprovalsPage() {
                         type="button"
                         onClick={() => handleApproveUser(user)}
                         disabled={approvingId === user.id}
-                        className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md shadow-emerald-500/20 transition-colors disabled:opacity-70 cursor-pointer shrink-0"
+                        className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md shadow-indigo-500/20 transition-colors disabled:opacity-70 cursor-pointer shrink-0"
                       >
                         {approvingId === user.id ? (
                           <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />

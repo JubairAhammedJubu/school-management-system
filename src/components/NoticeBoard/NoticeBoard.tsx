@@ -20,6 +20,7 @@ import {
   Trash2,
   AlertTriangle,
   Wand2,
+  RotateCw,
 } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,6 +41,7 @@ interface NoticeBoardProps {
   subtitle?: string;
   showCreateButton?: boolean;
   isHomePageNotices?: boolean;
+  onNoticesChange?: (notices: Notice[]) => void;
 }
 
 export default function NoticeBoard({
@@ -47,6 +49,7 @@ export default function NoticeBoard({
   subtitle = "Stay up-to-date with official notices.",
   showCreateButton = false,
   isHomePageNotices = false,
+  onNoticesChange,
 }: NoticeBoardProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -98,10 +101,13 @@ export default function NoticeBoard({
     try {
       const res = await getNoticesAction();
       if (res.success && Array.isArray(res.notices)) {
-        setNotices(res.notices as Notice[]);
+        const list = res.notices as Notice[];
+        setNotices(list);
+        onNoticesChange?.(list);
       } else {
         console.warn("[NoticeBoard] Failed to load notices:", res.error);
         setNotices([]);
+        onNoticesChange?.([]);
       }
     } catch (error) {
       console.error("Failed to load notices:", error);
@@ -334,14 +340,26 @@ export default function NoticeBoard({
             </div>
           </div>
 
-          {showCreateButton && (
+          <div className="flex items-center gap-2.5 shrink-0 self-stretch sm:self-center">
             <button
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-md shadow-indigo-500/25 transition-all cursor-pointer whitespace-nowrap active:scale-95 shrink-0 self-stretch sm:self-center"
+              onClick={() => fetchNotices()}
+              disabled={isLoading}
+              title="Refresh Notices"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
             >
-              <Plus className="h-4 w-4 shrink-0" /> Create Notice
+              <RotateCw className={`h-4 w-4 text-indigo-600 dark:text-indigo-400 ${isLoading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
             </button>
-          )}
+
+            {showCreateButton && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-md shadow-indigo-500/25 transition-all cursor-pointer whitespace-nowrap active:scale-95 shrink-0"
+              >
+                <Plus className="h-4 w-4 shrink-0" /> Create Notice
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search & Category Filter Bar */}
@@ -380,17 +398,23 @@ export default function NoticeBoard({
       <div className="space-y-3 sm:space-y-4">
         {isLoading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-4 space-y-3 shadow-md dark:shadow-xl"
+                className="rounded-xl border border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 sm:p-5 space-y-3 shadow-sm animate-pulse"
               >
-                <div className="flex items-center justify-between">
-                  <div className="h-4 skeleton-shimmer rounded-md w-1/3" />
-                  <div className="h-4 skeleton-shimmer-subtle rounded-full w-16" />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  </div>
+                  <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
                 </div>
-                <div className="h-4 skeleton-shimmer rounded-md w-3/4" />
-                <div className="h-3 skeleton-shimmer-subtle rounded-md w-1/2" />
+                <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+                <div className="space-y-1.5">
+                  <div className="h-3.5 bg-slate-100 dark:bg-slate-900 rounded-md w-full" />
+                  <div className="h-3.5 bg-slate-100 dark:bg-slate-900 rounded-md w-4/5" />
+                </div>
               </div>
             ))}
           </div>
