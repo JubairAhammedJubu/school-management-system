@@ -1237,7 +1237,7 @@ export default function TeacherDashboardView() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
-          <RouteShortcut href="/dashboard/teacher/my-classes" label="My Classes" icon={BookOpen} />
+          <RouteShortcut href="/dashboard/teacher/my-class" label="My Classes" icon={BookOpen} />
           <RouteShortcut href="/dashboard/teacher/students" label="Students" icon={Users} />
           <RouteShortcut href="/dashboard/teacher/assignments" label="Assignments" icon={FileText} />
           <RouteShortcut href="/dashboard/teacher/examinations" label="Exams" icon={Clock} />
