@@ -14,6 +14,11 @@ import {
   Layers,
   AlertTriangle,
   Lock,
+  Bell,
+  CalendarCheck,
+  CalendarDays,
+  CreditCard,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
@@ -420,6 +425,50 @@ export default function StudentOverviewPage() {
           </div>
         </motion.section>
       )}
+
+      {/* Direct Route Shortcuts */}
+      <motion.section
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-indigo-600" />
+            Quick Navigation Hub
+          </h2>
+          <span className="text-xs text-slate-500 font-medium">Direct Portal Access</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {[
+            { label: "Notices", href: "/dashboard/student/notices", icon: Bell },
+            { label: "Assignments", href: "/dashboard/student/assignment", icon: FileText },
+            { label: "Results", href: "/dashboard/student/result", icon: Trophy },
+            { label: "Attendance", href: "/dashboard/student/attendance", icon: CalendarCheck },
+            { label: "Routine", href: "/dashboard/student/routine", icon: CalendarDays },
+            { label: "Fees", href: "/dashboard/student/fee", icon: CreditCard },
+            { label: "Subjects", href: "/dashboard/student/subjects", icon: BookOpen },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all text-center group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </motion.section>
     </div>
   );
 }

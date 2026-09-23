@@ -51,6 +51,7 @@ const adminRoutes: RouteItem[] = [
   { label: "Classes", href: "/dashboard/admin/classes", icon: BookOpen },
   { label: "Class periods", href: "/dashboard/admin/period", icon: TimerIcon },
   { label: "Routines", href: "/dashboard/admin/routine", icon: CalendarDays },
+  { label: "Events", href: "/dashboard/admin/events", icon: CalendarDays },
   {
     label: "Subject Requests",
     href: "/dashboard/admin/subject-requests",
@@ -284,12 +285,17 @@ export default function DashboardLayout({
             adminRoutes[7],
             adminRoutes[8],
             adminRoutes[9],
-          
+
           ],
         },
         {
           title: "Administration & Security",
-          items:   [adminRoutes[10],adminRoutes[11], adminRoutes[12]],
+          items: [
+            adminRoutes[10],
+            adminRoutes[11],
+            adminRoutes[12],
+            adminRoutes[13],
+          ],
         },
       ];
     } else if (role === "teacher") {
@@ -338,7 +344,7 @@ export default function DashboardLayout({
         },
         {
           title: "Finance & Alerts",
-          items: [studentRoutes[7], studentRoutes[8],studentRoutes[9]],
+          items: [studentRoutes[7], studentRoutes[8], studentRoutes[9]],
         },
       ];
     }
@@ -453,7 +459,7 @@ export default function DashboardLayout({
               const isActive = isOverview
                 ? pathname === route.href
                 : pathname === route.href ||
-                  pathname.startsWith(`${route.href}/`);
+                pathname.startsWith(`${route.href}/`);
 
               return (
                 <motion.div
@@ -464,11 +470,10 @@ export default function DashboardLayout({
                 >
                   <Link
                     href={route.href}
-                    className={`relative group flex items-center justify-between pl-3 pr-2.5 py-1.5 rounded-lg text-xs transition-all duration-200 cursor-pointer overflow-hidden ${
-                      isActive
-                        ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white font-bold shadow-md shadow-indigo-600/30 border border-indigo-500/30"
-                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 font-medium"
-                    }`}
+                    className={`relative group flex items-center justify-between pl-3 pr-2.5 py-1.5 rounded-lg text-xs transition-all duration-200 cursor-pointer overflow-hidden ${isActive
+                      ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white font-bold shadow-md shadow-indigo-600/30 border border-indigo-500/30"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 font-medium"
+                      }`}
                   >
                     {/* Active Left Accent Indicator Bar */}
                     {isActive && (
@@ -485,11 +490,10 @@ export default function DashboardLayout({
 
                     <div className="flex items-center gap-2.5">
                       <div
-                        className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-indigo-50 dark:group-hover:bg-slate-700"
-                        }`}
+                        className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors ${isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:bg-indigo-50 dark:group-hover:bg-slate-700"
+                          }`}
                       >
                         <Icon className="h-3.5 w-3.5" />
                       </div>
