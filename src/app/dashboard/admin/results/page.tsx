@@ -202,9 +202,9 @@ export default function AdminResultsPage() {
         transition={{ duration: 0.5 }}
         className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
         <div>
-          <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">
+          <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
             LIVE DATABASE ACADEMICS &amp; RESULTS
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
@@ -220,13 +220,13 @@ export default function AdminResultsPage() {
             onClick={handleExportCSVReport}
             className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-sm border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shadow-sm"
           >
-            <Download className="w-4 h-4 text-blue-500" />
+            <Download className="w-4 h-4 text-indigo-500" />
             Export CSV
           </button>
 
           <button
             onClick={() => setShowPublishModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Publish New Result
@@ -238,7 +238,7 @@ export default function AdminResultsPage() {
             className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all"
             title="Refresh Results"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-blue-500" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-indigo-500" : ""}`} />
           </button>
         </div>
       </motion.div>
@@ -250,7 +250,7 @@ export default function AdminResultsPage() {
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Recorded Results</p>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{totalExamsCount}</h3>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <FileText className="w-6 h-6" />
           </div>
         </div>
@@ -285,7 +285,7 @@ export default function AdminResultsPage() {
             placeholder="Search student, exam title or class..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-all shadow-sm backdrop-blur-xl"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all shadow-sm backdrop-blur-xl"
           />
         </div>
 
@@ -297,7 +297,7 @@ export default function AdminResultsPage() {
               onClick={() => setSelectedStatus(status)}
               className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${
                 selectedStatus === status
-                  ? "bg-blue-600 text-white border-blue-600 shadow-blue-500/25"
+                  ? "bg-indigo-600 text-white border-indigo-600 shadow-indigo-500/25"
                   : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
@@ -312,7 +312,7 @@ export default function AdminResultsPage() {
         <div className="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Live Database Exam Results</h3>
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Showing: <strong className="text-blue-600 dark:text-blue-400">{filteredResults.length}</strong> entries
+            Showing: <strong className="text-indigo-600 dark:text-indigo-400">{filteredResults.length}</strong> entries
           </span>
         </div>
 
