@@ -14,6 +14,7 @@ import {
   BookOpen,
   Clock3,
   AlertCircle,
+  UserX,
 } from "lucide-react";
 
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
@@ -106,6 +107,13 @@ export default function AdminRoutinePage() {
     [periods],
   );
 
+  // Only subjects with a real teacher assigned can actually be scheduled.
+  const assignableSubjects = useMemo(
+    () => availableSubjects.filter((s) => s.teacherName && s.teacherName !== "Unassigned"),
+    [availableSubjects],
+  );
+  const unassignedSubjectCount = availableSubjects.length - assignableSubjects.length;
+
   const filledCount = useMemo(() => {
     let n = 0;
     for (const day of DAYS) {
@@ -194,6 +202,25 @@ export default function AdminRoutinePage() {
       setActiveGroup(cls.groups?.[0] || FALLBACK_GROUPS[0]);
     }
     setGrid({});
+  };
+
+  // Called by the empty-cell "+ Add" button — never silently does nothing now.
+  const handleAddClick = (day: string, periodId: string) => {
+    if (availableSubjects.length === 0) {
+      toast.error(
+        "No subjects are linked to this section yet — add subjects from Classes → section drawer first.",
+        { toastId: "routine-no-subjects" },
+      );
+      return;
+    }
+    if (assignableSubjects.length === 0) {
+      toast.error(
+        "Every subject here still needs a teacher assigned before it can go on the routine — assign one from Classes → section drawer.",
+        { toastId: "routine-no-teachers" },
+      );
+      return;
+    }
+    setPicking({ day, periodId });
   };
 
   const setSlot = async (classSubjectId: string) => {
@@ -482,7 +509,7 @@ export default function AdminRoutinePage() {
               <GridSkeleton />
             ) : (
               <>
-                {availableSubjects.length === 0 && (
+                {availableSubjects.length === 0 ? (
                   <div className="mb-3 flex items-start gap-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
                     <span>
@@ -491,7 +518,18 @@ export default function AdminRoutinePage() {
                       Classes → section drawer first.
                     </span>
                   </div>
-                )}
+                ) : unassignedSubjectCount > 0 ? (
+                  <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20 px-4 py-3 text-xs text-amber-800 dark:text-amber-200">
+                    <UserX className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                    <span>
+                      {unassignedSubjectCount} subject
+                      {unassignedSubjectCount > 1 ? "s" : ""} in this section
+                      {hasGroups ? ` · ${activeGroup}` : ""} still need a
+                      teacher assigned before they can go on the routine —
+                      assign one from Classes → section drawer.
+                    </span>
+                  </div>
+                ) : null}
 
                 <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
                   <table className="w-full min-w-[720px] border-collapse">
@@ -547,12 +585,8 @@ export default function AdminRoutinePage() {
                                 <td key={day} className="px-1.5 py-1.5">
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      setPicking({ day, periodId: p.id })
-                                    }
-                                    disabled={
-                                      availableSubjects.length === 0 || saving
-                                    }
+                                    onClick={() => handleAddClick(day, p.id)}
+                                    disabled={saving}
                                     className="flex w-full min-h-[56px] items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-400 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/60 dark:hover:bg-indigo-500/10 disabled:opacity-40 cursor-pointer transition-colors"
                                   >
                                     <Plus className="h-3.5 w-3.5" />
@@ -644,22 +678,37 @@ export default function AdminRoutinePage() {
                     No subjects available
                   </p>
                 ) : (
-                  availableSubjects.map((s) => (
-                    <button
-                      key={s.classSubjectId}
-                      type="button"
-                      disabled={saving}
-                      onClick={() => setSlot(s.classSubjectId)}
-                      className="w-full flex items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-3 text-left hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors cursor-pointer disabled:opacity-50"
-                    >
-                      <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        {s.name}
-                      </span>
-                      <span className="text-[11px] font-medium text-slate-400 shrink-0">
-                        {s.teacherName}
-                      </span>
-                    </button>
-                  ))
+                  availableSubjects.map((s) => {
+                    const noTeacher = !s.teacherName || s.teacherName === "Unassigned";
+                    return (
+                      <button
+                        key={s.classSubjectId}
+                        type="button"
+                        disabled={saving || noTeacher}
+                        onClick={() => setSlot(s.classSubjectId)}
+                        title={noTeacher ? "Assign a teacher to this subject first" : undefined}
+                        className={`w-full flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors ${
+                          noTeacher
+                            ? "border-slate-100 dark:border-slate-800/60 bg-slate-50/60 dark:bg-slate-900/30 cursor-not-allowed opacity-70"
+                            : "border-slate-200 dark:border-slate-800 hover:border-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer disabled:opacity-50"
+                        }`}
+                      >
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                          {s.name}
+                        </span>
+                        {noTeacher ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-950/50 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 shrink-0">
+                            <UserX className="h-3 w-3" />
+                            No teacher
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-medium text-slate-400 shrink-0">
+                            {s.teacherName}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })
                 )}
               </div>
               {saving && (
