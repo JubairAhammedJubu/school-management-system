@@ -66,7 +66,7 @@ const getAssignments = async () => {
       },
     );
     const data = await parseJsonResponse(response);
-    console.log(data)
+
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch assignments");
