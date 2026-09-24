@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  reactStrictMode: false, // dev-এ double effect বন্ধ
   reactCompiler: true,
   images: {
     remotePatterns: [
