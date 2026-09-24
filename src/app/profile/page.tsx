@@ -214,6 +214,7 @@ export default function ProfilePage() {
   const [guardianRelation, setGuardianRelation] = useState("");
   const [qualification, setQualification] = useState("");
   const [bio, setBio] = useState("");
+  const[group,setGroup]=useState("")
 
   // Profile Image States (UNTOUCHED as requested)
   const [profileImage, setProfileImage] = useState("");
@@ -241,6 +242,7 @@ export default function ProfilePage() {
       if (u.phone) setPhone(u.phone);
       if (u.location) setLocation(u.location);
       if (u.department) setDepartment(u.department);
+      if(u.group) setGroup(u.group)
       const createdYear = u.createdAt
         ? new Date(u.createdAt).getFullYear()
         : null;
@@ -1091,7 +1093,7 @@ export default function ProfilePage() {
                               <input
                                 type="text"
                                 disabled
-                                value={department || "Not specified"}
+                                value={group || "Not specified"}
                                 className="w-full rounded-xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/80 dark:bg-slate-900/60 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 font-bold cursor-not-allowed"
                               />
                               <Building className="absolute right-3.5 top-3 h-4 w-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
