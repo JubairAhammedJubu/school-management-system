@@ -65,8 +65,8 @@ const getAssignments = async () => {
         credentials: "include",
       },
     );
-
     const data = await parseJsonResponse(response);
+    console.log(data)
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch assignments");

@@ -7,6 +7,7 @@ export interface UpdateProfileInput {
   phone?: string;
   location?: string;
   department?: string;
+  group?:string;
   bio?: string;
   fatherName?: string;
   motherName?: string;

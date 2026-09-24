@@ -769,7 +769,7 @@ export default function AdminStudentsPage() {
       });
 
       const data = await res.json().catch(() => ({}));
-
+      console.log(data)
       if (!res.ok) {
         throw new Error(data.error || "Failed to create student account.");
       }
@@ -842,60 +842,58 @@ export default function AdminStudentsPage() {
     }
   };
   // Update Student Profile & Class Assignment
-  const handleUpdateStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!modal || modal.type !== "edit") return;
-    setIsSubmitting(true);
+const handleUpdateStudent = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!modal || modal.type !== "edit") return;
+  setIsSubmitting(true);
 
-    try {
-      const isClass9or10 =
-        editClassNum.includes("9") || editClassNum.includes("10");
-      const groupPart = isClass9or10 && editGroup ? ` - ${editGroup}` : "";
-      const sectionPart = editSection ? ` (${editSection})` : "";
-      const fullClass = `${editClassNum}${groupPart}${sectionPart}`;
+  try {
+    const isClass9or10 =
+      editClassNum.includes("9") || editClassNum.includes("10");
+    const fullClass = `${editClassNum}`;
 
-      const res = await authedFetch(`/api/admin/users/${modal.student.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: editName.trim(),
-          phone: editPhone.trim(),
-          studentClass: fullClass,
-          studentSection: editSection,
-          group: isClass9or10 ? editGroup : null,
-          isApproved: editIsApproved,
-        }),
-      });
+    const res = await authedFetch(`/api/admin/users/${modal.student.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: editName.trim(),
+        phone: editPhone.trim(),
+        studentClass: fullClass,
+        studentSection: editSection,
+        group: isClass9or10 ? editGroup : null,   // FIXED — was `groupPart`
+        isApproved: editIsApproved,
+      }),
+    });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to update student profile.");
-      }
-
-      setStudents((prev) =>
-        prev.map((s) =>
-          s.id === modal.student.id
-            ? {
-                ...s,
-                name: editName.trim(),
-                phone: editPhone.trim(),
-                studentClass: fullClass,
-                studentSection: editSection,
-                group: isClass9or10 ? editGroup : undefined,
-                isApproved: editIsApproved,
-              }
-            : s,
-        ),
-      );
-
-      toast.success(`Updated ${editName.trim()}'s details!`);
-      setModal(null);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update student.");
-    } finally {
-      setIsSubmitting(false);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to update student profile.");
     }
-  };
+
+    setStudents((prev) =>
+      prev.map((s) =>
+        s.id === modal.student.id
+          ? {
+              ...s,
+              name: editName.trim(),
+              phone: editPhone.trim(),
+              studentClass: fullClass,
+              studentSection: editSection,
+              group: isClass9or10 ? editGroup : undefined,
+              isApproved: editIsApproved,
+            }
+          : s,
+      ),
+    );
+
+    toast.success(`Updated ${editName.trim()}'s details!`);
+    setModal(null);
+  } catch (err: any) {
+    toast.error(err.message || "Failed to update student.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Delete Student Account with Demo Protection Guard
   const handleDeleteStudent = async () => {
