@@ -1,70 +1,40 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
-import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "react-toastify";
-import {  
-  Award, 
-  Search, 
-  Plus, 
-  ArrowUpRight, 
-  BarChart3, 
+import { motion } from "framer-motion";
+import {
+  Award,
+  Users,
+  TrendingUp,
+  FileCheck2,
+  Clock3,
+  Plus,
   FileText,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  X,
-  Download,
-  BookOpen,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
+import { toast } from "react-toastify";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
-
-function authedFetch(path: string, init?: RequestInit) {
-  return fetch(`${SERVER_URL}${path}`, {
-    ...init,
-    credentials: "include",
-    cache: "no-store",
-  });
-}
-
-interface ResultRecord {
-  id: string;
-  studentName?: string;
-  studentEmail?: string;
-  studentClass?: string;
-  exam: string;
-  score: number;
-  total: number;
-  grade: string;
-  status: string;
-  createdAt: string;
-}
+import ResultList, { type Result } from "@/components/shared/ResultList";
+import SubmitResultModal from "@/components/shared/SubmitResultModal";
+import ResultDetailsModal from "@/components/shared/ResultDetailsModal";
+import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 
 export default function AdminResultsPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All");
 
-  const [resultsRecords, setResultsRecords] = useState<ResultRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitResultModalOpen, setIsSubmitResultModalOpen] = useState(false);
+  const [editingResult, setEditingResult] = useState<Result | null>(null);
+  const [selectedResult, setSelectedResult] = useState<Result | null>(null);
+  const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
+  const [results, setResults] = useState<Result[]>([]);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<ResultRecord | null>(null);
-
-  // Form states
-  const [studentName, setStudentName] = useState("");
-  const [studentEmail, setStudentEmail] = useState("");
-  const [studentClass, setStudentClass] = useState("Grade 10");
-  const [examTitle, setExamTitle] = useState("");
-  const [scoreVal, setScoreVal] = useState("85");
-  const [totalVal, setTotalVal] = useState("100");
-  const [gradeVal, setGradeVal] = useState("A+");
-  const [isPublishing, setIsPublishing] = useState(false);
+  // Delete modal state
+  const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
+  const [isDeletingResult, setIsDeletingResult] = useState(false);
 
   const rawRole = (session?.user as { role?: string } | undefined)?.role?.toLowerCase();
 
@@ -78,95 +48,238 @@ export default function AdminResultsPage() {
     }
   }, [session, rawRole, isPending, router]);
 
-  const loadResults = useCallback(async () => {
-    setIsLoading(true);
+  const dynamicGradeDistribution = ["A+", "A", "B+", "B", "C", "D", "F"].map(
+    (grade) => {
+      const count = results.filter(
+        (result) => result.grade.toUpperCase() === grade
+      ).length;
+
+      const percentage =
+        results.length > 0 ? Math.round((count / results.length) * 100) : 0;
+
+      return {
+        grade,
+        count,
+        percentage,
+      };
+    }
+  );
+
+  const bPlusOrHigherCount = results.filter((result) =>
+    ["A+", "A", "B+"].includes(result.grade.toUpperCase())
+  ).length;
+
+  const bPlusOrHigherPercentage =
+    results.length > 0
+      ? Math.round((bPlusOrHigherCount / results.length) * 100)
+      : 0;
+
+  // Open delete confirmation modal
+  const openDeleteModal = (result: Result) => {
+    setResultToDelete(result);
+  };
+
+  // Confirm delete result and trigger deletion
+  const confirmDeleteResult = async () => {
+    if (!resultToDelete) return;
     try {
-      const res = await authedFetch("/api/teacher/results");
-      const data = await res.json();
-      if (res.ok && data.results) {
-        setResultsRecords(data.results);
+      setIsDeletingResult(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results/${resultToDelete.id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete result.");
       }
-    } catch (err) {
-      console.error("Failed to fetch database results", err);
+
+      toast.success("Result deleted successfully!");
+      setResultsRefreshKey((current) => current + 1);
+    } catch (error: any) {
+      console.error("Error deleting result:", error);
+      toast.error(error?.message || "Something went wrong while deleting the result.");
     } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (session?.user && rawRole === "admin") {
-      loadResults();
-    }
-  }, [session, rawRole, loadResults]);
-
-  const handlePublishExam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!examTitle.trim() || !studentName.trim() || !studentEmail.trim()) {
-      toast.error("Please fill in student info and exam title.");
-      return;
-    }
-
-    setIsPublishing(true);
-    try {
-      const res = await authedFetch("/api/teacher/results", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: `STU-${Date.now()}`,
-          studentName: studentName.trim(),
-          studentEmail: studentEmail.trim().toLowerCase(),
-          studentClass: studentClass.trim(),
-          exam: examTitle.trim(),
-          score: parseInt(scoreVal) || 0,
-          total: parseInt(totalVal) || 100,
-          grade: gradeVal,
-          status: "PUBLISHED",
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save result");
-
-      toast.success(`Exam result published for ${studentName}!`);
-      setShowPublishModal(false);
-      setStudentName("");
-      setStudentEmail("");
-      setExamTitle("");
-      loadResults();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to publish result.");
-    } finally {
-      setIsPublishing(false);
+      setIsDeletingResult(false);
+      setResultToDelete(null);
     }
   };
 
-  const handleExportCSVReport = () => {
-    if (resultsRecords.length === 0) {
+  const handleExportPDFReport = async () => {
+    if (results.length === 0) {
       toast.info("No exam results available to export.");
       return;
     }
-    const headers = "Result ID,Student Name,Student Email,Class,Exam Title,Score,Total Marks,Grade,Status,Date\n";
-    const rows = resultsRecords
-      .map(
-        (r) =>
-          `"${r.id}","${r.studentName || 'Student'}","${r.studentEmail || ''}","${r.studentClass || 'Grade 10'}","${r.exam}",${r.score},${r.total},"${r.grade}","${r.status}","${new Date(r.createdAt).toLocaleDateString()}"`
-      )
-      .join("\n");
 
-    const blob = new Blob([headers + rows], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `EduNexus_Database_Academic_Report_${Date.now()}.csv`;
-    a.click();
-    toast.success("Database academic results report exported to CSV!");
+    setIsExportingPDF(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 14;
+
+      // Color Palette
+      const primaryIndigo = [79, 70, 229]; // #4F46E5
+      const textDark = [15, 23, 42]; // #0F172A
+      const bgLight = [248, 250, 252]; // #F8FAFC
+      const navyDark = [30, 41, 59]; // #1E293B
+      const borderGray = [226, 232, 240]; // #E2E8F0
+
+      // Header Banner Box
+      doc.setFillColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.rect(margin, 12, pageWidth - margin * 2, 28, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("EduNexus Academic Management System", margin + 8, 24);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Admin Dashboard — Master Database Academic Results & Grades Report", margin + 8, 32);
+
+      // Metadata
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(8);
+      const generatedDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      doc.text(`Generated: ${generatedDate}`, pageWidth - margin - 50, 24);
+
+      let y = 48;
+
+      // Summary Box
+      const totalCount = results.length;
+      const passedCount = results.filter((r) => (r.score / r.total) >= 0.4).length;
+      const avgScore = totalCount > 0
+        ? (results.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalCount).toFixed(1)
+        : "0.0";
+
+      doc.setFillColor(bgLight[0], bgLight[1], bgLight[2]);
+      doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+      doc.roundedRect(margin, y, pageWidth - margin * 2, 18, 3, 3, "FD");
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text(`Total Records: ${totalCount}`, margin + 6, y + 11);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`Passed Examinees: ${passedCount} (${((passedCount / (totalCount || 1)) * 100).toFixed(0)}%)`, margin + 65, y + 11);
+      doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.text(`Class Avg: ${avgScore}%`, margin + 145, y + 11);
+
+      // Table Header
+      y += 24;
+      const colX = [margin, margin + 45, margin + 88, margin + 128, margin + 154, margin + 170];
+
+      doc.setFillColor(navyDark[0], navyDark[1], navyDark[2]);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text("Student Name", colX[0] + 3, y + 5.5);
+      doc.text("Exam Title", colX[1] + 2, y + 5.5);
+      doc.text("Class", colX[2] + 2, y + 5.5);
+      doc.text("Score / Total", colX[3] + 2, y + 5.5);
+      doc.text("Grade", colX[4] + 2, y + 5.5);
+      doc.text("Status", colX[5] + 2, y + 5.5);
+
+      y += 8;
+
+      // Table Rows
+      doc.setFontSize(8);
+
+      results.forEach((r, idx) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+          doc.setFillColor(navyDark[0], navyDark[1], navyDark[2]);
+          doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(255, 255, 255);
+          doc.text("Student Name", colX[0] + 3, y + 5.5);
+          doc.text("Exam Title", colX[1] + 2, y + 5.5);
+          doc.text("Class", colX[2] + 2, y + 5.5);
+          doc.text("Score / Total", colX[3] + 2, y + 5.5);
+          doc.text("Grade", colX[4] + 2, y + 5.5);
+          doc.text("Status", colX[5] + 2, y + 5.5);
+          y += 8;
+        }
+
+        if (idx % 2 === 0) {
+          doc.setFillColor(bgLight[0], bgLight[1], bgLight[2]);
+          doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+        }
+
+        doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+        doc.line(margin, y + 8, pageWidth - margin, y + 8);
+
+        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        doc.setFont("helvetica", "bold");
+        const sName = (r.studentName || "Student").substring(0, 22);
+        doc.text(sName, colX[0] + 3, y + 5.5);
+
+        doc.setFont("helvetica", "normal");
+        const eTitle = (r.exam || "N/A").substring(0, 20);
+        doc.text(eTitle, colX[1] + 2, y + 5.5);
+
+        const sClass = (r.studentClass || "Class 6").substring(0, 18);
+        doc.text(sClass, colX[2] + 2, y + 5.5);
+
+        const scoreStr = `${r.score} / ${r.total}`;
+        doc.text(scoreStr, colX[3] + 2, y + 5.5);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+        doc.text(r.grade || "N/A", colX[4] + 2, y + 5.5);
+
+        doc.setFont("helvetica", "normal");
+        if (r.status?.toUpperCase() === "PUBLISHED") {
+          doc.setTextColor(16, 185, 129);
+        } else {
+          doc.setTextColor(217, 119, 6);
+        }
+        doc.text(r.status?.toUpperCase() || "DRAFT", colX[5] + 2, y + 5.5);
+
+        y += 8;
+      });
+
+      // Footer
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.setFont("helvetica", "normal");
+        doc.text(`EduNexus Academic Management Portal — Page ${i} of ${totalPages}`, margin, 290);
+      }
+
+      doc.save(`EduNexus_Master_Academic_Results_${Date.now()}.pdf`);
+      toast.success("Database academic results report exported to PDF!");
+    } catch (err) {
+      console.error("Failed to export PDF", err);
+      toast.error("Failed to generate PDF document.");
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
 
   if (isPending) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-900/60 animate-pulse" />
+        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-900/60 animate-pulse" />
       </div>
     );
   }
@@ -175,433 +288,303 @@ export default function AdminResultsPage() {
     return null;
   }
 
-  const filteredResults = resultsRecords.filter((record) => {
-    const matchesSearch = 
-      record.exam.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (record.studentName && record.studentName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (record.studentClass && record.studentClass.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      record.id.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = selectedStatus === "All" || record.status === selectedStatus.toUpperCase();
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalExamsCount = resultsRecords.length;
-  const passedCount = resultsRecords.filter(r => (r.score / r.total) >= 0.4).length;
-  const overallAvgScore = resultsRecords.length > 0
-    ? (resultsRecords.reduce((acc, curr) => acc + (curr.score / curr.total) * 100, 0) / resultsRecords.length).toFixed(1)
-    : "0.0";
-
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
+    <div className="space-y-6 pb-12">
+      {/* Top Header Banner matching admin dark mode */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        transition={{ duration: 0.4 }}
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
       >
-        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div>
-          <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
-            LIVE DATABASE ACADEMICS &amp; RESULTS
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-            Academic Results &amp; Grading Insights
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Publish exam results directly to Database, view performance analytics, and export reports.
-          </p>
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-60 w-60 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl" />
+
+        <div className="flex items-center gap-3.5 z-10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
+            <Award className="h-6 w-6" />
+          </div>
+          <div>
+            <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
+              LIVE DATABASE ACADEMICS &amp; RESULTS
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+              Academic Results &amp; Grading Insights
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+              Publish exam results directly to Database, view performance analytics, and export reports.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 z-10">
           <button
-            onClick={handleExportCSVReport}
-            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-sm border border-slate-200 dark:border-slate-700 transition-all cursor-pointer shadow-sm"
+            type="button"
+            onClick={handleExportPDFReport}
+            disabled={isExportingPDF}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-200 dark:border-indigo-900/50 transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
-            <Download className="w-4 h-4 text-indigo-500" />
-            Export CSV
+            {isExportingPDF ? (
+              <RefreshCw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            )}
+            Export PDF
           </button>
 
           <button
-            onClick={() => setShowPublishModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+            type="button"
+            onClick={() => setIsSubmitResultModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02]"
           >
             <Plus className="w-4 h-4" />
             Publish New Result
           </button>
-
-          <button
-            onClick={loadResults}
-            disabled={isLoading}
-            className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all"
-            title="Refresh Results"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-indigo-500" : ""}`} />
-          </button>
         </div>
       </motion.div>
 
-      {/* Stats Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Recorded Results</p>
-            <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{totalExamsCount}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <FileText className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Passed Examinees</p>
-            <h3 className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{passedCount}</h3>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <Award className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Overall Average Score</p>
-            <h3 className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-1">{overallAvgScore}%</h3>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
-            <BarChart3 className="w-6 h-6" />
-          </div>
-        </div>
+      {/* Metric Cards Row */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard
+          icon={Users}
+          label="Total Recorded Results"
+          value={String(results.length)}
+          detail="Recorded in master database"
+          delay={0.05}
+          iconClass="text-indigo-600 dark:text-indigo-400"
+          iconBg="bg-indigo-50 dark:bg-indigo-500/10"
+        />
+        <SummaryCard
+          icon={TrendingUp}
+          label="Average Score"
+          value={
+            results.length > 0
+              ? `${(
+                  results.reduce(
+                    (sum, result) => sum + (result.score / result.total) * 100,
+                    0
+                  ) / results.length
+                ).toFixed(1)}%`
+              : "0.0%"
+          }
+          detail="Overall database examinees average"
+          delay={0.1}
+          iconClass="text-emerald-600 dark:text-emerald-400"
+          iconBg="bg-emerald-50 dark:bg-emerald-500/10"
+        />
+        <SummaryCard
+          icon={FileCheck2}
+          label="Published Results"
+          value={String(
+            results.filter((result) => result.status.toUpperCase() === "PUBLISHED").length
+          )}
+          detail="Results visible to students"
+          delay={0.15}
+          iconClass="text-blue-600 dark:text-blue-400"
+          iconBg="bg-blue-50 dark:bg-blue-500/10"
+        />
+        <SummaryCard
+          icon={Clock3}
+          label="Draft Results"
+          value={String(
+            results.filter((result) => result.status.toUpperCase() === "DRAFT").length
+          )}
+          detail="Awaiting review or publish"
+          delay={0.2}
+          iconClass="text-amber-600 dark:text-amber-400"
+          iconBg="bg-amber-50 dark:bg-amber-500/10"
+        />
       </div>
 
-      {/* Search & Status Filter Tabs Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-96">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search student, exam title or class..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all shadow-sm backdrop-blur-xl"
-          />
-        </div>
+      {/* Main Content Layout Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+        {/* Live Database Results List */}
+        <ResultList
+          refreshKey={resultsRefreshKey}
+          onResultsChange={setResults}
+          onDelete={openDeleteModal}
+          onView={setSelectedResult}
+          onEdit={setEditingResult}
+        />
 
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          {["All", "Published", "Draft"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setSelectedStatus(status)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${
-                selectedStatus === status
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-indigo-500/25"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Results Table Section */}
-      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 shadow-xl backdrop-blur-xl overflow-hidden">
-        <div className="p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Live Database Exam Results</h3>
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Showing: <strong className="text-indigo-600 dark:text-indigo-400">{filteredResults.length}</strong> entries
-          </span>
-        </div>
-
-        {isLoading ? (
-          <div className="p-8 space-y-3">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-16 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-            ))}
-          </div>
-        ) : filteredResults.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  <th className="p-4 sm:px-6">Student &amp; Exam</th>
-                  <th className="p-4">Class</th>
-                  <th className="p-4">Score / Total</th>
-                  <th className="p-4">Grade</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/80 text-sm">
-                {filteredResults.map((record) => (
-                  <tr key={record.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="p-4 sm:px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center shrink-0">
-                          <Award className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{record.studentName || "Student"}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">{record.exam} • {new Date(record.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="p-4 font-medium text-slate-700 dark:text-slate-200">
-                      {record.studentClass || "Grade 10"}
-                    </td>
-
-                    <td className="p-4 font-bold text-slate-900 dark:text-white">
-                      {record.score} / {record.total} ({((record.score / record.total) * 100).toFixed(1)}%)
-                    </td>
-
-                    <td className="p-4 font-extrabold text-blue-600 dark:text-blue-400">
-                      {record.grade}
-                    </td>
-
-                    <td className="p-4">
-                      <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
-                        record.status === "PUBLISHED" 
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40" 
-                          : "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40"
-                      }`}>
-                        {record.status}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-right">
-                      <button 
-                        onClick={() => setSelectedRecord(record)}
-                        className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-600 hover:text-white text-blue-600 dark:text-blue-400 transition-all cursor-pointer shadow-sm inline-flex items-center justify-center" 
-                        title="View Details"
-                      >
-                        <ArrowUpRight className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8" />
+        {/* Grade Distribution Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.25 }}
+          className="rounded-3xl border border-slate-200/80 bg-white/90 p-5 sm:p-6 shadow-xl backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex items-center justify-between border-b border-slate-100/90 pb-4 dark:border-slate-800/90">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-950 dark:text-white">
+                  Grade Distribution
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  Master database performance breakdown
+                </p>
+              </div>
+              <span className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-extrabold text-white shadow-xs">
+                {results.length} Total
+              </span>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Database Results Found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-              Click &quot;Publish New Result&quot; to save exam marks directly to the database.
+
+            <div className="mt-6 space-y-4">
+              {dynamicGradeDistribution.map((item, index) => (
+                <motion.div
+                  key={item.grade}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.3 + index * 0.05,
+                  }}
+                >
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`flex h-6 w-6 items-center justify-center rounded-lg text-[10px] font-black ${
+                          item.grade === "A+"
+                            ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                            : item.grade === "A"
+                              ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                              : item.grade === "B+"
+                                ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
+                                : item.grade === "B"
+                                  ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                        }`}
+                      >
+                        {item.grade}
+                      </span>
+
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        {item.count} {item.count === 1 ? "student" : "students"}
+                      </span>
+                    </div>
+
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                      {item.percentage}%
+                    </span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800/80">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.percentage}%` }}
+                      transition={{
+                        duration: 0.6,
+                        delay: 0.35 + index * 0.05,
+                      }}
+                      className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500"
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Performance Callout Footer */}
+          <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4 dark:border-indigo-900/40 dark:bg-indigo-950/30">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                Performance Overview
+              </span>
+            </div>
+
+            <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300 font-medium">
+              {bPlusOrHigherPercentage}% of recorded database examinees achieved a B+ grade or higher this term.
             </p>
           </div>
-        )}
+        </motion.section>
       </div>
 
-      {/* Publish Exam Modal */}
-      <AnimatePresence>
-        {showPublishModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
-            >
-              <button
-                onClick={() => setShowPublishModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Award className="w-5 h-5 text-blue-600" /> Save &amp; Publish Exam Result to DB
-              </h3>
-
-              <form onSubmit={handlePublishExam} className="space-y-3">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Student Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sadia Sultana"
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Student Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="student@edunexus.edu"
-                    value={studentEmail}
-                    onChange={(e) => setStudentEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Exam Title
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Mid-Term Physics"
-                      value={examTitle}
-                      onChange={(e) => setExamTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Class / Grade
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Grade 10 A"
-                      value={studentClass}
-                      onChange={(e) => setStudentClass(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Score
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="85"
-                      value={scoreVal}
-                      onChange={(e) => setScoreVal(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Total
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="100"
-                      value={totalVal}
-                      onChange={(e) => setTotalVal(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Grade
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="A+"
-                      value={gradeVal}
-                      onChange={(e) => setGradeVal(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowPublishModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isPublishing}
-                    className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isPublishing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : "Save to Database"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Result Detail Modal */}
-      <AnimatePresence>
-        {selectedRecord && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
-            >
-              <button
-                onClick={() => setSelectedRecord(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                  <Award className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    {selectedRecord.exam}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    ID: {selectedRecord.id}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300 border-y border-slate-100 dark:border-slate-800 py-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Student Name:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedRecord.studentName || "Student"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Student Email:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedRecord.studentEmail || "N/A"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Class:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{selectedRecord.studentClass || "Grade 10"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Score Obtained:</span>
-                  <span className="font-extrabold text-blue-600">{selectedRecord.score} / {selectedRecord.total} Marks</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Letter Grade:</span>
-                  <span className="font-bold text-emerald-600">{selectedRecord.grade}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedRecord(null)}
-                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
-              >
-                Close Record
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Modals */}
+      <SubmitResultModal
+        isOpen={isSubmitResultModalOpen}
+        onClose={() => setIsSubmitResultModalOpen(false)}
+        onSuccess={() => {
+          setResultsRefreshKey((current) => current + 1);
+        }}
+      />
+      <SubmitResultModal
+        isOpen={Boolean(editingResult)}
+        result={editingResult}
+        onClose={() => setEditingResult(null)}
+        onSuccess={() => {
+          setEditingResult(null);
+          setResultsRefreshKey((current) => current + 1);
+        }}
+      />
+      <ResultDetailsModal
+        result={selectedResult}
+        isOpen={Boolean(selectedResult)}
+        onClose={() => setSelectedResult(null)}
+        onEdit={(res) => {
+          setSelectedResult(null);
+          setEditingResult(res);
+        }}
+      />
+      <DeleteConfirmationModal
+        isOpen={Boolean(resultToDelete)}
+        onClose={() => !isDeletingResult && setResultToDelete(null)}
+        onConfirm={confirmDeleteResult}
+        title="Delete Result"
+        itemTitle={
+          resultToDelete
+            ? `${resultToDelete.studentName}'s ${resultToDelete.exam}`
+            : "this result"
+        }
+        confirmButtonText="Delete Result"
+        isDeleting={isDeletingResult}
+      />
     </div>
+  );
+}
+
+function SummaryCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  delay,
+  iconClass = "text-indigo-600 dark:text-indigo-400",
+  iconBg = "bg-indigo-50 dark:bg-indigo-500/10",
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  detail: string;
+  delay: number;
+  iconClass?: string;
+  iconBg?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-5 shadow-xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-slate-800/80 dark:bg-slate-950/90"
+    >
+      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl" />
+
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} ${iconClass} shadow-xs`}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <p className="mt-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        {detail}
+      </p>
+    </motion.div>
   );
 }
