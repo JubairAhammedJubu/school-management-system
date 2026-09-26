@@ -176,11 +176,19 @@ export default function SubmitResultModal({
 
   const handleTotalChange = (val: string) => {
     if (error) setError("");
+    if (val === "") {
+      setTotal("");
+      return;
+    }
+
+    let numericTot = Number(val);
+    if (Number.isFinite(numericTot) && numericTot > 100) {
+      numericTot = 100;
+      val = "100";
+    }
+
     setTotal(val);
 
-    if (val === "") return;
-
-    const numericTot = Number(val);
     const numericSc = Number(score);
 
     if (score !== "" && Number.isFinite(numericSc) && Number.isFinite(numericTot) && numericTot > 0) {
@@ -263,6 +271,11 @@ export default function SubmitResultModal({
 
     if (numericTotal <= 0) {
       setError("Total marks must be greater than zero.");
+      return;
+    }
+
+    if (numericTotal > 100) {
+      setError("Total marks cannot exceed 100.");
       return;
     }
 
@@ -515,10 +528,12 @@ export default function SubmitResultModal({
                       label="Total Marks"
                       type="number"
                       min="1"
+                      max="100"
                       value={total}
                       onChange={handleTotalChange}
                       placeholder="e.g. 100"
                       disabled={isSubmitting}
+                      helperText="Max limit: 100"
                     />
                   </div>
 

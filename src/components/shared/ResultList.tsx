@@ -11,6 +11,8 @@ import {
   Filter,
   Layers,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Check,
   Award,
 } from "lucide-react";
@@ -62,6 +64,10 @@ export default function ResultList({
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
   const [selectedClass, setSelectedClass] = useState("All Classes");
+
+  // Pagination state (10 items per page)
+  const ITEMS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
@@ -122,6 +128,20 @@ export default function ResultList({
       return matchSearch && matchStatus && matchClass;
     });
   }, [results, search, selectedStatus, selectedClass]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedStatus, selectedClass]);
+
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredResults.length / ITEMS_PER_PAGE) || 1;
+  }, [filteredResults]);
+
+  const paginatedResults = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredResults, currentPage]);
 
   const closeMenu = () => {
     setOpenMenuId(null);
@@ -236,12 +256,57 @@ export default function ResultList({
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Skeleton Loading State */}
         {isLoading && (
-          <div className="flex min-h-[260px] items-center justify-center px-6">
-            <div className="flex items-center gap-3 text-sm font-semibold text-slate-500 dark:text-slate-400">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600 dark:border-slate-700 dark:border-t-indigo-400" />
-              Loading student results...
+          <div className="space-y-4 animate-pulse p-1">
+            {/* Table skeleton header */}
+            <div className="hidden md:block w-full overflow-x-auto">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between px-4">
+                <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                <div className="h-3.5 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                <div className="h-3.5 w-12 bg-slate-200 dark:bg-slate-800 rounded-md" />
+              </div>
+
+              {/* Skeleton Rows */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <div key={idx} className="py-3.5 px-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="h-10 w-10 rounded-2xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                        <div className="h-3 w-44 bg-slate-200/70 dark:bg-slate-800/60 rounded-md" />
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                      <div className="h-3 w-20 bg-slate-200/70 dark:bg-slate-800/60 rounded-md" />
+                    </div>
+                    <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-8 w-8 rounded-xl bg-slate-200 dark:bg-slate-800" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile skeleton cards */}
+            <div className="grid grid-cols-1 gap-3 md:hidden">
+              {[1, 2, 3].map((idx) => (
+                <div key={idx} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                        <div className="h-3 w-36 bg-slate-200/70 dark:bg-slate-800/60 rounded-md" />
+                      </div>
+                    </div>
+                    <div className="h-6 w-16 rounded-full bg-slate-200 dark:bg-slate-800" />
+                  </div>
+                  <div className="h-10 rounded-xl bg-slate-100 dark:bg-slate-900" />
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -307,7 +372,7 @@ export default function ResultList({
                 </thead>
 
                 <tbody>
-                  {filteredResults.map((result, index) => (
+                  {paginatedResults.map((result, index) => (
                     <ResultRow
                       key={result.id}
                       result={result}
@@ -321,7 +386,7 @@ export default function ResultList({
 
             {/* Mobile / Tablet Cards (< md) */}
             <div className="grid grid-cols-1 gap-3.5 md:hidden">
-              {filteredResults.map((result, index) => (
+              {paginatedResults.map((result, index) => (
                 <MobileResultCard
                   key={result.id}
                   result={result}
@@ -333,6 +398,66 @@ export default function ResultList({
                 />
               ))}
             </div>
+
+            {/* Pagination Controls Bar */}
+            {filteredResults.length > 0 && (
+              <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-slate-100/90 pt-4 dark:border-slate-800/90 sm:flex-row">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  Showing{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredResults.length)}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {filteredResults.length}
+                  </span>{" "}
+                  results
+                </p>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:pointer-events-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+                    title="Previous Page"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setCurrentPage(page)}
+                        className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold transition cursor-pointer ${
+                          currentPage === page
+                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                            : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:pointer-events-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+                    title="Next Page"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </section>
