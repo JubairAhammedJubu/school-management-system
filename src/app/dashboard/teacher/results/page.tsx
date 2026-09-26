@@ -10,6 +10,8 @@ import {
   FileCheck2,
   Clock3,
   Plus,
+  FileText,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -24,6 +26,7 @@ export default function TeacherResultsPage() {
   const [selectedResult, setSelectedResult] = useState<Result | null>(null);
   const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   // Delete modal state
   const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
@@ -90,6 +93,172 @@ export default function TeacherResultsPage() {
     }
   };
 
+  const handleExportPDFReport = async () => {
+    if (results.length === 0) {
+      toast.info("No exam results available to export.");
+      return;
+    }
+
+    setIsExportingPDF(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 14;
+
+      // Color Palette
+      const primaryIndigo = [79, 70, 229]; // #4F46E5
+      const textDark = [15, 23, 42]; // #0F172A
+      const bgLight = [248, 250, 252]; // #F8FAFC
+      const navyDark = [30, 41, 59]; // #1E293B
+      const borderGray = [226, 232, 240]; // #E2E8F0
+
+      // Header Banner Box
+      doc.setFillColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.rect(margin, 12, pageWidth - margin * 2, 28, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("EduNexus Academic Management System", margin + 8, 24);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Teacher Dashboard — Official Student Exam Results & Grades Report", margin + 8, 32);
+
+      // Metadata
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(8);
+      const generatedDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      doc.text(`Generated: ${generatedDate}`, pageWidth - margin - 50, 24);
+
+      let y = 48;
+
+      // Summary Box
+      const totalCount = results.length;
+      const passedCount = results.filter((r) => (r.score / r.total) >= 0.4).length;
+      const avgScore = totalCount > 0
+        ? (results.reduce((sum, r) => sum + (r.score / r.total) * 100, 0) / totalCount).toFixed(1)
+        : "0.0";
+
+      doc.setFillColor(bgLight[0], bgLight[1], bgLight[2]);
+      doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+      doc.roundedRect(margin, y, pageWidth - margin * 2, 18, 3, 3, "FD");
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+      doc.text(`Total Records: ${totalCount}`, margin + 6, y + 11);
+      doc.setTextColor(16, 185, 129);
+      doc.text(`Passed Examinees: ${passedCount} (${((passedCount / (totalCount || 1)) * 100).toFixed(0)}%)`, margin + 65, y + 11);
+      doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+      doc.text(`Class Avg: ${avgScore}%`, margin + 145, y + 11);
+
+      // Table Header
+      y += 24;
+      const colX = [margin, margin + 45, margin + 88, margin + 128, margin + 154, margin + 170];
+
+      doc.setFillColor(navyDark[0], navyDark[1], navyDark[2]);
+      doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text("Student Name", colX[0] + 3, y + 5.5);
+      doc.text("Exam Title", colX[1] + 2, y + 5.5);
+      doc.text("Class", colX[2] + 2, y + 5.5);
+      doc.text("Score / Total", colX[3] + 2, y + 5.5);
+      doc.text("Grade", colX[4] + 2, y + 5.5);
+      doc.text("Status", colX[5] + 2, y + 5.5);
+
+      y += 8;
+
+      // Table Rows
+      doc.setFontSize(8);
+
+      results.forEach((r, idx) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+          doc.setFillColor(navyDark[0], navyDark[1], navyDark[2]);
+          doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(255, 255, 255);
+          doc.text("Student Name", colX[0] + 3, y + 5.5);
+          doc.text("Exam Title", colX[1] + 2, y + 5.5);
+          doc.text("Class", colX[2] + 2, y + 5.5);
+          doc.text("Score / Total", colX[3] + 2, y + 5.5);
+          doc.text("Grade", colX[4] + 2, y + 5.5);
+          doc.text("Status", colX[5] + 2, y + 5.5);
+          y += 8;
+        }
+
+        if (idx % 2 === 0) {
+          doc.setFillColor(bgLight[0], bgLight[1], bgLight[2]);
+          doc.rect(margin, y, pageWidth - margin * 2, 8, "F");
+        }
+
+        doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+        doc.line(margin, y + 8, pageWidth - margin, y + 8);
+
+        doc.setTextColor(textDark[0], textDark[1], textDark[2]);
+        doc.setFont("helvetica", "bold");
+        const sName = (r.studentName || "Student").substring(0, 22);
+        doc.text(sName, colX[0] + 3, y + 5.5);
+
+        doc.setFont("helvetica", "normal");
+        const eTitle = (r.exam || "N/A").substring(0, 20);
+        doc.text(eTitle, colX[1] + 2, y + 5.5);
+
+        const sClass = (r.studentClass || "Class 6").substring(0, 18);
+        doc.text(sClass, colX[2] + 2, y + 5.5);
+
+        const scoreStr = `${r.score} / ${r.total}`;
+        doc.text(scoreStr, colX[3] + 2, y + 5.5);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(primaryIndigo[0], primaryIndigo[1], primaryIndigo[2]);
+        doc.text(r.grade || "N/A", colX[4] + 2, y + 5.5);
+
+        doc.setFont("helvetica", "normal");
+        if (r.status?.toUpperCase() === "PUBLISHED") {
+          doc.setTextColor(16, 185, 129);
+        } else {
+          doc.setTextColor(217, 119, 6);
+        }
+        doc.text(r.status?.toUpperCase() || "DRAFT", colX[5] + 2, y + 5.5);
+
+        y += 8;
+      });
+
+      // Footer
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.setFont("helvetica", "normal");
+        doc.text(`EduNexus Academic Management Portal — Page ${i} of ${totalPages}`, margin, 290);
+      }
+
+      doc.save(`EduNexus_Teacher_Academic_Results_${Date.now()}.pdf`);
+      toast.success("Academic results report exported to PDF!");
+    } catch (err) {
+      console.error("Failed to export PDF", err);
+      toast.error("Failed to generate PDF document.");
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header Banner matching other teacher routes */}
@@ -110,7 +279,7 @@ export default function TeacherResultsPage() {
               TEACHER ACADEMICS
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              Student Results & Grades
+              Student Results &amp; Grades
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
               Record, evaluate, and publish student examination marks and grade allocations for your classes.
@@ -118,14 +287,30 @@ export default function TeacherResultsPage() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsSubmitResultModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02] shrink-0 z-10"
-        >
-          <Plus className="w-4 h-4" />
-          Enter Student Result
-        </button>
+        <div className="flex items-center gap-3 shrink-0 z-10">
+          <button
+            type="button"
+            onClick={handleExportPDFReport}
+            disabled={isExportingPDF}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-200 dark:border-indigo-900/50 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+          >
+            {isExportingPDF ? (
+              <RefreshCw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            )}
+            Export PDF
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSubmitResultModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02]"
+          >
+            <Plus className="w-4 h-4" />
+            Enter Student Result
+          </button>
+        </div>
       </motion.div>
 
       {/* Metric Cards Row */}
