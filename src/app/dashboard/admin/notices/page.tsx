@@ -89,7 +89,7 @@ export default function AdminNoticesPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-900/90 dark:via-indigo-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-950/90 dark:via-indigo-950/30 dark:to-slate-950/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
         <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -131,7 +131,7 @@ export default function AdminNoticesPage() {
         <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -156,7 +156,7 @@ export default function AdminNoticesPage() {
         <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-violet-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -181,7 +181,7 @@ export default function AdminNoticesPage() {
         <motion.div
           whileHover={{ y: -4 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-sky-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -204,7 +204,7 @@ export default function AdminNoticesPage() {
       </div>
 
       {/* Main Notice Board Component Card Wrapper */}
-      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 shadow-2xl backdrop-blur-xl overflow-hidden p-4 sm:p-6 transition-all">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 shadow-2xl backdrop-blur-xl overflow-hidden p-4 sm:p-6 transition-all">
         <NoticeBoard
           title="Admin Notice Board"
           subtitle="Manage active circulars, review scheduled postings, and publish institutional announcements."
