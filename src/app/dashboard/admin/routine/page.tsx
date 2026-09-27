@@ -15,6 +15,7 @@ import {
   Clock3,
   AlertCircle,
   UserX,
+  Sparkles,
 } from "lucide-react";
 
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
@@ -279,94 +280,131 @@ export default function AdminRoutinePage() {
   /* ── Skeleton ───────────────────────────────────────── */
   if (loadingShell) {
     return (
-      <div className="p-5 sm:p-6 lg:p-8 space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="h-10 w-10 rounded-xl skeleton-shimmer" />
-            <div className="h-7 w-48 rounded-lg skeleton-shimmer" />
-            <div className="h-4 w-64 rounded-md skeleton-shimmer-subtle" />
-          </div>
-          <div className="h-9 w-24 rounded-xl skeleton-shimmer" />
+      <div className="space-y-6 pb-12">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-8 shadow-xl backdrop-blur-xl animate-pulse space-y-4">
+          <div className="h-6 w-44 rounded-full bg-slate-200 dark:bg-slate-800" />
+          <div className="h-8 w-64 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          <div className="h-4 w-96 rounded-lg bg-slate-100 dark:bg-slate-800/60" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-20 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-950/60 p-3"
+              className="h-24 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 shadow-xl backdrop-blur-xl animate-pulse"
             >
-              <div className="h-3 w-16 rounded skeleton-shimmer-subtle" />
-              <div className="mt-3 h-7 w-10 rounded skeleton-shimmer" />
+              <div className="h-3 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+              <div className="mt-3 h-7 w-12 rounded bg-slate-200 dark:bg-slate-800" />
             </div>
           ))}
         </div>
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
-          <div className="p-5 space-y-4 border-b border-slate-100 dark:border-slate-800">
-            <div className="h-3 w-12 rounded skeleton-shimmer-subtle" />
-            <div className="flex gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-9 w-20 rounded-xl skeleton-shimmer" />
-              ))}
-            </div>
-            <div className="h-3 w-14 rounded skeleton-shimmer-subtle" />
-            <div className="flex gap-2">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="h-9 w-24 rounded-xl skeleton-shimmer" />
-              ))}
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="h-64 w-full rounded-xl skeleton-shimmer-subtle" />
-          </div>
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl space-y-4 animate-pulse">
+          <div className="h-10 w-full rounded-2xl bg-slate-100 dark:bg-slate-900" />
+          <div className="h-72 w-full rounded-2xl bg-slate-100 dark:bg-slate-900" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-5 sm:p-6 lg:p-8 space-y-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
-              <CalendarDays className="h-5 w-5" />
-            </span>
-            Class routine
-          </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Build weekly timetable per class
-            {hasGroups ? " and stream" : ""}. Teachers cannot clash on the same
-            period.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            loadShell();
-            loadGrid();
-          }}
-          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer"
-        >
-          <RefreshCw className="h-3.5 w-3.5" />
-          Refresh
-        </button>
-      </div>
+    <div className="space-y-6 pb-12">
+      {/* Top Hero Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-950/90 dark:via-indigo-950/30 dark:to-slate-950/90 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl"
+      >
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Mini stats */}
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/70 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold tracking-wide shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              ROUTINE SCHEDULER HUB
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              Class Routine &amp; Timetable
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+              Design weekly routine grids per class and section, assign faculty subjects, and prevent schedule conflicts.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                loadShell();
+                loadGrid();
+              }}
+              disabled={loadingGrid}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingGrid ? "animate-spin" : ""}`} />
+              <span>Refresh Routine</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 4 Metric Stats Cards */}
       {classes.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <MiniStat label="Classes" value={classes.length} />
-          <MiniStat label="Periods" value={teachingPeriods.length} />
-          <MiniStat
-            label="Filled cells"
-            value={filledCount}
-            accent="text-indigo-600 dark:text-indigo-400"
-          />
-          <MiniStat
-            label="Subjects"
-            value={availableSubjects.length}
-            accent="text-emerald-600 dark:text-emerald-400"
-          />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Scheduled Slots */}
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 shadow-xl backdrop-blur-xl flex items-center justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Scheduled Cells</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
+                {loadingGrid ? <span className="inline-block h-7 w-12 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" /> : filledCount}
+              </h3>
+              <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">Grid assignments</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
+              <CalendarDays className="w-6 h-6" />
+            </div>
+          </div>
+
+          {/* Card 2: Periods */}
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 shadow-xl backdrop-blur-xl flex items-center justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Teaching Slots</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
+                {teachingPeriods.length}
+              </h3>
+              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Bell periods</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
+              <Clock3 className="w-6 h-6" />
+            </div>
+          </div>
+
+          {/* Card 3: Assignable Subjects */}
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 shadow-xl backdrop-blur-xl flex items-center justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Assignable Subjects</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1">
+                {assignableSubjects.length}
+              </h3>
+              <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400">Teacher ready</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/60 border border-violet-100 dark:border-violet-900/40 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner">
+              <BookOpen className="w-6 h-6" />
+            </div>
+          </div>
+
+          {/* Card 4: Group Stream */}
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 shadow-xl backdrop-blur-xl flex items-center justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Active Stream</p>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1 truncate max-w-36">
+                {hasGroups ? activeGroup : "General"}
+              </h3>
+              <span className="text-[11px] font-semibold text-sky-600 dark:text-sky-400">{activeClass?.name || "Class"}</span>
+            </div>
+            <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-inner">
+              <Layers className="w-6 h-6" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -395,7 +433,7 @@ export default function AdminRoutinePage() {
       )}
 
       {classes.length > 0 && (
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm overflow-hidden">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 shadow-xl backdrop-blur-xl overflow-hidden">
           {/* Toolbar */}
           <div className="p-4 sm:p-5 space-y-4 border-b border-slate-100 dark:border-slate-800">
             <div>
