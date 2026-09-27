@@ -66,8 +66,8 @@ function CustomGroupSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 py-2.5 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all cursor-pointer ${
           isOpen
-            ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-            : "border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white hover:border-indigo-400 dark:hover:border-indigo-500/60"
+            ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-xs"
+            : "border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white hover:border-indigo-400 dark:hover:border-indigo-500/60"
         }`}
       >
         <div className="flex items-center gap-2 truncate">
@@ -90,7 +90,7 @@ function CustomGroupSelect({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[70] max-h-56 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl p-1.5 space-y-1 custom-scrollbar"
+            className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[70] max-h-56 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-2xl p-1.5 space-y-1 custom-scrollbar"
           >
             {options.length === 0 ? (
               <div className="px-3 py-2.5 text-xs text-slate-400 dark:text-slate-500 italic">
@@ -321,7 +321,7 @@ export default function AdminSubjectsPage() {
         <motion.div
           whileHover={{ y: -3 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -346,7 +346,7 @@ export default function AdminSubjectsPage() {
         <motion.div
           whileHover={{ y: -3 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-violet-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -371,7 +371,7 @@ export default function AdminSubjectsPage() {
         <motion.div
           whileHover={{ y: -3 }}
           transition={{ duration: 0.2 }}
-          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
+          className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-sky-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
@@ -401,7 +401,7 @@ export default function AdminSubjectsPage() {
           placeholder="Search subject name, code, or group..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
+          className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
         />
         {searchTerm && (
           <button
@@ -422,7 +422,7 @@ export default function AdminSubjectsPage() {
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           {/* Core Subjects Box */}
-          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 overflow-hidden shadow-xl backdrop-blur-xl flex flex-col">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 overflow-hidden shadow-xl backdrop-blur-xl flex flex-col">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -474,7 +474,7 @@ export default function AdminSubjectsPage() {
           </div>
 
           {/* Group Subjects Box */}
-          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 overflow-hidden shadow-xl backdrop-blur-xl flex flex-col">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 overflow-hidden shadow-xl backdrop-blur-xl flex flex-col">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
