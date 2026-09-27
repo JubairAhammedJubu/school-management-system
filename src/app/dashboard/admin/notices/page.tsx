@@ -6,7 +6,7 @@ import { useSession } from "@/lib/auth-client";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import NoticeBoard from "@/components/NoticeBoard/NoticeBoard";
-import { Bell, Pin, Megaphone, ShieldCheck, Sparkles, Layers } from "lucide-react";
+import { Bell, Pin, Megaphone, ShieldCheck, Sparkles, Layers, RefreshCw } from "lucide-react";
 import { getNoticesAction, NoticeItem } from "@/lib/actions/teacher.notice";
 
 export default function AdminNoticesPage() {
@@ -17,6 +17,7 @@ export default function AdminNoticesPage() {
 
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const loadStats = useCallback(async () => {
     setStatsLoading(true);
@@ -31,6 +32,11 @@ export default function AdminNoticesPage() {
       setStatsLoading(false);
     }
   }, []);
+
+  const handleRefresh = useCallback(() => {
+    loadStats();
+    setRefreshTrigger((prev) => prev + 1);
+  }, [loadStats]);
 
   useEffect(() => {
     if (!isPending) {
@@ -72,6 +78,10 @@ export default function AdminNoticesPage() {
       ? "All Users"
       : Array.from(categoriesInUse).join(", ");
 
+  const handleNoticesChange = useCallback((updated: NoticeItem[]) => {
+    setNotices(updated);
+  }, []);
+
   return (
     <div className="space-y-8 pb-10">
       {/* Top Hero Banner with Gradient Glow */}
@@ -79,15 +89,15 @@ export default function AdminNoticesPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-emerald-50/30 to-white/90 dark:from-slate-900/90 dark:via-emerald-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-br from-white/90 via-indigo-50/30 to-white/90 dark:from-slate-900/90 dark:via-indigo-950/20 dark:to-slate-900/90 p-8 shadow-2xl backdrop-blur-2xl"
       >
-        <div className="absolute -right-16 -top-16 w-72 h-72 bg-emerald-500/15 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-teal-500/10 dark:bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-16 -top-16 w-72 h-72 bg-indigo-500/15 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 -bottom-20 w-60 h-60 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/70 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 text-xs font-bold tracking-wide shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-100/70 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold tracking-wide shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
               ADMIN COMMUNICATION HUB
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -99,15 +109,23 @@ export default function AdminNoticesPage() {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={handleRefresh}
+              disabled={statsLoading}
+              className="p-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 transition-all cursor-pointer shadow-sm backdrop-blur-xl disabled:opacity-50"
+              title="Refresh Stats & Notice Board"
+            >
+              <RefreshCw className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 ${statsLoading ? "animate-spin" : ""}`} />
+            </button>
             <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-md backdrop-blur-xl text-xs font-bold text-slate-700 dark:text-slate-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>Verified System Admin</span>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Stats Summary Cards Row — now real, from getNoticesAction */}
+      {/* Stats Summary Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Card 1 */}
         <motion.div
@@ -115,21 +133,21 @@ export default function AdminNoticesPage() {
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
-          <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
+          <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Total Published</p>
             {statsLoading ? (
-              <div className="h-9 w-16 rounded-lg skeleton-shimmer" />
+              <div className="h-9 w-16 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse" />
             ) : (
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">
                 {String(totalPublished).padStart(2, "0")}
               </h3>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
               <Layers className="w-3.5 h-3.5" /> All notices on record
             </span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
             <Megaphone className="w-7 h-7" />
           </div>
         </motion.div>
@@ -140,21 +158,21 @@ export default function AdminNoticesPage() {
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
-          <div className="absolute right-0 top-0 w-32 h-32 bg-amber-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
+          <div className="absolute right-0 top-0 w-32 h-32 bg-violet-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Pinned Notices</p>
             {statsLoading ? (
-              <div className="h-9 w-16 rounded-lg skeleton-shimmer" />
+              <div className="h-9 w-16 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse" />
             ) : (
               <h3 className="text-3xl font-black text-slate-900 dark:text-white">
                 {String(pinnedCount).padStart(2, "0")}
               </h3>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400">
               <Pin className="w-3.5 h-3.5" /> Highlighted on top
             </span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-950/60 border border-violet-100 dark:border-violet-900/40 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-inner">
             <Pin className="w-7 h-7" />
           </div>
         </motion.div>
@@ -165,21 +183,21 @@ export default function AdminNoticesPage() {
           transition={{ duration: 0.2 }}
           className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex items-center justify-between relative overflow-hidden group"
         >
-          <div className="absolute right-0 top-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
+          <div className="absolute right-0 top-0 w-32 h-32 bg-sky-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-[0.16em]">Target Audiences</p>
             {statsLoading ? (
-              <div className="h-9 w-24 rounded-lg skeleton-shimmer" />
+              <div className="h-9 w-24 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse" />
             ) : (
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white truncate max-w-40">
                 {audienceLabel}
               </h3>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400">
               <Bell className="w-3.5 h-3.5" /> Based on active categories
             </span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-inner">
             <Bell className="w-7 h-7" />
           </div>
         </motion.div>
@@ -191,8 +209,12 @@ export default function AdminNoticesPage() {
           title="Admin Notice Board"
           subtitle="Manage active circulars, review scheduled postings, and publish institutional announcements."
           showCreateButton={true}
+          showRefreshButton={false}
+          refreshTrigger={refreshTrigger}
+          onNoticesChange={handleNoticesChange}
         />
       </div>
     </div>
   );
 }
+
