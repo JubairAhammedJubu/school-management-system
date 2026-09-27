@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,14 @@ import {
   Sparkles,
   X,
   AlertCircle,
-  Megaphone
+  AlertTriangle,
+  ChevronDown,
+  Check,
+  BookOpen,
+  Trash2,
+  Pencil,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 
 interface AcademicEvent {
@@ -31,57 +38,183 @@ interface AcademicEvent {
   description: string;
 }
 
+const CATEGORIES = ["Academic", "Exam", "Holiday", "Meeting", "Sports"] as const;
+const AUDIENCES = ["All", "Students", "Teachers"] as const;
+
+// Custom Select UI for Category
+function CustomCategorySelect({
+  value,
+  onChange,
+}: {
+  value: "Holiday" | "Exam" | "Sports" | "Meeting" | "Academic";
+  onChange: (val: "Holiday" | "Exam" | "Sports" | "Meeting" | "Academic") => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-4 py-2.5 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all cursor-pointer ${isOpen
+          ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+          : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white hover:border-indigo-400 dark:hover:border-indigo-500/60"
+          }`}
+      >
+        <div className="flex items-center gap-2 truncate">
+          <Tag className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span className="truncate">{value}</span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
+            }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 max-h-52 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl p-1.5 space-y-1 custom-scrollbar"
+          >
+            {CATEGORIES.map((cat) => {
+              const isSelected = cat === value;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    onChange(cat);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                    ? "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Tag className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{cat}</span>
+                  </div>
+                  {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Custom Select UI for Target Audience
+function CustomAudienceSelect({
+  value,
+  onChange,
+}: {
+  value: "All" | "Students" | "Teachers";
+  onChange: (val: "All" | "Students" | "Teachers") => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-4 py-2.5 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all cursor-pointer ${isOpen
+          ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
+          : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white hover:border-indigo-400 dark:hover:border-indigo-500/60"
+          }`}
+      >
+        <div className="flex items-center gap-2 truncate">
+          <Users className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span className="truncate">{value}</span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
+            }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 top-[calc(100%+0.35rem)] z-50 max-h-52 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl p-1.5 space-y-1 custom-scrollbar"
+          >
+            {AUDIENCES.map((aud) => {
+              const isSelected = aud === value;
+              return (
+                <button
+                  key={aud}
+                  type="button"
+                  onClick={() => {
+                    onChange(aud);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${isSelected
+                    ? "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                    }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{aud}</span>
+                  </div>
+                  {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function AdminEventsPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const [events, setEvents] = useState<AcademicEvent[]>([
-    {
-      id: "EVT-101",
-      title: "Mid-Term Examination Week 2026",
-      category: "Exam",
-      startDate: "2026-09-20",
-      endDate: "2026-09-27",
-      location: "Main Exam Halls 1-4",
-      audience: "Students",
-      description: "Annual mid-term evaluation covering all secondary & higher secondary subjects.",
-    },
-    {
-      id: "EVT-102",
-      title: "Autumn Vacation & School Holiday",
-      category: "Holiday",
-      startDate: "2026-10-05",
-      endDate: "2026-10-10",
-      location: "Campus-wide",
-      audience: "All",
-      description: "Official institutional autumn break for faculty and students.",
-    },
-    {
-      id: "EVT-103",
-      title: "Parent-Teacher Conference 2026",
-      category: "Meeting",
-      startDate: "2026-10-15",
-      endDate: "2026-10-15",
-      location: "Auditorium & Classrooms",
-      audience: "All",
-      description: "Bi-monthly academic progress review meeting between faculty and guardians.",
-    },
-    {
-      id: "EVT-104",
-      title: "Annual Science Fair & Exhibition",
-      category: "Academic",
-      startDate: "2026-11-02",
-      endDate: "2026-11-03",
-      location: "Science Building Complex",
-      audience: "Students",
-      description: "Inter-school robotics, physics, and chemistry project showcase.",
-    },
-  ]);
+  const [events, setEvents] = useState<AcademicEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<AcademicEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<AcademicEvent | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<AcademicEvent | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form states
   const [title, setTitle] = useState("");
@@ -103,38 +236,150 @@ export default function AdminEventsPage() {
     }
   }, [session, rawRole, isPending, router]);
 
-  const handleCreateEvent = (e: React.FormEvent) => {
+  // Load real events from database
+  const loadEvents = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/events`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok && data.events) {
+        setEvents(data.events);
+      } else {
+        setEvents([]);
+      }
+    } catch (err) {
+      console.error("Failed to load events from database", err);
+      setEvents([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session?.user && rawRole === "admin") {
+      loadEvents();
+    }
+  }, [session, rawRole, loadEvents]);
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const resetForm = () => {
+    setTitle("");
+    setCategory("Academic");
+    setStartDate("");
+    setLocation("");
+    setAudience("All");
+    setDescription("");
+    setEditingEvent(null);
+  };
+
+  const handleOpenCreateModal = () => {
+    resetForm();
+    setShowCreateModal(true);
+  };
+
+  const handleOpenEditModal = (evt: AcademicEvent) => {
+    setEditingEvent(evt);
+    setTitle(evt.title);
+    setCategory(evt.category);
+    setStartDate(evt.startDate);
+    setLocation(evt.location);
+    setAudience(evt.audience);
+    setDescription(evt.description);
+    setShowCreateModal(true);
+  };
+
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !startDate) {
-      toast.error("Please enter event title and date.");
+    if (!title.trim()) {
+      toast.error("Event title is required.");
+      return;
+    }
+    if (!startDate) {
+      toast.error("Event date is required.");
+      return;
+    }
+    if (startDate < todayStr && !editingEvent) {
+      toast.error("Event date cannot be in the past.");
+      return;
+    }
+    if (!location.trim()) {
+      toast.error("Location / Venue is required.");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Event description is required.");
       return;
     }
 
-    const created: AcademicEvent = {
-      id: `EVT-${Date.now().toString().slice(-4)}`,
-      title: title.trim(),
-      category,
-      startDate,
-      endDate: startDate,
-      location: location.trim() || "Main Campus",
-      audience,
-      description: description.trim() || "No additional description provided.",
-    };
+    setIsSaving(true);
+    try {
+      const url = editingEvent
+        ? `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events/${editingEvent.id}`
+        : `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events`;
 
-    setEvents((prev) => [created, ...prev]);
-    toast.success(`Academic Event "${created.title}" published to calendar!`);
-    setShowCreateModal(false);
-    setTitle("");
-    setStartDate("");
-    setLocation("");
-    setDescription("");
+      const method = editingEvent ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: title.trim(),
+          category,
+          startDate,
+          location: location.trim(),
+          audience,
+          description: description.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save event");
+
+      toast.success(
+        editingEvent
+          ? `Academic Event "${title.trim()}" updated successfully!`
+          : `Academic Event "${title.trim()}" saved to database!`
+      );
+      setShowCreateModal(false);
+      resetForm();
+      loadEvents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save event.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingEvent) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events/${deletingEvent.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete event");
+
+      toast.success(`Event "${deletingEvent.title}" deleted from database.`);
+      setDeletingEvent(null);
+      loadEvents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete event.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (isPending) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
-        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+        <div className="h-32 rounded-3xl bg-slate-200 dark:bg-slate-900/60 animate-pulse" />
+        <div className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-900/60 animate-pulse" />
       </div>
     );
   }
@@ -154,22 +399,22 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
+      {/* Top Banner - Pitch-Black Dark Mode & Semi-Rounded Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-        
+
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
             <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
-              ACADEMIC CALENDAR &amp; EVENTS
+              LIVE CALENDAR &amp; EVENTS
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
               Institutional Event Manager
@@ -177,13 +422,24 @@ export default function AdminEventsPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Add Academic Event
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={loadEvents}
+            disabled={isLoading}
+            className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 transition-all cursor-pointer"
+            title="Refresh Events"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin text-indigo-500" : ""}`} />
+          </button>
+
+          <button
+            onClick={handleOpenCreateModal}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add Academic Event
+          </button>
+        </div>
       </motion.div>
 
       {/* Filter and Search Bar */}
@@ -195,7 +451,7 @@ export default function AdminEventsPage() {
             placeholder="Search events, holidays, location..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all shadow-sm backdrop-blur-xl"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all shadow-sm backdrop-blur-xl"
           />
         </div>
 
@@ -205,11 +461,10 @@ export default function AdminEventsPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${
-                selectedCategory === cat
-                  ? "bg-indigo-600 text-white border-indigo-600 shadow-indigo-500/25"
-                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border shadow-sm shrink-0 ${selectedCategory === cat
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-indigo-500/25"
+                : "bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900"
+                }`}
             >
               {cat}
             </button>
@@ -218,18 +473,24 @@ export default function AdminEventsPage() {
       </div>
 
       {/* Events Grid */}
-      {filteredEvents.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-48 rounded-3xl bg-slate-200 dark:bg-slate-900/60 animate-pulse border border-slate-200/80 dark:border-slate-800/80" />
+          ))}
+        </div>
+      ) : filteredEvents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredEvents.map((evt) => (
             <motion.div
               key={evt.id}
               whileHover={{ y: -4 }}
               transition={{ duration: 0.2 }}
-              className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 relative overflow-hidden"
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 relative overflow-hidden"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold shrink-0">
                     <CalendarIcon className="w-6 h-6" />
                   </div>
                   <div>
@@ -243,26 +504,50 @@ export default function AdminEventsPage() {
                   </div>
                 </div>
 
-                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                  evt.category === "Holiday" ? "bg-rose-50 text-rose-600 border-rose-100" :
-                  evt.category === "Exam" ? "bg-purple-50 text-purple-600 border-purple-100" :
-                  evt.category === "Meeting" ? "bg-amber-50 text-amber-600 border-amber-100" :
-                  "bg-emerald-50 text-emerald-600 border-emerald-100"
-                }`}>
-                  {evt.category}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold border ${evt.category === "Holiday"
+                      ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/40"
+                      : evt.category === "Exam"
+                        ? "bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/40"
+                        : evt.category === "Meeting"
+                          ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
+                          : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40"
+                      }`}
+                  >
+                    {evt.category}
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEditModal(evt)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors cursor-pointer"
+                      title="Edit Event"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      onClick={() => setDeletingEvent(evt)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 {evt.description}
               </p>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                <span className="text-slate-500 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   {evt.location}
                 </span>
-                <span className="font-bold text-blue-600 dark:text-blue-400">
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">
                   Target: {evt.audience}
                 </span>
               </div>
@@ -270,77 +555,97 @@ export default function AdminEventsPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-12 text-center shadow-xl backdrop-blur-xl flex flex-col items-center justify-center space-y-3">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-12 text-center shadow-xl backdrop-blur-xl flex flex-col items-center justify-center space-y-3">
           <AlertCircle className="w-8 h-8 text-slate-400" />
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Events Found</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">
-            We couldn't find any events matching your search or category filter.
+            We couldn't find any events saved in the database matching your criteria.
           </p>
         </div>
       )}
 
-      {/* Create Event Modal */}
+      {/* Create / Edit Event Modal */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4 overflow-visible"
             >
               <button
-                onClick={() => setShowCreateModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  resetForm();
+                }}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-blue-600" /> Schedule Academic Event
+                <CalendarIcon className="w-5 h-5 text-indigo-600" />{" "}
+                {editingEvent ? "Edit Academic Event" : "Schedule Academic Event"}
               </h3>
 
-              <form onSubmit={handleCreateEvent} className="space-y-3">
+              <form onSubmit={handleSaveEvent} className="space-y-3.5">
                 <div>
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Event Title
+                    Event Title <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. Science Fair 2026"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-medium"
                     required
                   />
+                </div>
+
+                {/* Custom Select Category & Target Audience */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Category <span className="text-rose-500">*</span>
+                    </label>
+                    <CustomCategorySelect value={category} onChange={setCategory} />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Target Audience <span className="text-rose-500">*</span>
+                    </label>
+                    <CustomAudienceSelect value={audience} onChange={setAudience} />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Category
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value as any)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="Academic">Academic</option>
-                      <option value="Exam">Exam</option>
-                      <option value="Holiday">Holiday</option>
-                      <option value="Meeting">Meeting</option>
-                      <option value="Sports">Sports</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Date
+                      Date <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="date"
+                      min={editingEvent ? undefined : todayStr}
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Location / Venue <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Auditorium Hall 1"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-medium"
                       required
                     />
                   </div>
@@ -348,45 +653,116 @@ export default function AdminEventsPage() {
 
                 <div>
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Location / Venue
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Auditorium Hall 1"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Description
+                    Description <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     placeholder="Provide event details..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 h-20"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 h-20 resize-none font-medium"
+                    required
                   />
                 </div>
 
                 <div className="flex items-center gap-3 pt-3">
                   <button
                     type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      resetForm();
+                    }}
+                    className="flex-1 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
+                    disabled={isSaving}
+                    className="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-500/25 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    Save Event
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : editingEvent ? (
+                      "Update Event"
+                    ) : (
+                      "Save Event"
+                    )}
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deletingEvent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-5 overflow-hidden"
+            >
+              <button
+                onClick={() => setDeletingEvent(null)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1 rounded-xl"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/80 border border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Academic Event</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 space-y-1.5">
+                <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>{deletingEvent.title}</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-rose-100 dark:bg-rose-950/90 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">
+                    {deletingEvent.category}
+                  </span>
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-indigo-500" />
+                    {deletingEvent.startDate}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                    {deletingEvent.location}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Are you sure you want to permanently delete this academic event from the system database?
+              </p>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeletingEvent(null)}
+                  disabled={isDeleting}
+                  className="flex-1 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={isDeleting}
+                  className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all shadow-lg shadow-rose-500/25 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Delete Event"}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

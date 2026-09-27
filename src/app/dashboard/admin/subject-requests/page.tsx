@@ -60,19 +60,19 @@ type StatusCounts = {
 // Skeleton Loader for Stats Overview Cards
 function StatsSkeleton() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="p-4.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 animate-pulse space-y-3"
+          className="p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 shadow-xl backdrop-blur-xl animate-pulse space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="h-3.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
-            <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-800" />
+            <div className="h-3.5 w-20 bg-slate-200 dark:bg-slate-900 rounded-md" />
+            <div className="w-10 h-10 rounded-2xl bg-slate-200 dark:bg-slate-900" />
           </div>
           <div className="mt-2.5 flex items-baseline gap-2">
-            <div className="h-7 w-12 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
+            <div className="h-8 w-14 bg-slate-200 dark:bg-slate-900 rounded-lg" />
+            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-900 rounded-md" />
           </div>
         </div>
       ))}
@@ -87,28 +87,28 @@ function RequestCardsSkeleton() {
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 animate-pulse space-y-4"
+          className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl animate-pulse space-y-4"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-slate-800 flex-shrink-0" />
+              <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-900 flex-shrink-0" />
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
-                  <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-4 w-36 bg-slate-200 dark:bg-slate-900 rounded-md" />
+                  <div className="h-4 w-28 bg-slate-200 dark:bg-slate-900 rounded-md" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-5 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                  <div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="h-6 w-28 bg-slate-200 dark:bg-slate-900 rounded-xl" />
+                  <div className="h-6 w-24 bg-slate-200 dark:bg-slate-900 rounded-xl" />
                 </div>
               </div>
             </div>
-            <div className="h-6 w-32 bg-slate-200 dark:bg-slate-800 rounded-full" />
+            <div className="h-7 w-32 bg-slate-200 dark:bg-slate-900 rounded-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 p-3.5 rounded-xl bg-slate-100/60 dark:bg-slate-800/40">
-            <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
-            <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
-            <div className="h-4 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
+            <div className="h-4 w-full bg-slate-200 dark:bg-slate-900 rounded-md" />
+            <div className="h-4 w-full bg-slate-200 dark:bg-slate-900 rounded-md" />
+            <div className="h-4 w-full bg-slate-200 dark:bg-slate-900 rounded-md" />
           </div>
         </div>
       ))}
@@ -146,16 +146,15 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-xs min-w-[145px]"
+        className="inline-flex items-center justify-between gap-2.5 px-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer shadow-xs min-w-[150px]"
       >
         <div className="flex items-center gap-2 truncate">
           <Filter className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
           <span className="truncate">{selectedOption.label}</span>
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
-            isOpen ? "rotate-180 text-indigo-600" : ""
-          }`}
+          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
+            }`}
         />
       </button>
 
@@ -166,7 +165,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-1.5 w-48 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-900/10 dark:shadow-slate-950/40 z-50 overflow-hidden"
+            className="absolute left-0 mt-2 w-48 py-1.5 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;
@@ -178,11 +177,10 @@ function CustomSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left ${
-                    isSelected
-                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold"
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80"
-                  }`}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left ${isSelected
+                    ? "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 font-bold"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                    }`}
                 >
                   <span>{opt.label}</span>
                   {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />}
@@ -304,12 +302,17 @@ export default function AdminSubjectRequestsPage() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Top Banner - White in Light mode & Sleek Dark in Dark mode */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 text-slate-900 dark:text-white shadow-sm dark:shadow-md border border-slate-200/90 dark:border-slate-800">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+      {/* Top Banner - Pitch Black Dark Mode & Semi-Rounded Card Styling */}
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative overflow-hidden rounded-3xl bg-white/90 dark:bg-slate-950/90 p-6 sm:p-8 text-slate-900 dark:text-white shadow-xl backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80"
+      >
+        <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-xs font-extrabold tracking-wide border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-xs font-semibold tracking-wide border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400">
               <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>ACADEMIC MANAGEMENT</span>
             </div>
@@ -317,112 +320,108 @@ export default function AdminSubjectRequestsPage() {
               Teacher Subject Requests
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-              Review and approve subject teaching applications submitted by faculty members across classes and sections.
+              Review and approve subject teaching applications submitted by  faculty members across <br /> classes and sections.
             </p>
           </div>
 
           <button
             onClick={() => loadRequests(true)}
             disabled={refreshing || loading}
-            className="self-start sm:self-center inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+            className="self-start sm:self-center inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 dark:text-slate-400 ${refreshing ? "animate-spin" : ""}`} />
             <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards Row with Skeleton Loading State */}
       {loading ? (
         <StatsSkeleton />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Pending Card */}
           <div
             onClick={() => setStatusFilter("PENDING")}
-            className={`p-4.5 rounded-2xl border transition-all cursor-pointer ${
-              statusFilter === "PENDING"
-                ? "bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/50 ring-2 ring-amber-500/20 shadow-md"
-                : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-600/80"
-            }`}
+            className={`p-5 rounded-3xl border transition-all cursor-pointer shadow-xl backdrop-blur-xl ${statusFilter === "PENDING"
+              ? "bg-amber-500/10 dark:bg-amber-950/40 border-amber-500/50 ring-2 ring-amber-500/20"
+              : "bg-white/90 dark:bg-slate-950/90 border-slate-200/80 dark:border-slate-800/80 hover:border-amber-400 dark:hover:border-amber-600/80"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Pending</span>
-              <div className="p-2.5 rounded-xl bg-amber-500/15 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <div className="p-2.5 rounded-2xl bg-amber-500/15 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
                 <Clock className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
                 {counts.PENDING}
               </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">awaiting decision</span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">awaiting decision</span>
             </div>
           </div>
 
           {/* Approved Card */}
           <div
             onClick={() => setStatusFilter("APPROVED")}
-            className={`p-4.5 rounded-2xl border transition-all cursor-pointer ${
-              statusFilter === "APPROVED"
-                ? "bg-emerald-500/10 dark:bg-emerald-950/40 border-emerald-500/50 ring-2 ring-emerald-500/20 shadow-md"
-                : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600/80"
-            }`}
+            className={`p-5 rounded-3xl border transition-all cursor-pointer shadow-xl backdrop-blur-xl ${statusFilter === "APPROVED"
+              ? "bg-emerald-500/10 dark:bg-emerald-950/40 border-emerald-500/50 ring-2 ring-emerald-500/20"
+              : "bg-white/90 dark:bg-slate-950/90 border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-400 dark:hover:border-emerald-600/80"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Approved</span>
-              <div className="p-2.5 rounded-xl bg-emerald-500/15 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2.5 rounded-2xl bg-emerald-500/15 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
                 {counts.APPROVED}
               </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">assigned teachers</span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">assigned teachers</span>
             </div>
           </div>
 
           {/* Rejected Card */}
           <div
             onClick={() => setStatusFilter("REJECTED")}
-            className={`p-4.5 rounded-2xl border transition-all cursor-pointer ${
-              statusFilter === "REJECTED"
-                ? "bg-rose-500/10 dark:bg-rose-950/40 border-rose-500/50 ring-2 ring-rose-500/20 shadow-md"
-                : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600/80"
-            }`}
+            className={`p-5 rounded-3xl border transition-all cursor-pointer shadow-xl backdrop-blur-xl ${statusFilter === "REJECTED"
+              ? "bg-rose-500/10 dark:bg-rose-950/40 border-rose-500/50 ring-2 ring-rose-500/20"
+              : "bg-white/90 dark:bg-slate-950/90 border-slate-200/80 dark:border-slate-800/80 hover:border-rose-400 dark:hover:border-rose-600/80"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-rose-700 dark:text-rose-400">Rejected</span>
-              <div className="p-2.5 rounded-xl bg-rose-500/15 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+              <div className="p-2.5 rounded-2xl bg-rose-500/15 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
                 <XCircle className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
                 {counts.REJECTED}
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">declined</span>
             </div>
           </div>
 
-          {/* Total Card (Shows Capped Display Info) */}
+          {/* Total Card */}
           <div
             onClick={() => setStatusFilter("ALL")}
-            className={`p-4.5 rounded-2xl border transition-all cursor-pointer ${
-              statusFilter === "ALL"
-                ? "bg-indigo-500/10 dark:bg-indigo-950/40 border-indigo-500/50 ring-2 ring-indigo-500/20 shadow-md"
-                : "bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-600/80"
-            }`}
+            className={`p-5 rounded-3xl border transition-all cursor-pointer shadow-xl backdrop-blur-xl ${statusFilter === "ALL"
+              ? "bg-indigo-500/10 dark:bg-indigo-950/40 border-indigo-500/50 ring-2 ring-indigo-500/20"
+              : "bg-white/90 dark:bg-slate-950/90 border-slate-200/80 dark:border-slate-800/80 hover:border-indigo-400 dark:hover:border-indigo-600/80"
+              }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-indigo-700 dark:text-indigo-400">Total Requests</span>
-              <div className="p-2.5 rounded-xl bg-indigo-500/15 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+              <div className="p-2.5 rounded-2xl bg-indigo-500/15 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                 <Layers className="w-4 h-4" />
               </div>
             </div>
             <div className="mt-2.5 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
                 {counts.ALL}
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
@@ -436,7 +435,7 @@ export default function AdminSubjectRequestsPage() {
       {/* Stacked Upper & Down Filter Controls Section */}
       <div className="space-y-3">
         {/* Upper Part: Status Filter Pills */}
-        <div className="w-full bg-white dark:bg-slate-900 p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm overflow-x-auto no-scrollbar">
+        <div className="w-full bg-white/90 dark:bg-slate-950/90 p-3 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl backdrop-blur-xl overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-2">
             {(["PENDING", "APPROVED", "REJECTED", "ALL"] as const).map((tab) => {
               const isActive = statusFilter === tab;
@@ -446,19 +445,17 @@ export default function AdminSubjectRequestsPage() {
                 <button
                   key={tab}
                   onClick={() => setStatusFilter(tab)}
-                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                    isActive
-                      ? "bg-indigo-600 dark:bg-indigo-600 text-white shadow-md shadow-indigo-600/25"
-                      : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80"
-                  }`}
+                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isActive
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                    }`}
                 >
                   <span>{tab === "ALL" ? "All Requests" : tab.charAt(0) + tab.slice(1).toLowerCase()}</span>
                   <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
-                      isActive
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
-                    }`}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800"
+                      }`}
                   >
                     {countVal}
                   </span>
@@ -469,7 +466,7 @@ export default function AdminSubjectRequestsPage() {
         </div>
 
         {/* Down Part: Class Dropdown Custom Select & Search Bar */}
-        <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm">
+        <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/90 dark:bg-slate-950/90 p-3 sm:p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl backdrop-blur-xl">
           {/* Custom Select for Class Filter */}
           <div className="flex items-center gap-2">
             <CustomSelect
@@ -494,7 +491,7 @@ export default function AdminSubjectRequestsPage() {
               placeholder="Search by teacher name, email, subject, class, or room..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/90 text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
             {searchQuery && (
               <button
@@ -512,19 +509,19 @@ export default function AdminSubjectRequestsPage() {
       {loading ? (
         <RequestCardsSkeleton />
       ) : filteredRequests.length === 0 ? (
-        /* Full Screen Width Semi-Rounded Empty States Card */
+        /* Semi-Rounded Empty States Card */
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-8 sm:p-14 border border-slate-200/90 dark:border-slate-800 shadow-sm text-center flex flex-col items-center justify-center space-y-4 my-2"
+          className="w-full bg-white/90 dark:bg-slate-950/90 rounded-3xl p-8 sm:p-14 border border-slate-200/80 dark:border-slate-800/80 shadow-xl backdrop-blur-xl text-center flex flex-col items-center justify-center space-y-4 my-2"
         >
           {searchQuery !== "" || selectedClass !== "ALL" ? (
             <>
-              <div className="w-16 h-16 rounded-3xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-inner">
                 <SearchX className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
                   No Matching Requests Found
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md">
@@ -536,7 +533,7 @@ export default function AdminSubjectRequestsPage() {
                   setSearchQuery("");
                   setSelectedClass("ALL");
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors cursor-pointer border border-slate-200 dark:border-slate-800"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Reset Filters</span>
@@ -544,15 +541,15 @@ export default function AdminSubjectRequestsPage() {
             </>
           ) : statusFilter === "PENDING" ? (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/15">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/15">
                 <CheckCircle2 className="w-9 h-9 sm:w-10 sm:h-10" />
               </div>
               <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-100 dark:border-emerald-900/40">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                   <span>ALL CAUGHT UP</span>
                 </div>
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
                   No Pending Requests
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg leading-relaxed">
@@ -562,7 +559,7 @@ export default function AdminSubjectRequestsPage() {
               {counts.APPROVED > 0 && (
                 <button
                   onClick={() => setStatusFilter("APPROVED")}
-                  className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 transition-all cursor-pointer"
+                  className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>View Approved Requests ({counts.APPROVED})</span>
@@ -571,11 +568,11 @@ export default function AdminSubjectRequestsPage() {
             </>
           ) : statusFilter === "APPROVED" ? (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-inner">
                 <ShieldCheck className="w-9 h-9 sm:w-10 sm:h-10" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   No Approved Subject Requests
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md">
@@ -585,11 +582,11 @@ export default function AdminSubjectRequestsPage() {
             </>
           ) : statusFilter === "REJECTED" ? (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-inner">
                 <XCircle className="w-9 h-9 sm:w-10 sm:h-10" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   No Rejected Requests
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md">
@@ -599,11 +596,11 @@ export default function AdminSubjectRequestsPage() {
             </>
           ) : (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 flex items-center justify-center">
                 <Inbox className="w-9 h-9 sm:w-10 sm:h-10" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                   No Requests Found
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md">
@@ -614,7 +611,7 @@ export default function AdminSubjectRequestsPage() {
           )}
         </motion.div>
       ) : (
-        /* Requests Grid List - Capped to MAX 20 items */
+        /* Requests Grid List - Semi-Rounded Cards with Pitch-Black Dark Mode */
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
             {displayedRequests.map((r) => {
@@ -629,42 +626,41 @@ export default function AdminSubjectRequestsPage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  className="w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-all space-y-4 relative overflow-hidden"
+                  className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 shadow-xl backdrop-blur-xl hover:shadow-2xl transition-all space-y-4 relative overflow-hidden"
                 >
                   {/* Status Indicator Bar */}
                   <div
-                    className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                      isPending
-                        ? "bg-amber-500"
-                        : isApproved
+                    className={`absolute left-0 top-0 bottom-0 w-1.5 ${isPending
+                      ? "bg-amber-500"
+                      : isApproved
                         ? "bg-emerald-500"
                         : "bg-rose-500"
-                    }`}
+                      }`}
                   />
 
                   {/* Header Row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-2">
                     <div className="flex items-start gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-indigo-200/60 dark:border-indigo-800/60">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-extrabold text-base flex-shrink-0 border border-indigo-100 dark:border-indigo-900/40">
                         {r.teacherName.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
+                          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
                             {r.teacherName}
                           </h3>
-                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-700/60">
+                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 rounded-lg border border-slate-200/80 dark:border-slate-800">
                             {r.teacherEmail}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/70 px-3 py-1 rounded-lg border border-indigo-200/80 dark:border-indigo-800/80">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
                             <BookOpen className="w-3.5 h-3.5" />
                             {r.subject} {r.group ? `(${r.group})` : ""}
                           </span>
 
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-800">
                             <GraduationCap className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                             {r.grade} • {r.section}
                           </span>
@@ -675,17 +671,17 @@ export default function AdminSubjectRequestsPage() {
                     {/* Status Badge */}
                     <div className="self-start sm:self-center">
                       {isPending && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-extrabold animate-pulse">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 text-xs font-extrabold animate-pulse">
                           <Clock className="w-3.5 h-3.5" /> Pending Review
                         </span>
                       )}
                       {isApproved && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-xs font-extrabold">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 text-xs font-extrabold">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Approved
                         </span>
                       )}
                       {isRejected && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-500/30 text-xs font-extrabold">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 text-xs font-extrabold">
                           <XCircle className="w-3.5 h-3.5" /> Rejected
                         </span>
                       )}
@@ -693,11 +689,11 @@ export default function AdminSubjectRequestsPage() {
                   </div>
 
                   {/* Details Meta Grid */}
-                  <div className="pl-2 grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50/80 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <div className="pl-2 grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50/80 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                       <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
                       <span>Room: </span>
-                      <strong className="text-slate-900 dark:text-slate-100 font-mono">
+                      <strong className="text-slate-900 dark:text-white font-mono">
                         {r.room || "Not specified"}
                       </strong>
                     </div>
@@ -705,7 +701,7 @@ export default function AdminSubjectRequestsPage() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
                       <span>Schedule: </span>
-                      <strong className="text-slate-900 dark:text-slate-100">
+                      <strong className="text-slate-900 dark:text-white">
                         {r.schedule || "Flexible"} {r.time ? `(${r.time})` : ""}
                       </strong>
                     </div>
@@ -723,7 +719,7 @@ export default function AdminSubjectRequestsPage() {
                   {/* Teacher's Reason */}
                   {r.reason && (
                     <div className="pl-2">
-                      <div className="p-3.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs text-indigo-950 dark:text-indigo-200 space-y-1">
+                      <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 text-xs text-indigo-950 dark:text-indigo-200 space-y-1">
                         <span className="font-bold flex items-center gap-1.5 text-[11px] text-indigo-600 dark:text-indigo-400">
                           <FileText className="w-3.5 h-3.5" /> Teacher's Application Note:
                         </span>
@@ -737,7 +733,7 @@ export default function AdminSubjectRequestsPage() {
                   {/* Admin Rejection Feedback (If rejected) */}
                   {isRejected && r.adminFeedback && (
                     <div className="pl-2">
-                      <div className="p-3.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-950 dark:text-rose-200 space-y-1">
+                      <div className="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-950 dark:text-rose-200 space-y-1">
                         <span className="font-bold flex items-center gap-1.5 text-[11px] text-rose-600 dark:text-rose-400">
                           <AlertCircle className="w-3.5 h-3.5" /> Reason for Rejection:
                         </span>
@@ -750,11 +746,11 @@ export default function AdminSubjectRequestsPage() {
 
                   {/* Admin Action Buttons for PENDING */}
                   {isPending && (
-                    <div className="pl-2 pt-1 flex items-center justify-end gap-2.5">
+                    <div className="pl-2 pt-1 flex items-center justify-end gap-3">
                       <button
                         onClick={() => setRejectingRequest(r)}
                         disabled={busyId === r.id}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Reject</span>
@@ -763,7 +759,7 @@ export default function AdminSubjectRequestsPage() {
                       <button
                         onClick={() => handleApprove(r.id)}
                         disabled={busyId === r.id}
-                        className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
                       >
                         {busyId === r.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -781,7 +777,7 @@ export default function AdminSubjectRequestsPage() {
 
           {/* Notice when requests exceed 20 items */}
           {filteredRequests.length > MAX_DISPLAY_COUNT && (
-            <div className="p-3.5 text-center rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/60 text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex items-center justify-center gap-2">
+            <div className="p-4 text-center rounded-3xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/60 text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex items-center justify-center gap-2 shadow-xl backdrop-blur-xl">
               <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
               <span>
                 Showing the latest 20 requests out of <strong>{filteredRequests.length}</strong> total matching requests.
@@ -791,15 +787,15 @@ export default function AdminSubjectRequestsPage() {
         </div>
       )}
 
-      {/* Reject Modal */}
+      {/* Reject Modal with Pitch-Black Dark Mode */}
       <AnimatePresence>
         {rejectingRequest && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
             >
               <button
                 onClick={() => setRejectingRequest(null)}
@@ -809,14 +805,14 @@ export default function AdminSubjectRequestsPage() {
               </button>
 
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-md shadow-rose-500/15">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-md shadow-rose-500/15">
                   <AlertTriangle className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                     Reject Subject Request
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {rejectingRequest.teacherName} • {rejectingRequest.subject} ({rejectingRequest.grade})
                   </p>
                 </div>
@@ -831,7 +827,7 @@ export default function AdminSubjectRequestsPage() {
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Explain why this request is being rejected (e.g., Schedule conflict, Subject already assigned to another teacher)..."
                   rows={3}
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/90 p-3 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
                 />
               </div>
 
@@ -840,7 +836,7 @@ export default function AdminSubjectRequestsPage() {
                   type="button"
                   onClick={() => setRejectingRequest(null)}
                   disabled={busyId === rejectingRequest.id}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -848,7 +844,7 @@ export default function AdminSubjectRequestsPage() {
                   type="button"
                   onClick={handleReject}
                   disabled={busyId === rejectingRequest.id || !rejectReason.trim()}
-                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/25 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {busyId === rejectingRequest.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
