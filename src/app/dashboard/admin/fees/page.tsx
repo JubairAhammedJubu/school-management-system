@@ -14,6 +14,9 @@ import {
   Wallet,
   Search,
   ShieldCheck,
+  ChevronDown,
+  Check,
+  Filter,
 } from "lucide-react";
 import RecordPaymentModal from "@/components/shared/RecordFeePaymentModal";
 import VerifyPaymentModal from "@/components/shared/VerifyPaymentModal";
@@ -34,6 +37,167 @@ function monthKey() {
 }
 
 type Tab = "claims" | "roster" | "structure";
+
+function NiceSelect({
+  value,
+  onChange,
+  options,
+  placeholder = "Select...",
+  icon: Icon,
+  disabled = false,
+  className = "",
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder?: string;
+  icon?: any;
+  disabled?: boolean;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={`relative min-w-36 ${className}`}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white transition-all cursor-pointer shadow-xs focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+      >
+        <div className="flex items-center gap-2 truncate">
+          {Icon && <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+          <span className="truncate">{value || placeholder}</span>
+        </div>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 shrink-0 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-56 overflow-y-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-xl backdrop-blur-xl space-y-1"
+            >
+              {options.map((opt) => {
+                const isSelected = opt === value;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                    }`}
+                  >
+                    <span className="truncate">{opt}</span>
+                    {isSelected && (
+                      <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-2" />
+                    )}
+                  </button>
+                );
+              })}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function FeesSummarySkeleton() {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-pulse">
+      {[...Array(4)].map((_, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm space-y-2.5"
+        >
+          <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+          <div className="h-7 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+          <div className="h-2.5 w-32 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ClaimsTableSkeleton() {
+  return (
+    <div className="p-6 space-y-4 animate-pulse">
+      {[...Array(4)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3.5 last:border-0"
+        >
+          <div className="space-y-1.5 flex-1">
+            <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
+            <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
+          </div>
+          <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden sm:block" />
+          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden md:block" />
+          <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-md mx-4" />
+          <div className="h-8 w-20 bg-slate-200 dark:bg-slate-800 rounded-xl shrink-0" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RosterTableSkeleton() {
+  return (
+    <div className="p-6 space-y-4 animate-pulse">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3.5 last:border-0"
+        >
+          <div className="flex items-center gap-3 flex-1">
+            <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
+            <div className="space-y-1.5 flex-1">
+              <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
+              <div className="h-3 w-44 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
+            </div>
+          </div>
+          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden sm:block" />
+          <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md mx-4" />
+          <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-full shrink-0" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StructureSkeleton() {
+  return (
+    <div className="p-6 space-y-3.5 animate-pulse max-w-lg rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-md">
+      <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md mb-2" />
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-3.5"
+        >
+          <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
+          <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+        </div>
+      ))}
+      <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl mt-4" />
+    </div>
+  );
+}
 
 export default function AdminFeesPage() {
   const year = new Date().getFullYear().toString();
@@ -241,14 +405,15 @@ export default function AdminFeesPage() {
           <button
             type="button"
             onClick={refresh}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer"
+            disabled={loading}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer disabled:opacity-50 shadow-xs active:scale-[0.98]"
           >
-            {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3.5 w-3.5" />
-            )}
-            Refresh
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${
+                loading ? "animate-spin text-indigo-600 dark:text-indigo-400" : ""
+              }`}
+            />
+            <span>{loading ? "Refreshing..." : "Refresh"}</span>
           </button>
           <button
             type="button"
@@ -261,44 +426,48 @@ export default function AdminFeesPage() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Total due
-          </p>
-          <p className="mt-1 text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-            ৳{summary.totalDue.toLocaleString()}
-          </p>
+      {loading ? (
+        <FeesSummarySkeleton />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Total due
+            </p>
+            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+              ৳{summary.totalDue.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Total paid
+            </p>
+            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              ৳{summary.totalPaid.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Remaining
+            </p>
+            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400">
+              ৳{summary.remaining.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Collected
+            </p>
+            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
+              {summary.collectedPercent}%
+            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              {summary.paidCount} paid · {summary.dueCount} due ·{" "}
+              {summary.studentCount} students
+            </p>
+          </div>
         </div>
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Total paid
-          </p>
-          <p className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-            ৳{summary.totalPaid.toLocaleString()}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Remaining
-          </p>
-          <p className="mt-1 text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400">
-            ৳{summary.remaining.toLocaleString()}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            Collected
-          </p>
-          <p className="mt-1 text-xl sm:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
-            {summary.collectedPercent}%
-          </p>
-          <p className="text-[10px] text-slate-400 mt-0.5">
-            {summary.paidCount} paid · {summary.dueCount} due ·{" "}
-            {summary.studentCount} students
-          </p>
-        </div>
-      </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => {
@@ -342,7 +511,9 @@ export default function AdminFeesPage() {
             exit={{ opacity: 0, y: -4 }}
             className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-md"
           >
-            {claims.length === 0 ? (
+            {loading ? (
+              <ClaimsTableSkeleton />
+            ) : claims.length === 0 ? (
               <EmptyState
                 icon={Clock}
                 title="No pending claims"
@@ -439,29 +610,18 @@ export default function AdminFeesPage() {
                 />
               </div>
 
-              <select
+              <NiceSelect
                 value={filterClass}
-                onChange={(e) => setFilterClass(e.target.value)}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-bold"
-              >
-                {CLASS_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFilterClass(val)}
+                options={CLASS_OPTIONS}
+                icon={Filter}
+              />
 
-              <select
+              <NiceSelect
                 value={filterSection}
-                onChange={(e) => setFilterSection(e.target.value)}
-                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-bold"
-              >
-                {SECTION_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFilterSection(val)}
+                options={SECTION_OPTIONS}
+              />
 
               <button
                 type="button"
@@ -473,7 +633,9 @@ export default function AdminFeesPage() {
             </div>
 
             <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-md">
-              {roster.length === 0 ? (
+              {loading ? (
+                <RosterTableSkeleton />
+              ) : roster.length === 0 ? (
                 <EmptyState
                   icon={Users}
                   title="No students found"
@@ -544,8 +706,11 @@ export default function AdminFeesPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="max-w-lg rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 shadow-md space-y-4"
           >
+            {loading ? (
+              <StructureSkeleton />
+            ) : (
+              <div className="max-w-lg rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 shadow-md space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -605,8 +770,10 @@ export default function AdminFeesPage() {
               )}
               Save structure
             </button>
-          </motion.div>
+          </div>
         )}
+      </motion.div>
+    )}
       </AnimatePresence>
 
       <RecordPaymentModal
