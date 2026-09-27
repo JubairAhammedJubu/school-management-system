@@ -137,8 +137,8 @@ function CustomSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between pl-3 pr-2.5 py-2 rounded-xl border text-xs sm:text-sm transition-all cursor-pointer ${
           isOpen
-            ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-            : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600"
+            ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-xs"
+            : "border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-950 text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-600"
         }`}
       >
         <div className="flex items-center gap-2 truncate pr-1 min-w-0">
@@ -174,7 +174,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 4, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.12 }}
-            className="absolute z-[70] left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-1 space-y-0.5"
+            className="absolute z-[70] left-0 right-0 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-2xl p-1 space-y-0.5"
           >
             {options.map((opt, idx) => {
               const isSelected = opt.value === value;
@@ -1016,7 +1016,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
+        className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative overflow-hidden"
       >
         <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -1069,7 +1069,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
           <button
             onClick={loadStudents}
             disabled={isLoading}
-            className="flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all disabled:opacity-60 cursor-pointer shadow-xs"
+            className="flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all disabled:opacity-60 cursor-pointer shadow-xs"
             title="Refresh Roster"
           >
             <RefreshCw
@@ -1128,7 +1128,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
                 isSelected
                   ? "border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-lg"
                   : "border-slate-200/80 dark:border-slate-800"
-              } bg-white/90 dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-xl transition-all hover:scale-[1.01] cursor-pointer flex flex-col justify-between relative overflow-hidden`}
+              } bg-white/90 dark:bg-slate-950/90 p-4 shadow-sm backdrop-blur-xl transition-all hover:scale-[1.01] cursor-pointer flex flex-col justify-between relative overflow-hidden`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div
@@ -1162,7 +1162,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
       {/* Filter Tabs & Search Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 shadow-sm overflow-x-auto no-scrollbar">
           {[
             { id: "all", label: "All Students", count: totalStudents },
             {
@@ -1196,7 +1196,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
                       ? "bg-white/20 text-white"
                       : tab.alert
                         ? "bg-amber-500 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        : "bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -1214,7 +1214,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
             placeholder="Search by name, email or class..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
           />
           {searchTerm && (
             <button
@@ -1228,7 +1228,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
       </div>
 
       {/* Academic Placement Filter Bar (Class, Section, Group) */}
-      <div className="relative z-30 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-4 sm:p-5 shadow-xl backdrop-blur-xl space-y-3.5">
+      <div className="relative z-30 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-4 sm:p-5 shadow-xl backdrop-blur-xl space-y-3.5">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
@@ -1387,7 +1387,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
           ))}
         </div>
       ) : filteredStudents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm">
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-8 shadow-sm">
           <UserX className="w-12 h-12 text-slate-400" />
           <p className="text-base font-bold text-slate-900 dark:text-white">
             No students found
@@ -1415,7 +1415,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
                   exit={{ opacity: 0, scale: 0.95 }}
                   whileHover={{ y: -3 }}
                   transition={{ duration: 0.2 }}
-                  className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 p-5 sm:p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 relative overflow-hidden"
+                  className="rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 p-5 sm:p-6 shadow-xl backdrop-blur-xl flex flex-col justify-between space-y-4 relative overflow-hidden"
                 >
                   {/* Top Row: Avatar, Info, Status Badge */}
                   <div className="flex items-start justify-between gap-3">
@@ -1587,7 +1587,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xl max-w-2xl sm:max-w-3xl w-full relative overflow-x-hidden overflow-y-auto max-h-[90vh] my-auto no-scrollbar"
+              className="bg-white dark:bg-slate-950 rounded-2xl p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xl max-w-2xl sm:max-w-3xl w-full relative overflow-x-hidden overflow-y-auto max-h-[90vh] my-auto no-scrollbar"
             >
               <div className="absolute right-0 top-0 w-40 h-40 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none overflow-hidden" />
 
@@ -1938,7 +1938,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
             >
               <button
                 onClick={() => setModal(null)}
@@ -1962,7 +1962,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               </div>
 
               {/* Box displaying generated student credentials */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700/80 space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-500 dark:text-slate-400 font-medium">
                     Student Name:
@@ -2050,7 +2050,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xl max-w-2xl sm:max-w-3xl w-full relative overflow-x-hidden overflow-y-auto max-h-[90vh] my-auto no-scrollbar"
+              className="bg-white dark:bg-slate-950 rounded-2xl p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xl max-w-2xl sm:max-w-3xl w-full relative overflow-x-hidden overflow-y-auto max-h-[90vh] my-auto no-scrollbar"
             >
               <div className="absolute right-0 top-0 w-40 h-40 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none overflow-hidden" />
 
@@ -2247,7 +2247,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full relative space-y-4"
             >
               <button
                 onClick={() => setModal(null)}
@@ -2344,7 +2344,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
             >
               <button
                 onClick={() => setModal(null)}
@@ -2396,7 +2396,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
             >
               <button
                 onClick={() => setModal(null)}
@@ -2450,7 +2450,7 @@ const handleUpdateStudent = async (e: React.FormEvent) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
+              className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-2xl max-w-sm w-full relative"
             >
               <button
                 onClick={() => setModal(null)}
