@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Bell,
   CalendarDays,
@@ -42,6 +42,8 @@ interface NoticeBoardProps {
   showCreateButton?: boolean;
   isHomePageNotices?: boolean;
   onNoticesChange?: (notices: Notice[]) => void;
+  showRefreshButton?: boolean;
+  refreshTrigger?: number;
 }
 
 export default function NoticeBoard({
@@ -50,12 +52,19 @@ export default function NoticeBoard({
   showCreateButton = false,
   isHomePageNotices = false,
   onNoticesChange,
+  showRefreshButton = true,
+  refreshTrigger,
 }: NoticeBoardProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const onNoticesChangeRef = useRef(onNoticesChange);
+  useEffect(() => {
+    onNoticesChangeRef.current = onNoticesChange;
+  }, [onNoticesChange]);
 
   const { data: session } = useSession();
   const isLoggedIn = Boolean(session?.user);
@@ -96,29 +105,29 @@ export default function NoticeBoard({
     ? ["All", "Events", "General"]
     : ["All", "Academic", "Events", "General"];
 
-  const fetchNotices = async () => {
+  const fetchNotices = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getNoticesAction();
       if (res.success && Array.isArray(res.notices)) {
         const list = res.notices as Notice[];
         setNotices(list);
-        onNoticesChange?.(list);
+        onNoticesChangeRef.current?.(list);
       } else {
         console.warn("[NoticeBoard] Failed to load notices:", res.error);
         setNotices([]);
-        onNoticesChange?.([]);
+        onNoticesChangeRef.current?.([]);
       }
     } catch (error) {
       console.error("Failed to load notices:", error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchNotices();
-  }, []);
+  }, [fetchNotices, refreshTrigger]);
 
   const polishNotice = async (
     notes: string,
@@ -341,15 +350,17 @@ export default function NoticeBoard({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0 self-stretch sm:self-center">
-            <button
-              onClick={() => fetchNotices()}
-              disabled={isLoading}
-              title="Refresh Notices"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-            >
-              <RotateCw className={`h-4 w-4 text-indigo-600 dark:text-indigo-400 ${isLoading ? "animate-spin" : ""}`} />
-              <span>Refresh</span>
-            </button>
+            {showRefreshButton && (
+              <button
+                onClick={() => fetchNotices()}
+                disabled={isLoading}
+                title="Refresh Notices"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800/80 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+              >
+                <RotateCw className={`h-4 w-4 text-indigo-600 dark:text-indigo-400 ${isLoading ? "animate-spin" : ""}`} />
+                <span>Refresh</span>
+              </button>
+            )}
 
             {showCreateButton && (
               <button
