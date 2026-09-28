@@ -40,18 +40,9 @@ import {
   PaginationMeta,
 } from "@/lib/actions/teacher-students";
 
-const DEFAULT_CLASSES = [
-  "All Classes",
-  "Class 6",
-  "Class 7",
-  "Class 8",
-  "Class 9",
-  "Class 10",
-];
-
 export default function TeacherStudentsPage() {
   const [students, setStudents] = useState<StudentUser[]>([]);
-  const [classesList, setClassesList] = useState<string[]>(DEFAULT_CLASSES);
+  const [classesList, setClassesList] = useState<string[]>(["All Assigned Classes"]);
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0,
     page: 1,
@@ -61,7 +52,7 @@ export default function TeacherStudentsPage() {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedClass, setSelectedClass] = useState("All Classes");
+  const [selectedClass, setSelectedClass] = useState("All Assigned Classes");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -78,18 +69,26 @@ export default function TeacherStudentsPage() {
     (pageNum: number, searchVal: string, classVal: string) => {
       setIsLoading(true);
       startTransition(async () => {
+        const queryClass = (classVal === "All Classes" || classVal === "All Assigned Classes") ? "" : classVal;
         const res = await getTeacherStudentsAction({
           page: pageNum,
           limit: 10,
           search: searchVal,
-          studentClass: classVal,
+          studentClass: queryClass,
         });
 
         if (res.success) {
           setStudents(res.students);
           setPagination(res.pagination);
           if (res.classes && res.classes.length > 0) {
-            setClassesList(res.classes);
+            const cleanClasses = res.classes.filter(
+              (c) => c !== "All Classes" && c !== "All Assigned Classes"
+            );
+            if (cleanClasses.length > 0) {
+              setClassesList(["All Assigned Classes", ...cleanClasses]);
+            } else {
+              setClassesList(["All Assigned Classes"]);
+            }
           }
           setErrorMessage(null);
         } else {
