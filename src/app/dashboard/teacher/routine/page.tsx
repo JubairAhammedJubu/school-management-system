@@ -105,38 +105,16 @@ export default function TeacherRoutinePage() {
     return DAYS.some((day) => Object.keys(grid[day] || {}).length > 0);
   }, [grid]);
 
-  if (loading) {
-    return (
-      <div className="p-5 sm:p-6 lg:p-8 space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <div className="h-10 w-10 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
-            <div className="h-7 w-44 rounded-lg bg-slate-200 dark:bg-slate-800 animate-pulse" />
-            <div className="h-4 w-56 rounded-md bg-slate-100 dark:bg-slate-900 animate-pulse" />
-          </div>
-          <div className="h-9 w-24 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-20 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-3.5"
-            >
-              <div className="h-3 w-16 rounded bg-slate-100 dark:bg-slate-900 animate-pulse" />
-              <div className="mt-3 h-7 w-10 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />
-            </div>
-          ))}
-        </div>
-        <div className="h-72 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 animate-pulse" />
-      </div>
-    );
-  }
-
   return (
-    <div className="p-5 sm:p-6 lg:p-8 space-y-5">
+    <div className="space-y-6 pb-12">
       <style jsx global>{`
         @media print {
-          * {
+          html, body, main, div, table, tr, td, th, p, span {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -149,8 +127,30 @@ export default function TeacherRoutinePage() {
           }
           body,
           main {
-            background: #fff !important;
+            background: #ffffff !important;
             margin: 0 !important;
+            padding: 0 !important;
+          }
+          table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            background-color: #ffffff !important;
+          }
+          th {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            font-weight: 800 !important;
+            border: 1px solid #cbd5e1 !important;
+          }
+          td {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+          }
+          td div {
+            background-color: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+            border-radius: 8px !important;
           }
           @page {
             size: A4 landscape;
@@ -159,41 +159,50 @@ export default function TeacherRoutinePage() {
         }
       `}</style>
 
-      {/* Header */}
+      {/* Top Header Banner matching other routes */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        transition={{ duration: 0.4 }}
+        className="no-print relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
       >
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
-              <CalendarDays className="h-5 w-5" />
+        <div className="pointer-events-none absolute -right-10 -bottom-10 h-60 w-60 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl" />
+
+        <div className="flex items-center gap-3.5 z-10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
+            <CalendarDays className="h-6 w-6" />
+          </div>
+          <div>
+            <span className="inline-block px-3 py-1 mb-1 text-xs font-semibold rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40">
+              ACADEMIC SCHEDULE
             </span>
-            My routine
-          </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Your weekly teaching timetable
-            {session?.user?.name ? ` · ${session.user.name}` : ""}
-          </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+              Weekly Routine &amp; Timetable
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+              View your assigned class periods, section allocations, classroom locations, and breaks.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+
+        <div className="flex items-center gap-3 shrink-0 z-10">
           <button
             type="button"
             onClick={load}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-200 dark:border-indigo-900/50 transition-all cursor-pointer shadow-xs"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
+            <RefreshCw className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            Refresh Routine
           </button>
+
           <button
             type="button"
             onClick={() => window.print()}
             disabled={!hasAnyClass}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-3 text-xs font-bold text-white shadow-md shadow-indigo-500/25 hover:bg-indigo-700 disabled:opacity-40 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02] disabled:opacity-40"
           >
-            <Printer className="h-3.5 w-3.5" />
-            Print
+            <Printer className="h-4 w-4" />
+            Print Routine
           </button>
         </div>
       </motion.div>
@@ -209,22 +218,75 @@ export default function TeacherRoutinePage() {
         )}
       </div>
 
-      {/* Stats */}
-      <div className="no-print grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <MiniStat label="Periods" value={teachingPeriods.length} />
-        <MiniStat
-          label="Assigned slots"
-          value={filledCount}
-          accent="text-indigo-600 dark:text-indigo-400"
+      {/* Metric Summary Cards Row */}
+      <div className="no-print grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <SummaryCard
+          icon={Clock3}
+          label="Daily Periods"
+          value={String(teachingPeriods.length)}
+          detail="Configured teaching periods per day"
+          delay={0.05}
+          iconClass="text-indigo-600 dark:text-indigo-400"
+          iconBg="bg-indigo-50 dark:bg-indigo-500/10"
         />
-        <MiniStat
-          label="School days"
-          value={DAYS.length}
-          accent="text-emerald-600 dark:text-emerald-400"
+        <SummaryCard
+          icon={BookOpen}
+          label="Assigned Slots"
+          value={String(filledCount)}
+          detail="Weekly allocated class sessions"
+          delay={0.1}
+          iconClass="text-emerald-600 dark:text-emerald-400"
+          iconBg="bg-emerald-50 dark:bg-emerald-500/10"
+        />
+        <SummaryCard
+          icon={CalendarDays}
+          label="School Days"
+          value={String(DAYS.length)}
+          detail="Weekly scheduled academic days"
+          delay={0.15}
+          iconClass="text-blue-600 dark:text-blue-400"
+          iconBg="bg-blue-50 dark:bg-blue-500/10"
         />
       </div>
 
-      {periods.length === 0 ? (
+      {loading ? (
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 p-4 shadow-md backdrop-blur-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="h-4 w-32 rounded bg-slate-200 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+            <div className="h-3 w-28 rounded bg-slate-100 dark:bg-slate-900 animate-pulse" />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60">
+                  <th className="px-3 py-3 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 min-w-[100px]">Period</th>
+                  {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"].map((day) => (
+                    <th key={day} className="px-2 py-3 text-center text-[11px] font-extrabold uppercase tracking-wider text-slate-400 min-w-[120px]">{day}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 5 }).map((_, pIdx) => (
+                  <tr key={pIdx} className="border-b border-slate-50 dark:border-slate-800/60 last:border-0">
+                    <td className="px-3 py-3">
+                      <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+                      <div className="mt-1 h-3 w-14 rounded bg-slate-100 dark:bg-slate-900 animate-pulse" />
+                    </td>
+                    {Array.from({ length: 5 }).map((_, dIdx) => (
+                      <td key={dIdx} className="px-1.5 py-1.5">
+                        <div className="min-h-[58px] rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/40 p-2.5 space-y-2">
+                          <div className="h-3.5 w-3/4 rounded bg-slate-200 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+                          <div className="h-2.5 w-1/2 rounded bg-slate-100 dark:bg-slate-900 animate-pulse" />
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : periods.length === 0 ? (
         <Empty
           title="No periods configured"
           text="Admin has not set the school bell schedule yet."
@@ -358,22 +420,54 @@ export default function TeacherRoutinePage() {
   );
 }
 
-function MiniStat({
+function SummaryCard({
+  icon: Icon,
   label,
   value,
-  accent = "text-slate-900 dark:text-white",
+  detail,
+  delay,
+  iconClass = "text-indigo-600 dark:text-indigo-400",
+  iconBg = "bg-indigo-50 dark:bg-indigo-500/10",
 }: {
+  icon: React.ElementType;
   label: string;
-  value: number;
-  accent?: string;
+  value: string;
+  detail: string;
+  delay: number;
+  iconClass?: string;
+  iconBg?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-3.5 shadow-sm">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl dark:shadow-black/70"
+    >
+      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-500/10 blur-xl" />
+
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} ${iconClass} shadow-xs`}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <p className="mt-4 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
         {label}
       </p>
-      <p className={`mt-1 text-xl font-extrabold ${accent}`}>{value}</p>
-    </div>
+
+      {value === "..." ? (
+        <div className="mt-2 h-7 w-16 rounded-md bg-slate-200/90 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+      ) : (
+        <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+          {value}
+        </p>
+      )}
+
+      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        {detail}
+      </p>
+    </motion.div>
   );
 }
 
@@ -390,3 +484,4 @@ function Empty({ title, text }: { title: string; text: string }) {
     </div>
   );
 }
+
