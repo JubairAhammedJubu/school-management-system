@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import {
   FileText,
-  Sparkles,
   Clock3,
   CheckCircle2,
   UploadCloud,
@@ -13,7 +12,13 @@ import {
   Trash2,
   ExternalLink,
   X,
+  RefreshCw,
+  ChevronDown,
+  Check,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
 interface AssignmentRecord {
   id?: string;
@@ -29,12 +34,24 @@ interface AssignmentRecord {
   attemptsUsed: number;
 }
 
-import { useSession } from "@/lib/auth-client";
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "N/A";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 function isSafePdfUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    // Block javascript:, data:, file:, etc.
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
       return false;
     }
@@ -44,7 +61,6 @@ function isSafePdfUrl(url: string): boolean {
   }
 }
 
-// Helper function to safely parse API responses
 const parseJsonResponse = async (response: Response) => {
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
@@ -66,7 +82,6 @@ const getAssignments = async () => {
       },
     );
     const data = await parseJsonResponse(response);
-
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to fetch assignments");
@@ -96,7 +111,7 @@ const statusStyles: Record<
   SUBMITTED: {
     label: "Submitted",
     className:
-      "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/60",
+      "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60",
     icon: UploadCloud,
   },
   GRADED: {
@@ -107,26 +122,181 @@ const statusStyles: Record<
   },
 };
 
+function AssignmentSelect({
+  assignments,
+  value,
+  onChange,
+  disabled,
+}: {
+  assignments: AssignmentRecord[];
+  value: string;
+  onChange: (id: string) => void;
+  disabled?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selectedItem = assignments.find(
+    (a) => (a.id ?? a.title) === value,
+  );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-medium text-slate-800 shadow-2xs outline-none transition-all hover:border-indigo-400 focus:border-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-indigo-500 cursor-pointer"
+      >
+        <span className="flex items-center gap-2 truncate">
+          <FileText className="h-4 w-4 shrink-0 text-indigo-500" />
+          <span className="truncate">
+            {selectedItem
+              ? `${selectedItem.title} — ${selectedItem.subject}`
+              : "Choose an assignment"}
+          </span>
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-800 dark:bg-slate-900"
+          >
+            {assignments.length === 0 ? (
+              <p className="p-3 text-center text-xs text-slate-400">
+                No submittable assignments available
+              </p>
+            ) : (
+              assignments.map((assignment) => {
+                const id = assignment.id ?? assignment.title;
+                const isSelected = id === value;
+                const attemptsUsed = assignment.attemptsUsed ?? 0;
+
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      onChange(id);
+                      setIsOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-xs transition-colors cursor-pointer ${
+                      isSelected
+                        ? "bg-indigo-50 font-bold text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400"
+                        : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800/70"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <div className="truncate font-semibold">
+                        {assignment.title}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                          {assignment.subject}
+                        </span>
+                        <span>•</span>
+                        <span>Due {formatDate(assignment.dueDate)}</span>
+                        <span>•</span>
+                        <span className="font-semibold text-amber-600 dark:text-amber-400">
+                          {attemptsUsed === 1 ? "1 attempt left" : "2 attempts left"}
+                        </span>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <Check className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function TableSkeleton({ rows = 4 }: { rows?: number }) {
+  return (
+    <div className="overflow-x-auto p-5 sm:p-6 animate-pulse">
+      <div className="space-y-4">
+        {Array.from({ length: rows }).map((_, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-between gap-4 py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0"
+          >
+            <div className="space-y-2 flex-1">
+              <div className="h-4 w-44 rounded bg-slate-200 dark:bg-slate-800" />
+              <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+            </div>
+            <div className="h-4 w-20 rounded bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+            <div className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+            <div className="h-4 w-12 rounded bg-slate-200 dark:bg-slate-800" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function StudentAssignmentsPage() {
   const { isPending: isSessionLoading } = useSession();
   const [assignments, setAssignments] = useState<AssignmentRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [previewUrl, setPreviewUrl] = useState<{
     url: string;
     title: string;
   } | null>(null);
-  useEffect(() => {
-    if (isSessionLoading) return;
-    const fetchAssignments = async () => {
+
+  const fetchAssignments = async (refresh = false) => {
+    try {
+      setIsLoading(true);
+      if (refresh) setIsRefreshing(true);
       const data = await getAssignments();
       if (data) {
         setAssignments(data);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
+    if (isSessionLoading) return;
     fetchAssignments();
   }, [isSessionLoading]);
 
@@ -147,10 +317,20 @@ export default function StudentAssignmentsPage() {
     (assignment) =>
       (assignment.id ?? assignment.title) === selectedAssignmentId,
   );
-  const submittableAssignments = assignments.filter(
-    (assignment) =>
-      assignment.submitStatus === "PENDING" ||
-      assignment.submitStatus === "SUBMITTED",
+
+  // Filter out assignments that are GRADED or have used max 2 attempts
+  const submittableAssignments = assignments.filter((assignment) => {
+    const attempts = assignment.attemptsUsed ?? 0;
+    return assignment.submitStatus !== "GRADED" && attempts < 2;
+  });
+
+  const pendingAssignmentsList = assignments.filter(
+    (item) => item.submitStatus === "PENDING",
+  );
+  const totalPages = Math.ceil(pendingAssignmentsList.length / pageSize) || 1;
+  const paginatedPending = pendingAssignmentsList.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   const handleFileChange = (file: File | undefined) => {
@@ -203,7 +383,6 @@ export default function StudentAssignmentsPage() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // 1. Upload File (Do NOT set Content-Type header when sending FormData)
       const uploadResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
         {
@@ -212,7 +391,6 @@ export default function StudentAssignmentsPage() {
           body: formData,
         },
       );
-      // console.log("Upload response status:", uploadResponse, uploadResponse.statusText);
 
       const uploadData = await parseJsonResponse(uploadResponse);
 
@@ -232,7 +410,6 @@ export default function StudentAssignmentsPage() {
 
       const safeFileUrl = fileUrl.trim();
 
-      // 2. Submit Assignment (Include application/json, credentials: include sends session cookie)
       const submitResponse = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
         {
@@ -249,7 +426,7 @@ export default function StudentAssignmentsPage() {
       );
 
       const submitData = await parseJsonResponse(submitResponse);
-      // console.log("Submit response status:", submitResponse, submitResponse.statusText, submitData);
+
       if (!submitResponse.ok) {
         throw new Error(submitData.error || "Failed to submit assignment");
       }
@@ -284,79 +461,127 @@ export default function StudentAssignmentsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Executive Header Banner */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900 p-6 sm:p-8 text-slate-900 dark:text-white shadow-xs transition-colors duration-300"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-6 lg:p-7"
       >
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 shadow-2xs shrink-0">
-            <FileText className="h-6 w-6 text-slate-700 dark:text-slate-300" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-white dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
-                <Sparkles className="h-3 w-3 text-slate-500 dark:text-slate-400" />
-                Student Workspace
-              </span>
+        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-to-tr from-indigo-600/15 via-indigo-500/10 to-indigo-500/15 blur-3xl" />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50/80 text-indigo-600 shadow-2xs dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+              <FileText className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1 text-slate-900 dark:text-white">
-              Assignments
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Track, submit, and review your assignments.
-            </p>
+
+            <div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  Student Workspace
+                </span>
+              </div>
+
+              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
+                Assignments & Coursework
+              </h1>
+
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
+                Track assigned tasks, upload PDF submissions, monitor review attempts, and check teacher feedback.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => fetchAssignments(true)}
+              disabled={isLoading || isRefreshing}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${
+                  isRefreshing
+                    ? "animate-spin text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-400"
+                }`}
+              />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
       </motion.div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* High-Contrast Stat Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            label: "Pending",
-            value: pendingCount,
-            className: "text-amber-600 dark:text-amber-400",
+            label: "Total Assignments",
+            value: isLoading || isRefreshing ? null : String(assignments.length),
+            icon: FileText,
+            detail: "Assigned course tasks",
           },
           {
-            label: "Submitted",
-            value: submittedCount,
-            className: "text-blue-600 dark:text-blue-400",
+            label: "Pending Submission",
+            value: isLoading || isRefreshing ? null : String(pendingCount),
+            icon: Clock3,
+            detail: "Action required",
           },
           {
-            label: "Graded",
-            value: gradedCount,
-            className: "text-emerald-600 dark:text-emerald-400",
+            label: "Submitted Tasks",
+            value: isLoading || isRefreshing ? null : String(submittedCount),
+            icon: UploadCloud,
+            detail: "Turned in for review",
+          },
+          {
+            label: "Graded & Reviewed",
+            value: isLoading || isRefreshing ? null : String(gradedCount),
+            icon: CheckCircle2,
+            detail: "Marks & feedback available",
           },
         ].map((item, idx) => (
           <motion.div
             key={item.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: idx * 0.06, ease: "easeOut" }}
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 text-center shadow-xs transition-colors duration-300"
+            transition={{ duration: 0.35, delay: idx * 0.05 }}
+            className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
           >
-            <p
-              className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${item.className}`}
-            >
-              {item.value}
-            </p>
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-1">
+            <div className="flex items-center justify-between">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+                <item.icon className="h-4 w-4" />
+              </div>
+            </div>
+
+            <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
               {item.label}
+            </p>
+
+            {item.value === null ? (
+              <div className="mt-1 h-7 w-16 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />
+            ) : (
+              <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+                {item.value}
+              </p>
+            )}
+
+            <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
+              {item.detail}
             </p>
           </motion.div>
         ))}
       </div>
 
+      {/* Submit Assignment Card */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.12, ease: "easeOut" }}
-        className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 shadow-xs dark:border-blue-900/60 dark:bg-blue-950/20 sm:p-6"
+        className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 shadow-xs dark:border-indigo-900/60 dark:bg-indigo-950/20 sm:p-6"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
             <UploadCloud className="h-5 w-5" />
           </div>
           <div>
@@ -364,58 +589,53 @@ export default function StudentAssignmentsPage() {
               Submit an assignment
             </h2>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-              Upload a PDF up to 10 MB. You can submit each assignment up to two
-              times.
+              Upload a PDF up to 10 MB. You can submit each assignment up to two times.
             </p>
           </div>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
+          className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] lg:items-end"
         >
           <label className="block">
             <span className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Assignment
+              Choose Assignment
             </span>
-            <select
+            <AssignmentSelect
+              assignments={submittableAssignments}
               value={selectedAssignmentId}
-              onChange={(event) => {
-                setSelectedAssignmentId(event.target.value);
+              onChange={(id) => {
+                setSelectedAssignmentId(id);
+                setSelectedFile(null);
                 setSubmitError("");
               }}
               disabled={submittableAssignments.length === 0 || isSubmitting}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800"
-            >
-              <option value="">Choose an assignment</option>
-              {submittableAssignments.map((assignment) => (
-                <option
-                  key={assignment.id ?? assignment.title}
-                  value={assignment.id ?? assignment.title}
-                >
-                  {assignment.title}
-                </option>
-              ))}
-            </select>
+            />
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
-              PDF file
+            <span className="mb-1.5 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span>PDF file</span>
+              {!selectedAssignmentId && (
+                <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                  (Select assignment first)
+                </span>
+              )}
             </span>
             <input
               type="file"
               accept="application/pdf,.pdf"
               onChange={(event) => handleFileChange(event.target.files?.[0])}
-              disabled={isSubmitting}
-              className="block h-11 w-full cursor-pointer rounded-xl border border-slate-200 bg-white text-xs text-slate-600 file:mr-3 file:h-full file:border-0 file:bg-slate-100 file:px-3 file:font-semibold dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:file:bg-slate-800"
+              disabled={!selectedAssignmentId || isSubmitting}
+              className="block h-11 w-full rounded-xl border border-slate-200 bg-white text-xs text-slate-600 file:mr-3 file:h-full file:border-0 file:bg-slate-100 file:px-3 file:font-semibold disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:file:bg-slate-800 cursor-pointer"
             />
           </label>
 
           <button
             type="submit"
             disabled={isSubmitting || !selectedAssignment || !selectedFile}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -427,10 +647,10 @@ export default function StudentAssignmentsPage() {
         </form>
 
         {selectedFile && (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs dark:border-blue-900/60 dark:bg-slate-900">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-white px-3.5 py-2.5 text-xs dark:border-indigo-900/60 dark:bg-slate-900">
             <span className="flex min-w-0 items-center gap-2 text-slate-700 dark:text-slate-300">
-              <FileText className="h-4 w-4 shrink-0 text-blue-600" />
-              <span className="truncate">{selectedFile.name}</span>
+              <FileText className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+              <span className="truncate font-semibold">{selectedFile.name}</span>
               <span className="shrink-0 text-slate-400">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
               </span>
@@ -439,7 +659,7 @@ export default function StudentAssignmentsPage() {
               type="button"
               onClick={() => setSelectedFile(null)}
               disabled={isSubmitting}
-              className="shrink-0 text-slate-500 hover:text-red-600"
+              className="shrink-0 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
               aria-label="Remove selected PDF"
             >
               <Trash2 className="h-4 w-4" />
@@ -447,7 +667,7 @@ export default function StudentAssignmentsPage() {
           </div>
         )}
         {submitError && (
-          <p className="mt-3 text-xs font-semibold text-red-600 dark:text-red-400">
+          <p className="mt-3 text-xs font-semibold text-rose-600 dark:text-rose-400">
             {submitError}
           </p>
         )}
@@ -458,15 +678,16 @@ export default function StudentAssignmentsPage() {
         )}
       </motion.section>
 
+      {/* Submissions Section */}
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs transition-colors duration-300 overflow-hidden"
       >
         <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white">
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
@@ -480,7 +701,9 @@ export default function StudentAssignmentsPage() {
           </div>
         </div>
 
-        {turnedInAssignments.length === 0 ? (
+        {isLoading || isRefreshing ? (
+          <TableSkeleton rows={3} />
+        ) : turnedInAssignments.length === 0 ? (
           <p className="px-5 sm:px-6 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
             You haven&apos;t submitted any assignments yet.
           </p>
@@ -521,7 +744,7 @@ export default function StudentAssignmentsPage() {
                   return (
                     <tr
                       key={item.id ?? `${item.title}-submitted-${idx}`}
-                      className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                      className="border-b border-slate-50 dark:border-slate-800/60 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors"
                     >
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
                         <div>{item.title}</div>
@@ -535,7 +758,7 @@ export default function StudentAssignmentsPage() {
                         {item.subject}
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                        {item.dueDate}
+                        {formatDate(item.dueDate)}
                       </td>
                       <td className="px-5 sm:px-6 py-3.5">
                         <span
@@ -551,9 +774,13 @@ export default function StudentAssignmentsPage() {
                         {attemptsUsed} / 2
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        {item.marks != null
-                          ? `${item.marks}${item.totalMarks ? `/${item.totalMarks}` : ""}`
-                          : "—"}
+                        {item.marks != null ? (
+                          `${item.marks}${item.totalMarks ? `/${item.totalMarks}` : ""}`
+                        ) : (
+                          <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                            Pending
+                          </span>
+                        )}
                       </td>
                       <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm">
                         {item.fileUrl && isSafePdfUrl(item.fileUrl) ? (
@@ -565,7 +792,7 @@ export default function StudentAssignmentsPage() {
                                 title: item.title,
                               })
                             }
-                            className="font-semibold hover:cursor-pointer text-blue-600 hover:underline dark:text-blue-400"
+                            className="font-semibold cursor-pointer text-indigo-600 hover:underline dark:text-indigo-400"
                           >
                             View PDF
                           </button>
@@ -582,21 +809,30 @@ export default function StudentAssignmentsPage() {
         )}
       </motion.section>
 
-      {/* Assignments Table */}
+      {/* All Assignments Table with Pagination */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs transition-colors duration-300 overflow-hidden"
+        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs transition-colors duration-300 overflow-hidden"
       >
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-            All Assignments
-          </h2>
+        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              All Pending Assignments
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Tasks waiting for your PDF submission
+            </p>
+          </div>
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+            {pendingAssignmentsList.length} total
+          </span>
         </div>
 
-        {assignments.filter((item) => item.submitStatus === "PENDING")
-          .length === 0 ? (
+        {isLoading || isRefreshing ? (
+          <TableSkeleton rows={4} />
+        ) : pendingAssignmentsList.length === 0 ? (
           <div className="px-5 sm:px-6 py-12 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
               <FileText className="h-6 w-6 text-slate-400" />
@@ -605,42 +841,40 @@ export default function StudentAssignmentsPage() {
               No pending assignments
             </h3>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              You have submitted all your assignments or there are none
-              available right now.
+              You have submitted all your assignments or there are none available right now.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Assignment
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Subject
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Due Date
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Status
-                  </th>
-                  <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Grade
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {assignments
-                  .filter((item) => item.submitStatus === "PENDING")
-                  .map((item, idx) => {
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Assignment
+                    </th>
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Subject
+                    </th>
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Due Date
+                    </th>
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Status
+                    </th>
+                    <th className="px-5 sm:px-6 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Grade
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedPending.map((item, idx) => {
                     const style = statusStyles[item.submitStatus];
                     const StatusIcon = style?.icon || Clock3;
                     return (
                       <tr
-                        key={`${item.title}-${idx}`}
-                        className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
+                        key={item.id ?? `${item.title}-${idx}`}
+                        className="border-b border-slate-50 dark:border-slate-800/60 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors"
                       >
                         <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
                           {item.title}
@@ -649,7 +883,7 @@ export default function StudentAssignmentsPage() {
                           {item.subject}
                         </td>
                         <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                          {item.dueDate}
+                          {formatDate(item.dueDate)}
                         </td>
                         <td className="px-5 sm:px-6 py-3.5">
                           <span
@@ -662,16 +896,56 @@ export default function StudentAssignmentsPage() {
                           </span>
                         </td>
                         <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100">
-                          {item.grade ?? "—"}
+                          {item.grade ? (
+                            item.grade
+                          ) : (
+                            <span className="inline-flex items-center rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                              Pending
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );
                   })}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {pendingAssignmentsList.length > 0 && (
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-5 py-3.5 text-xs">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">
+                  Showing {Math.min((currentPage - 1) * pageSize + 1, pendingAssignmentsList.length)} to{" "}
+                  {Math.min(currentPage * pageSize, pendingAssignmentsList.length)} of {pendingAssignmentsList.length} assignments
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="px-2 font-semibold text-slate-700 dark:text-slate-300">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={currentPage >= totalPages}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </motion.div>
+
+      {/* PDF Modal */}
       {previewUrl && (
         <div className="fixed inset-0 z-110 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
           <motion.div
