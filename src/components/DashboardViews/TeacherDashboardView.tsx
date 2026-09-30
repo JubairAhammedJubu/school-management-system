@@ -357,7 +357,7 @@ export default function TeacherDashboardView() {
             </Link>
 
             <Link
-              href="/dashboard/teacher/my-classes"
+              href="/dashboard/teacher/my-class"
               className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 text-xs font-bold text-white shadow-md shadow-indigo-500/25 hover:from-indigo-500 hover:to-indigo-600 transition-all active:scale-95"
             >
               <BookOpen className="h-3.5 w-3.5" />
@@ -458,7 +458,7 @@ export default function TeacherDashboardView() {
             </div>
 
             <Link
-              href="/dashboard/teacher/my-classes"
+              href="/dashboard/teacher/my-class"
               className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
             >
               <span>Full Timetable</span>
@@ -472,7 +472,7 @@ export default function TeacherDashboardView() {
                 <Calendar className="h-8 w-8 text-slate-300 dark:text-slate-700" />
                 <p>No room sessions or class schedules assigned for today.</p>
                 <Link
-                  href="/dashboard/teacher/my-classes"
+                  href="/dashboard/teacher/my-class"
                   className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   <Plus className="h-3 w-3" /> Request Class Assignment
