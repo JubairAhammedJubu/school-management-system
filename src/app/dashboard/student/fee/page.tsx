@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import {
@@ -13,7 +14,6 @@ import {
   Loader2,
   Wallet,
 } from "lucide-react";
-import SubmitFeePaymentModal from "@/components/shared/SubmitFeePaymentModal";
 
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
@@ -26,7 +26,6 @@ type FeeData = {
     due: number;
     status: FeeStatus;
   };
-  /** Extra structures admin created (not MONTHLY) — optional */
   otherFees?: {
     feeType: string;
     label: string;
@@ -38,42 +37,47 @@ type FeeData = {
   pendingClaims: any[];
 };
 
-export default function StudentFeePage() {
-  
-  function StatusPill({ status }: { status: FeeStatus }) {
-    const map = {
-      PAID: {
-        icon: CheckCircle2,
-        cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-        label: "Paid",
-      },
-      PARTIAL: {
-        icon: AlertCircle,
-        cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
-        label: "Partial",
-      },
-      DUE: {
-        icon: XCircle,
-        cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-        label: "Due",
-      },
-    }[status];
-    const Icon = map.icon;
+function StatusPill({ status }: { status: FeeStatus }) {
+  const map = {
+    PAID: {
+      icon: CheckCircle2,
+      cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
+      label: "Paid",
+    },
+    PARTIAL: {
+      icon: AlertCircle,
+      cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
+      label: "Partial",
+    },
+    DUE: {
+      icon: XCircle,
+      cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
+      label: "Due",
+    },
+  }[status];
+  const Icon = map.icon;
 
-    return (
-      <span
-        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${map.cls}`}
-      >
-        <Icon className="h-3 w-3" />
-        {map.label}
-      </span>
-    );
-  }
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${map.cls}`}
+    >
+      <Icon className="h-3 w-3" />
+      {map.label}
+    </span>
+  );
+}
+
+function methodLabel(p: any) {
+  if (p.gateway === "SSLCommerz" || p.gatewayStatus) return "SSLCommerz";
+  if (p.method === "CASH") return "Cash";
+  return p.gateway || p.method || "—";
+}
+
+export default function StudentFeePage() {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<FeeData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{
-    feeType: "MONTHLY" | "EXAM" | "REGISTRATION";
-  } | null>(null);
+  const [paying, setPaying] = useState(false);
 
   const fetchFees = useCallback(async () => {
     setLoading(true);
@@ -96,6 +100,55 @@ export default function StudentFeePage() {
     fetchFees();
   }, [fetchFees]);
 
+  // SSL redirect return
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (!status) return;
+
+    if (status === "success") {
+      toast.success("Payment successful. Updating your fees…");
+      fetchFees();
+    } else if (status === "fail") {
+      toast.error("Payment failed. You can try again.");
+    } else if (status === "cancel") {
+      toast.info("Payment cancelled.");
+    } else if (status === "error") {
+      toast.error("Something went wrong with the payment.");
+    }
+
+    // clean query from URL without full reload
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("status");
+      url.searchParams.delete("tran");
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, [searchParams, fetchFees]);
+
+  const payWithSsl = async (feeType: "MONTHLY" | "EXAM" | "REGISTRATION" = "MONTHLY") => {
+    setPaying(true);
+    try {
+      const res = await fetch(`${SERVER}/api/student/fees/ssl/init`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feeType,
+          // month optional — backend can default current month
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) {
+        throw new Error(json.error || "Could not start online payment");
+      }
+      // SSLCommerz hosted page
+      window.location.href = json.url;
+    } catch (e: any) {
+      toast.error(e.message || "Payment init failed");
+      setPaying(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-5 sm:p-6 lg:p-8 space-y-6">
@@ -116,7 +169,7 @@ export default function StudentFeePage() {
           <button
             type="button"
             onClick={fetchFees}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer"
           >
             Try again
           </button>
@@ -127,10 +180,10 @@ export default function StudentFeePage() {
 
   const { monthly } = data;
   const otherFees = data.otherFees || [];
+  const pending = data.pendingClaims || [];
 
   return (
     <div className="p-5 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -145,12 +198,12 @@ export default function StudentFeePage() {
             My Fees
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Monthly school fee status and payment history.
+            Pay online via SSLCommerz, or view cash payments recorded by the office.
           </p>
         </div>
       </motion.div>
 
-      {/* Monthly card */}
+      {/* Monthly */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -172,17 +225,26 @@ export default function StudentFeePage() {
 
           <button
             type="button"
-            disabled={monthly.status === "PAID"}
-            onClick={() => setModal({ feeType: "MONTHLY" })}
+            disabled={monthly.status === "PAID" || paying}
+            onClick={() => payWithSsl("MONTHLY")}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-700 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
-            <CreditCard className="h-4 w-4" />
-            Submit payment
+            {paying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Redirecting…
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Pay online (SSLCommerz)
+              </>
+            )}
           </button>
         </div>
       </motion.div>
 
-      {/* Extra fees admin added (registration / other) */}
+      {/* Other fees */}
       {otherFees.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -217,16 +279,16 @@ export default function StudentFeePage() {
                 </div>
                 <button
                   type="button"
-                  disabled={f.status === "PAID"}
+                  disabled={f.status === "PAID" || paying}
                   onClick={() =>
-                    setModal({
-                      feeType:
-                        f.feeType === "REGISTRATION" ? "REGISTRATION" : "EXAM",
-                    })
+                    payWithSsl(
+                      f.feeType === "REGISTRATION" ? "REGISTRATION" : "MONTHLY",
+                    )
                   }
-                  className="text-xs font-bold text-indigo-600 hover:underline disabled:opacity-40"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline disabled:opacity-40 cursor-pointer"
                 >
-                  Submit payment
+                  <CreditCard className="h-3.5 w-3.5" />
+                  Pay online
                 </button>
               </li>
             ))}
@@ -234,8 +296,8 @@ export default function StudentFeePage() {
         </motion.div>
       )}
 
-      {/* Pending */}
-      {(data.pendingClaims || []).length > 0 && (
+      {/* Pending (SSL PENDING or claims) */}
+      {pending.length > 0 && (
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,11 +306,14 @@ export default function StudentFeePage() {
         >
           <div className="px-5 sm:px-6 py-4 border-b border-amber-200/60 dark:border-amber-500/15">
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Pending review
+              Pending payments
             </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Online payment in progress or awaiting confirmation
+            </p>
           </div>
           <ul className="divide-y divide-amber-200/50 dark:divide-amber-500/10">
-            {data.pendingClaims.map((c: any) => (
+            {pending.map((c: any) => (
               <li
                 key={c.id}
                 className="flex items-center justify-between gap-3 px-5 sm:px-6 py-3.5"
@@ -259,13 +324,15 @@ export default function StudentFeePage() {
                     {c.month ? ` · ${c.month}` : ""} — ৳{c.amount}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {c.gateway || c.method}
-                    {c.transactionRef ? ` · Trx ${c.transactionRef}` : ""}
+                    {methodLabel(c)}
+                    {c.gatewayTranId || c.transactionRef
+                      ? ` · ${c.gatewayTranId || c.transactionRef}`
+                      : ""}
                   </p>
                 </div>
                 <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-300/80 dark:border-amber-500/30 bg-white/80 dark:bg-slate-950/40 px-2.5 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
                   <Clock className="h-3 w-3" />
-                  Awaiting
+                  {c.gatewayStatus || c.status || "Pending"}
                 </span>
               </li>
             ))}
@@ -280,10 +347,17 @@ export default function StudentFeePage() {
         transition={{ duration: 0.35, delay: 0.12 }}
         className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-md"
       >
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">
             Payment history
           </h2>
+          <button
+            type="button"
+            onClick={fetchFees}
+            className="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer"
+          >
+            Refresh
+          </button>
         </div>
 
         {(data.history || []).length === 0 ? (
@@ -325,7 +399,7 @@ export default function StudentFeePage() {
                       ৳{p.amount}
                     </td>
                     <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                      {p.gateway || p.method}
+                      {methodLabel(p)}
                     </td>
                     <td className="px-5 sm:px-6 py-3.5 text-xs sm:text-sm text-slate-500">
                       {new Date(p.paidAt).toLocaleDateString()}
@@ -337,14 +411,6 @@ export default function StudentFeePage() {
           </div>
         )}
       </motion.section>
-
-      {modal && (
-        <SubmitFeePaymentModal
-          feeType={modal.feeType}
-          onClose={() => setModal(null)}
-          onSuccess={fetchFees}
-        />
-      )}
     </div>
   );
 }
