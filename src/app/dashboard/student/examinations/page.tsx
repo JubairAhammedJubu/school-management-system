@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, CalendarDays, CheckCircle2, Clock3, FileCheck2, Filter, MapPin, RefreshCw, Search, X } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, Clock3, FileCheck2, Filter, MapPin, RefreshCw, Search, X, ChevronDown, Check } from "lucide-react";
 import { getTeacherExamsAction, type ExamItem } from "@/lib/actions/teacher.exam";
 import { useSession } from "@/lib/auth-client";
 
@@ -44,8 +44,8 @@ export default function StudentExaminationsPage() {
   }, [isPending, rawRole, router, session?.user]);
 
   const fetchExams = async (refresh = false) => {
+    setIsLoading(true);
     if (refresh) setIsRefreshing(true);
-    else setIsLoading(true);
     setError(null);
     try {
       const response = await getTeacherExamsAction();
@@ -53,8 +53,10 @@ export default function StudentExaminationsPage() {
       else setError(response.error ?? "Unable to load the examination schedule.");
     } catch { 
       setError("Unable to connect to the examination service."); 
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-    finally { setIsLoading(false); setIsRefreshing(false); }
   };
 
   useEffect(() => {
@@ -79,381 +81,435 @@ export default function StudentExaminationsPage() {
   const upcoming = matchingExams.filter((exam) => exam.status === "Upcoming").length;
   const ongoing = matchingExams.filter((exam) => exam.status === "Ongoing").length;
 
-  if (isPending || !session?.user || rawRole !== "student") return <ScheduleSkeleton />;
-
-
-  return (
-  <div className="space-y-6 pb-8">
-    <motion.header
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="rounded-2xl border border-slate-200 bg-slate-100/90 p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-8"
-    >
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-200">
-            <CalendarDays className="h-6 w-6" />
-          </div>
-
-          <div>
-            <span className="inline-flex rounded-md border border-slate-200/80 bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-300">
-              Student Workspace
-            </span>
-
-            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-              Examinations
-            </h1>
-
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
-              Your personal examination schedule and preparation
-              details.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => fetchExams(true)}
-          disabled={isLoading || isRefreshing}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${
-              isRefreshing ? "animate-spin" : ""
-            }`}
-          />
-
-          Refresh schedule
-        </button>
-      </div>
-
-      <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-        <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800">
-          {studentClass ?? "Your class"}
-        </span>
-
-        <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800">
-          {studentSection ?? "Your section"}
-        </span>
-
-        {studentGroup && (
-          <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800">
-            {studentGroup}
-          </span>
-        )}
-      </div>
-    </motion.header>
-
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      <InfoCard
-        icon={CalendarDays}
-        label="Scheduled exams"
-        value={String(matchingExams.length)}
-        detail="For your class"
-      />
-
-      <InfoCard
-        icon={Clock3}
-        label="Upcoming"
-        value={String(upcoming)}
-        detail="Prepare ahead"
-      />
-
-      <InfoCard
-        icon={CheckCircle2}
-        label="Ongoing"
-        value={String(ongoing)}
-        detail="Currently active"
-        green
-      />
-
-      <InfoCard
-        icon={FileCheck2}
-        label="Completed"
-        value={String(
-          matchingExams.filter(
-            (exam) => exam.status === "Completed"
-          ).length
-        )}
-        detail="Past examinations"
-      />
-    </div>
-
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div>
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-            My examination schedule
-          </h2>
-
-          <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            Only exams assigned to your class and section are shown.
-          </p>
-        </div>
-
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-          {filteredExams.length} exam
-          {filteredExams.length === 1 ? "" : "s"}
-        </span>
-      </div>
-
-      <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/20 sm:flex-row sm:p-5">
-        <label className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
-          <input
-            value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
-            placeholder="Search subject, exam, or room..."
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          />
-        </label>
-
-        <label className="relative sm:w-48">
-          <Filter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-
-          <select
-            value={status}
-            onChange={(event) =>
-              setStatus(event.target.value)
-            }
-            className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-8 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-          >
-            {[
-              "All",
-              "Upcoming",
-              "Ongoing",
-              "Completed",
-              "Cancelled",
-            ].map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      {isLoading ? (
-        <ScheduleSkeleton />
-      ) : error ? (
-        <MessageState
-          icon={AlertCircle}
-          title="Schedule unavailable"
-          detail={error}
-          action="Try again"
-          onAction={() => fetchExams()}
-        />
-      ) : filteredExams.length === 0 ? (
-        <MessageState
-          icon={CalendarDays}
-          title="No examinations found"
-          detail={
-            matchingExams.length === 0
-              ? "There are no examination records for your class and section yet."
-              : "Try changing the search or status filter."
-          }
-        />
-      ) : (
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {filteredExams.map((exam, index) => (
-            <motion.article
-              key={exam.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
-              className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-            >
-              <div className="flex min-w-0 items-start gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  <FileCheck2 className="h-4.5 w-4.5" />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">
-                      {exam.title}
-                    </h3>
-
-                    <StatusBadge status={exam.status} />
-                  </div>
-
-                  <p className="mt-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                    {exam.subject}{" "}
-                    <span className="text-slate-400">·</span>{" "}
-                    {exam.examType}
-                  </p>
-
-                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <CalendarDays className="h-3 w-3" />
-                      {formatDate(exam.date)}
-                    </span>
-
-                    <span className="flex items-center gap-1">
-                      <Clock3 className="h-3 w-3" />
-                      {exam.startTime} – {exam.endTime}
-                    </span>
-
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {exam.roomNo}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedExam(exam)}
-                className="shrink-0 rounded-xl border border-slate-200 px-3.5 py-2 text-[11px] font-bold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
-              >
-                View details
-              </button>
-            </motion.article>
+  if (isPending || !session?.user || rawRole !== "student") {
+    return (
+      <div className="space-y-6 pb-8">
+        <div className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
           ))}
         </div>
-      )}
-    </section>
+        <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
+      </div>
+    );
+  }
 
-    <AnimatePresence>
-      {selectedExam && (
-        <ExamDetails
-          exam={selectedExam}
-          onClose={() => setSelectedExam(null)}
+  return (
+    <div className="space-y-6 pb-8">
+      {/* Executive Header Banner */}
+      <motion.header
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-6 lg:p-7"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-to-tr from-indigo-600/15 via-purple-500/10 to-indigo-500/15 blur-3xl" />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50/80 text-indigo-600 shadow-2xs dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+              <CalendarDays className="h-6 w-6" />
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  Student Workspace
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  {studentClass ?? "Class"} • {studentSection ?? "Section"} {studentGroup ? `• ${studentGroup}` : ""}
+                </span>
+              </div>
+
+              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
+                Examinations Schedule
+              </h1>
+
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
+                Your personal examination schedule, room assignments, timing, and preparation details.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-1 md:pt-0">
+            <button
+              type="button"
+              onClick={() => fetchExams(true)}
+              disabled={isLoading || isRefreshing}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 ${
+                  isRefreshing || isLoading ? "animate-spin" : ""
+                }`}
+              />
+              <span>Refresh Schedule</span>
+            </button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* High-Contrast Stat Cards Grid */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <InfoCard
+          icon={CalendarDays}
+          label="Scheduled Exams"
+          value={String(matchingExams.length)}
+          detail="For your class"
+          isLoading={isLoading || isRefreshing}
         />
-      )}
-    </AnimatePresence>
-  </div>
-);
+
+        <InfoCard
+          icon={Clock3}
+          label="Upcoming Exams"
+          value={String(upcoming)}
+          detail="Prepare ahead"
+          isLoading={isLoading || isRefreshing}
+        />
+
+        <InfoCard
+          icon={CheckCircle2}
+          label="Ongoing Exams"
+          value={String(ongoing)}
+          detail="Currently active"
+          green
+          isLoading={isLoading || isRefreshing}
+        />
+
+        <InfoCard
+          icon={FileCheck2}
+          label="Completed Exams"
+          value={String(
+            matchingExams.filter(
+              (exam) => exam.status === "Completed"
+            ).length
+          )}
+          detail="Past examinations"
+          isLoading={isLoading || isRefreshing}
+        />
+      </div>
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
+        <div className="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+              My examination schedule
+            </h2>
+
+            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+              Only exams assigned to your class and section are shown.
+            </p>
+          </div>
+
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {filteredExams.length} exam
+            {filteredExams.length === 1 ? "" : "s"}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:p-5">
+          <label className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+            <input
+              value={search}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+              placeholder="Search subject, exam, or room..."
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
+          </label>
+
+          <StatusSelect value={status} onChange={setStatus} />
+        </div>
+
+        {isLoading || isRefreshing ? (
+          <ScheduleSkeleton />
+        ) : error ? (
+          <MessageState
+            icon={AlertCircle}
+            title="Schedule unavailable"
+            detail={error}
+            action="Try again"
+            onAction={() => fetchExams()}
+          />
+        ) : filteredExams.length === 0 ? (
+          <MessageState
+            icon={CalendarDays}
+            title="No examinations found"
+            detail={
+              matchingExams.length === 0
+                ? "There are no examination records for your class and section yet."
+                : "Try changing the search or status filter."
+            }
+          />
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {filteredExams.map((exam, index) => (
+              <motion.article
+                key={exam.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04 }}
+                className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors"
+              >
+                <div className="flex min-w-0 items-start gap-3.5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-400 dark:border-indigo-900/40">
+                    <FileCheck2 className="h-4.5 w-4.5" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">
+                        {exam.title}
+                      </h3>
+
+                      <StatusBadge status={exam.status} />
+                    </div>
+
+                    <p className="mt-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                      {exam.subject}{" "}
+                      <span className="text-slate-400">·</span>{" "}
+                      {exam.examType}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <CalendarDays className="h-3 w-3 text-indigo-500" />
+                        {formatDate(exam.date)}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <Clock3 className="h-3 w-3 text-amber-500" />
+                        {exam.startTime} – {exam.endTime}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-emerald-500" />
+                        {exam.roomNo}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedExam(exam)}
+                  className="shrink-0 rounded-xl border border-slate-200 px-3.5 py-2 text-[11px] font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 cursor-pointer"
+                >
+                  View details
+                </button>
+              </motion.article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <AnimatePresence>
+        {selectedExam && (
+          <ExamDetails
+            exam={selectedExam}
+            onClose={() => setSelectedExam(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function StatusSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const options = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
+
+  return (
+    <div ref={dropdownRef} className="relative sm:w-52">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-2xs transition hover:border-indigo-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-600 cursor-pointer"
+      >
+        <div className="flex items-center gap-2 truncate">
+          <Filter className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span className="truncate">
+            {value === "All" ? "Status: All Exams" : `Status: ${value}`}
+          </span>
+        </div>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180 text-indigo-600 dark:text-indigo-400" : ""
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-12 z-50 w-full min-w-[190px] rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950"
+          >
+            {options.map((option) => {
+              const isActive = value === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange(option);
+                    setIsOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold transition cursor-pointer ${
+                    isActive
+                      ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/70 dark:text-indigo-400 font-bold"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
+                  }`}
+                >
+                  <span>{option === "All" ? "All Statuses" : option}</span>
+                  {isActive && (
+                    <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                  )}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 function formatDate(value: string) {
-const date = new Date(`${value}T00:00:00`);
+  const date = new Date(`${value}T00:00:00`);
 
-return Number.isNaN(date.getTime())
-  ? value
-  : date.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
 }
 
 function StatusBadge({
-status,
+  status,
 }: {
-status: ExamItem["status"];
+  status: ExamItem["status"];
 }) {
-return (
-  <span
-    className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[status]}`}
-  >
-    {status}
-  </span>
-);
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[status]}`}
+    >
+      {status}
+    </span>
+  );
 }
 
 function InfoCard({
-icon: Icon,
-label,
-value,
-detail,
-green = false,
+  icon: Icon,
+  label,
+  value,
+  detail,
+  isLoading = false,
+  green = false,
 }: {
-icon: typeof CalendarDays;
-label: string;
-value: string;
-detail: string;
-green?: boolean;
+  icon: typeof CalendarDays;
+  label: string;
+  value: string;
+  detail: string;
+  isLoading?: boolean;
+  green?: boolean;
 }) {
-return (
-  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-    <div
-      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-        green
-          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-      }`}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
     >
-      <Icon className="h-4.5 w-4.5" />
-    </div>
+      <div className="flex items-center justify-between">
+        <div
+          className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-2xs ${
+            green
+              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40"
+              : "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40"
+          }`}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
 
-    <p className="mt-4 text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-      {value}
-    </p>
+      <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
+        {label}
+      </p>
 
-    <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-      {label}
-    </p>
+      {isLoading ? (
+        <div className="my-1 h-7 w-16 rounded-md bg-slate-200 dark:bg-slate-800/80 animate-pulse" />
+      ) : (
+        <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+          {value}
+        </p>
+      )}
 
-    <p className="mt-0.5 text-[10px] text-slate-400">
-      {detail}
-    </p>
-  </div>
-);
-}
-
-function MessageState({
-icon: Icon,
-title,
-detail,
-action,
-onAction,
-}: {
-icon: typeof CalendarDays;
-title: string;
-detail: string;
-action?: string;
-onAction?: () => void;
-}) {
-return (
-  <div className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
-    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-      <Icon className="h-5 w-5" />
-    </div>
-
-    <h3 className="mt-4 text-sm font-bold text-slate-800 dark:text-slate-100">
-      {title}
-    </h3>
-
-    <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-      {detail}
-    </p>
-
-    {action && (
-      <button
-        type="button"
-        onClick={onAction}
-        className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white dark:bg-white dark:text-slate-900"
-      >
-        {action}
-      </button>
-    )}
-  </div>
-);
+      <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
+        {detail}
+      </p>
+    </motion.div>
+  );
 }
 
 function ScheduleSkeleton() {
-return (
-  <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-    {Array.from({ length: 4 }).map((_, index) => (
-      <div
-        key={index}
-        className="flex gap-3 border-b border-slate-100 pb-4 last:border-0 dark:border-slate-800"
-      >
-        <div className="h-10 w-10 rounded-xl bg-slate-200 animate-pulse dark:bg-slate-800" />
+  return (
+    <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 animate-pulse"
+        >
+          <div className="flex min-w-0 items-start gap-3.5">
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-200 dark:bg-slate-800/80" />
 
-        <div className="flex-1 space-y-2">
-          <div className="h-3.5 w-44 rounded bg-slate-200 animate-pulse dark:bg-slate-800" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-40 rounded-md bg-slate-200 dark:bg-slate-800/80" />
+                <div className="h-4 w-16 rounded-full bg-slate-200 dark:bg-slate-800/80" />
+              </div>
 
-          <div className="h-3 w-72 max-w-full rounded bg-slate-100 animate-pulse dark:bg-slate-800/60" />
+              <div className="h-3 w-28 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+
+              <div className="flex items-center gap-3 pt-1">
+                <div className="h-3 w-24 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+                <div className="h-3 w-24 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+                <div className="h-3 w-16 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+              </div>
+            </div>
+          </div>
+
+          <div className="h-8 w-24 shrink-0 rounded-xl bg-slate-200 dark:bg-slate-800/80" />
         </div>
-      </div>
-    ))}
-  </div>
-);
+      ))}
+    </div>
+  );
 }
 
 function ExamDetails({
@@ -571,4 +627,36 @@ return (
     </p>
   </div>
 );
+}
+
+function MessageState({
+  icon: Icon,
+  title,
+  detail,
+  action,
+  onAction,
+}: {
+  icon: React.ElementType;
+  title: string;
+  detail: string;
+  action?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center p-12 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 mb-4 border border-slate-200 dark:border-slate-700">
+        <Icon className="h-6 w-6" />
+      </div>
+      <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">{title}</h3>
+      <p className="max-w-md text-xs text-slate-500 dark:text-slate-400 mb-4">{detail}</p>
+      {action && onAction && (
+        <button
+          onClick={onAction}
+          className="px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-xs"
+        >
+          {action}
+        </button>
+      )}
+    </div>
+  );
 }
