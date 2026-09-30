@@ -10,6 +10,8 @@ import {
   FileText,
   Wand2,
   Loader2,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -35,7 +37,6 @@ interface PerformanceSnapshot {
   assignmentCompletionRate: number | null;
 }
 
-// Same numbers the teacher sees, framed as encouragement. No risk labels.
 const paceStyles: Record<
   StudentPace,
   { label: string; className: string; dot: string }
@@ -70,18 +71,81 @@ function StatCard({
   icon: Icon,
   label,
   value,
+  detail,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
+  detail?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-3">
-        <Icon className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <p className="text-2xl font-extrabold text-slate-900 dark:text-white">{value}</p>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>
+
+      <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
+        {label}
+      </p>
+
+      <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">{value}</p>
+
+      {detail && (
+        <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">{detail}</p>
+      )}
+    </motion.div>
+  );
+}
+
+function PerformanceSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* AI Insights Banner Skeleton */}
+      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 animate-pulse">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-36 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-6 w-24 rounded-full bg-slate-200 dark:bg-slate-800" />
+          </div>
+          <div className="h-9 w-40 rounded-xl bg-slate-200 dark:bg-slate-800" />
+        </div>
+        <div className="mt-4 h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
+      </div>
+
+      {/* 4 Stat Cards Skeleton */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 animate-pulse space-y-3"
+          >
+            <div className="h-9 w-9 rounded-xl bg-slate-200 dark:bg-slate-800" />
+            <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-7 w-16 rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-2.5 w-24 rounded bg-slate-200 dark:bg-slate-800" />
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 animate-pulse space-y-4">
+          <div className="h-4 w-40 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="h-3 w-64 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="h-56 w-full rounded-xl bg-slate-100 dark:bg-slate-900/60" />
+        </div>
+        <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 animate-pulse space-y-4">
+          <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="h-3 w-48 rounded bg-slate-200 dark:bg-slate-800" />
+          <div className="h-48 w-full rounded-xl bg-slate-100 dark:bg-slate-900/60" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -90,6 +154,7 @@ export default function StudentPerformancePage() {
   const { isPending: isSessionLoading } = useSession();
   const [snapshot, setSnapshot] = useState<PerformanceSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const hasFetched = useRef(false);
 
@@ -98,32 +163,34 @@ export default function StudentPerformancePage() {
   const [insightError, setInsightError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const fetchSnapshot = async (refresh = false) => {
+    try {
+      setIsLoading(true);
+      if (refresh) setIsRefreshing(true);
+      setError("");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/performance`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to load your performance snapshot.");
+      }
+
+      setSnapshot(data);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to load your performance snapshot.");
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (isSessionLoading || hasFetched.current) return;
     hasFetched.current = true;
-
-    const fetchSnapshot = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/performance`,
-          { credentials: "include" }
-        );
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || "Failed to load your performance snapshot.");
-        }
-
-        setSnapshot(data);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || "Failed to load your performance snapshot.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchSnapshot();
   }, [isSessionLoading]);
 
@@ -165,54 +232,86 @@ export default function StudentPerformancePage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Executive Header Banner */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-900 p-6 sm:p-8 shadow-xs transition-colors duration-300"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-6 lg:p-7"
       >
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0">
-            <HeartPulse className="h-6 w-6 text-slate-700 dark:text-slate-300" />
+        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-to-tr from-indigo-600/15 via-rose-500/10 to-indigo-500/15 blur-3xl" />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-rose-100 bg-rose-50/80 text-rose-600 shadow-2xs dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
+              <HeartPulse className="h-6 w-6" />
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  Student Workspace
+                </span>
+              </div>
+
+              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
+                My Performance Metrics
+              </h1>
+
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
+                A quick read on your attendance, examination scores, coursework completion, and AI guidance insights.
+              </p>
+            </div>
           </div>
-          <div>
-            <span className="inline-flex items-center gap-1 rounded-md bg-white dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
-              <Sparkles className="h-3 w-3 text-slate-500 dark:text-slate-400" />
-              Student Workspace
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1 text-slate-900 dark:text-white">
-              My Performance
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              A quick read on your attendance and results, plus a personalized note — an
-              assistive view, not a verdict.
-            </p>
+
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => fetchSnapshot(true)}
+              disabled={isLoading || isRefreshing}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${
+                  isRefreshing
+                    ? "animate-spin text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-400"
+                }`}
+              />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
       </motion.div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="h-24 rounded-2xl bg-slate-200 dark:bg-slate-800/60 animate-pulse"
-            />
-          ))}
-        </div>
+      {isLoading || isRefreshing ? (
+        <PerformanceSkeleton />
       ) : error ? (
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          {error}
+        <div className="flex flex-col items-center justify-center py-16 text-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 mb-4 border border-rose-200 dark:border-rose-800">
+            <AlertCircle className="h-6 w-6" />
+          </div>
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">
+            Unable to load performance metrics
+          </h3>
+          <p className="max-w-md text-xs text-slate-500 dark:text-slate-400 mb-4">
+            {error}
+          </p>
+          <button
+            onClick={() => fetchSnapshot(true)}
+            className="px-4 py-2 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-xs cursor-pointer"
+          >
+            Try again
+          </button>
         </div>
       ) : snapshot && status ? (
         <>
-          {/* Status */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5 sm:p-6">
+          {/* AI Insights & Pace Banner */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs p-5 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-bold text-slate-900 dark:text-white">
-                  Overall status
+                  Academic Momentum
                 </p>
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${status.className}`}
@@ -238,8 +337,7 @@ export default function StudentPerformancePage() {
             </div>
 
             <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-              These numbers are yours. The note below is a suggestion you can use — it does not
-              change a grade or your standing.
+              These numbers reflect your active database metrics. Use the AI insight feature for feedback and study suggestions.
             </p>
 
             <AnimatePresence>
@@ -273,14 +371,21 @@ export default function StudentPerformancePage() {
             )}
           </div>
 
-          {/* Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* High-Contrast Stat Cards Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              icon={HeartPulse}
+              label="Overall Pace"
+              value={status.label}
+              detail="Academic trajectory"
+            />
             <StatCard
               icon={CalendarCheck}
               label="Attendance Rate"
               value={
                 snapshot.attendanceRate !== null ? `${snapshot.attendanceRate}%` : "Not recorded"
               }
+              detail="Recorded presence"
             />
             <StatCard
               icon={Award}
@@ -290,6 +395,7 @@ export default function StudentPerformancePage() {
                   ? `${snapshot.averageScorePercent}%`
                   : "Not recorded"
               }
+              detail="Exam mark average"
             />
             <StatCard
               icon={FileText}
@@ -299,11 +405,12 @@ export default function StudentPerformancePage() {
                   ? `${snapshot.assignmentCompletionRate}%`
                   : "Not recorded"
               }
+              detail="Turned in courseworks"
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5 sm:p-6">
+            <div className="lg:col-span-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs p-5 sm:p-6">
               <p className="text-sm font-bold text-slate-900 dark:text-white">Performance analysis</p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 Attendance, published exam scores, and assignment completion side by side.
@@ -316,10 +423,22 @@ export default function StudentPerformancePage() {
                 <div className="mt-4 h-56">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartRows} barSize={36}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} unit="%" />
-                      <Tooltip formatter={(value) => [`${value}%`, "Rate"]} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.3} />
+                      <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} unit="%" />
+                      <Tooltip
+                        cursor={{ fill: "transparent" }}
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          borderColor: "#1e293b",
+                          borderRadius: "0.75rem",
+                          color: "#f8fafc",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+                        }}
+                        itemStyle={{ color: "#f8fafc" }}
+                        labelStyle={{ color: "#94a3b8", fontWeight: 600 }}
+                        formatter={(value) => [`${value}%`, "Rate"]}
+                      />
                       <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                         {chartRows.map((row) => (
                           <Cell key={row.name} fill={row.fill} />
@@ -331,7 +450,7 @@ export default function StudentPerformancePage() {
               )}
             </div>
 
-            <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs p-5 sm:p-6">
+            <div className="lg:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs p-5 sm:p-6">
               <p className="text-sm font-bold text-slate-900 dark:text-white">Overall mix</p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 Same colors as the bars: attendance, average score, and assignments.
@@ -363,6 +482,15 @@ export default function StudentPerformancePage() {
                           ))}
                         </Pie>
                         <Tooltip
+                          contentStyle={{
+                            backgroundColor: "#0f172a",
+                            borderColor: "#1e293b",
+                            borderRadius: "0.75rem",
+                            color: "#f8fafc",
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+                          }}
+                          itemStyle={{ color: "#f8fafc" }}
+                          labelStyle={{ color: "#94a3b8", fontWeight: 600 }}
                           formatter={(_value, _name, item) => {
                             const display = (item?.payload as { display?: number } | undefined)?.display;
                             return [`${display ?? 0}%`, "Rate"];

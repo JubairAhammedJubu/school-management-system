@@ -265,40 +265,54 @@ useEffect(() => {
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 font-sans text-slate-900 dark:text-slate-100">
-      {/* Header */}
+      {/* Executive Header Banner */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 sm:p-8 shadow-sm backdrop-blur-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white p-5 shadow-md backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-2xl dark:shadow-black/70 sm:p-6 lg:p-7"
       >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 shrink-0">
-            <CalendarDays className="h-6 w-6" />
+        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-gradient-to-tr from-indigo-600/15 via-purple-500/10 to-indigo-500/15 blur-3xl" />
+
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50/80 text-indigo-600 shadow-2xs dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+              <CalendarDays className="h-6 w-6" />
+            </div>
+
+            <div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  Student Workspace
+                </span>
+              </div>
+
+              <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
+                My Attendance
+              </h1>
+
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
+                Monitor your class presence, tardiness, and overall attendance records.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              My Attendance
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Monitor your class presence, tardiness, and overall attendance
-              records
-            </p>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-1 md:pt-0">
+            <button
+              type="button"
+              onClick={fetchAttendance}
+              disabled={isLoading}
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 ${
+                  isLoading ? "animate-spin" : ""
+                }`}
+              />
+              <span>Refresh Attendance</span>
+            </button>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={fetchAttendance}
-          disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-xs cursor-pointer shrink-0 disabled:opacity-50"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 ${
-              isLoading ? "animate-spin" : ""
-            }`}
-          />
-          <span>Refresh</span>
-        </button>
       </motion.div>
 
       {/* Warning/Success Banner */}
@@ -333,40 +347,32 @@ useEffect(() => {
         </motion.div>
       )}
 
-      {/* Stat Cards */}
+      {/* High-Contrast Stat Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           {
             label: "Attendance Rate",
             value: `${summary.attendanceRate}%`,
             icon: TrendingUp,
-            color: "text-indigo-600 dark:text-indigo-400",
-            bgColor:
-              "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20",
+            detail: "Overall recorded presence",
           },
           {
             label: "Present Days",
             value: summary.present,
             icon: CheckCircle2,
-            color: "text-emerald-600 dark:text-emerald-400",
-            bgColor:
-              "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20",
+            detail: "Classes attended",
           },
           {
             label: "Late Days",
             value: summary.late,
             icon: Clock3,
-            color: "text-amber-600 dark:text-amber-400",
-            bgColor:
-              "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20",
+            detail: "Tardy arrivals",
           },
           {
             label: "Absent Days",
             value: summary.absent,
             icon: XCircle,
-            color: "text-rose-600 dark:text-rose-400",
-            bgColor:
-              "bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20",
+            detail: "Unexcused absences",
           },
         ].map((item, idx) => (
           <motion.div
@@ -374,18 +380,28 @@ useEffect(() => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 text-center shadow-xs"
+            className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
           >
-            <div
-              className={`mx-auto flex h-10 w-10 items-center justify-center rounded-xl border ${item.bgColor} mb-2`}
-            >
-              <item.icon className={`h-5 w-5 ${item.color}`} />
+            <div className="flex items-center justify-between">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+                <item.icon className="h-4 w-4" />
+              </div>
             </div>
-            <p className={`text-2xl sm:text-3xl font-extrabold ${item.color}`}>
-              {isLoading ? "-" : item.value}
-            </p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+
+            <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
               {item.label}
+            </p>
+
+            {isLoading ? (
+              <div className="my-1 h-7 w-20 rounded-md bg-slate-200 dark:bg-slate-800/80 animate-pulse" />
+            ) : (
+              <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+                {item.value}
+              </p>
+            )}
+
+            <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
+              {item.detail}
             </p>
           </motion.div>
         ))}
@@ -453,11 +469,45 @@ useEffect(() => {
 
         {/* Content State */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 font-medium">
-              Loading attendance records...
-            </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
+                  <th className="px-5 sm:px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Date
+                  </th>
+                  <th className="px-5 sm:px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Student Details
+                  </th>
+                  <th className="px-5 sm:px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Subject &amp; Teacher
+                  </th>
+                  <th className="px-5 sm:px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-5 sm:px-6 py-4">
+                      <div className="h-4 w-28 rounded-md bg-slate-200 dark:bg-slate-800/80" />
+                    </td>
+                    <td className="px-5 sm:px-6 py-4 space-y-2">
+                      <div className="h-4 w-36 rounded-md bg-slate-200 dark:bg-slate-800/80" />
+                      <div className="h-3 w-24 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+                    </td>
+                    <td className="px-5 sm:px-6 py-4 space-y-2">
+                      <div className="h-4 w-32 rounded-md bg-slate-200 dark:bg-slate-800/80" />
+                      <div className="h-3 w-28 rounded-md bg-slate-100 dark:bg-slate-800/50" />
+                    </td>
+                    <td className="px-5 sm:px-6 py-4">
+                      <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800/80" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-4">
