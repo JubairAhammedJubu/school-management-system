@@ -31,8 +31,8 @@ export default function VerifyPaymentModal({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (trx.trim().length < 5) {
-      toast.error("Enter the TrxID from your payment statement");
+    if (trx.trim().length !== 10) {
+      toast.error("Transaction ID must be exactly 10 characters, e.g. 8N7A5B3C2D");
       return;
     }
 
@@ -125,15 +125,25 @@ export default function VerifyPaymentModal({
 
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Transaction ID (TrxID)
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Transaction ID (TrxID)
+                  </label>
+                  <span
+                    className={`text-[11px] font-mono font-medium ${
+                      trx.length === 10 ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-slate-400"
+                    }`}
+                  >
+                    {trx.length}/10 chars
+                  </span>
+                </div>
                 <input
                   value={trx}
-                  onChange={(e) => setTrx(e.target.value.trim())}
-                  placeholder="Paste TrxID from statement..."
+                  onChange={(e) => setTrx(e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 10))}
+                  maxLength={10}
+                  placeholder="e.g. 8N7A5B3C2D"
                   autoComplete="off"
-                  className="mt-1.5 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs font-mono font-bold tracking-wider text-slate-900 dark:text-white placeholder:font-sans placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                  className="mt-1.5 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs font-mono font-bold tracking-widest text-slate-900 dark:text-white placeholder:font-sans placeholder:font-normal placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 uppercase transition-all"
                 />
               </div>
 
