@@ -1,842 +1,641 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import {
-  CreditCard,
-  Clock,
-  Users,
-  RefreshCw,
+  Wallet,
   Loader2,
+  RefreshCw,
   Save,
   Plus,
-  Wallet,
+  Banknote,
   Search,
-  ShieldCheck,
-  ChevronDown,
-  Check,
-  Filter,
+  Lock,
 } from "lucide-react";
-import RecordPaymentModal from "@/components/shared/RecordFeePaymentModal";
-import VerifyPaymentModal from "@/components/shared/VerifyPaymentModal";
 
 const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const CLASSES = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
+const SECTIONS = ["All Sections", "Section A", "Section B"];
+const inputCls =
+  "w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/30";
 
-const DEFAULT_FEES: Record<string, number> = {
-  "Class 6": 1200,
-  "Class 7": 1300,
-  "Class 8": 1400,
-  "Class 9": 1500,
-  "Class 10": 1600,
-};
-
-function monthKey() {
-  const n = new Date();
-  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
-}
-
-type Tab = "claims" | "roster" | "structure";
-
-function NiceSelect({
-  value,
-  onChange,
-  options,
-  placeholder = "Select...",
-  icon: Icon,
-  disabled = false,
-  className = "",
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  options: string[];
-  placeholder?: string;
-  icon?: any;
-  disabled?: boolean;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className={`relative min-w-36 ${className}`}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white transition-all cursor-pointer shadow-xs focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-      >
-        <div className="flex items-center gap-2 truncate">
-          {Icon && <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />}
-          <span className="truncate">{value || placeholder}</span>
-        </div>
-        <ChevronDown
-          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 shrink-0 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <>
-            <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-            <motion.div
-              initial={{ opacity: 0, y: -6, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-              className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-56 overflow-y-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-xl backdrop-blur-xl space-y-1"
-            >
-              {options.map((opt) => {
-                const isSelected = opt === value;
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => {
-                      onChange(opt);
-                      setOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300"
-                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
-                    }`}
-                  >
-                    <span className="truncate">{opt}</span>
-                    {isSelected && (
-                      <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-2" />
-                    )}
-                  </button>
-                );
-              })}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function FeesSummarySkeleton() {
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-pulse">
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm space-y-2.5"
-        >
-          <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
-          <div className="h-7 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-          <div className="h-2.5 w-32 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ClaimsTableSkeleton() {
-  return (
-    <div className="p-6 space-y-4 animate-pulse">
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3.5 last:border-0"
-        >
-          <div className="space-y-1.5 flex-1">
-            <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
-            <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
-          </div>
-          <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden sm:block" />
-          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden md:block" />
-          <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-md mx-4" />
-          <div className="h-8 w-20 bg-slate-200 dark:bg-slate-800 rounded-xl shrink-0" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RosterTableSkeleton() {
-  return (
-    <div className="p-6 space-y-4 animate-pulse">
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3.5 last:border-0"
-        >
-          <div className="flex items-center gap-3 flex-1">
-            <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-800 shrink-0" />
-            <div className="space-y-1.5 flex-1">
-              <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-3 w-44 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
-            </div>
-          </div>
-          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md mx-4 hidden sm:block" />
-          <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md mx-4" />
-          <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-full shrink-0" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StructureSkeleton() {
-  return (
-    <div className="p-6 space-y-3.5 animate-pulse max-w-lg rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-md">
-      <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md mb-2" />
-      {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-3.5"
-        >
-          <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
-          <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-        </div>
-      ))}
-      <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl mt-4" />
-    </div>
-  );
-}
+type Tab = "structure" | "catalog" | "cash" | "roster" | "history";
 
 export default function AdminFeesPage() {
   const year = new Date().getFullYear().toString();
-  const month = monthKey();
-  const [summary, setSummary] = useState({
-    totalPaid: 0,
-    totalDue: 0,
-    remaining: 0,
-    collectedPercent: 0,
-    studentCount: 0,
-    paidCount: 0,
-    dueCount: 0,
+  const [tab, setTab] = useState<Tab>("structure");
+  const [loading, setLoading] = useState(false);
+
+  const [structures, setStructures] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(null);
+  const [amounts, setAmounts] = useState<Record<string, string>>({});
+
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [catForm, setCatForm] = useState({
+    title: "",
+    feeType: "EXAM" as "EXAM" | "CUSTOM",
+    amount: "",
+    studentClass: "ALL",
+    section: "",
+    dueDate: "",
+    description: "",
   });
+
+  const [allStudents, setAllStudents] = useState<any[]>([]);
+  const [studentQ, setStudentQ] = useState("");
+  const [student, setStudent] = useState<any>(null);
+  const [cashSource, setCashSource] = useState<"MONTHLY" | "EXAM" | "CATALOG">("MONTHLY");
+  const [cashMonth, setCashMonth] = useState(
+    `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`,
+  );
+  const [cashCatalogId, setCashCatalogId] = useState("");
+  const [payFine, setPayFine] = useState(true);
+  const [savingCash, setSavingCash] = useState(false);
+
+  const [roster, setRoster] = useState<any[]>([]);
   const [filterClass, setFilterClass] = useState("All Classes");
   const [filterSection, setFilterSection] = useState("All Sections");
-  const [rosterSearch, setRosterSearch] = useState("");
-
-  const CLASS_OPTIONS = [
-    "All Classes",
-    "Class 6",
-    "Class 7",
-    "Class 8",
-    "Class 9",
-    "Class 10",
-  ];
-  const SECTION_OPTIONS = ["All Sections", "Section A", "Section B"];
-
-  const [tab, setTab] = useState<Tab>("claims");
-  const [loading, setLoading] = useState(false);
-  const [claims, setClaims] = useState<any[]>([]);
-  const [roster, setRoster] = useState<any[]>([]);
-  const [amounts, setAmounts] = useState(DEFAULT_FEES);
-
-  const [recordOpen, setRecordOpen] = useState(false);
-  const [verifyTarget, setVerifyTarget] = useState<{
-    id: string;
-    name: string;
-    amount: number;
-  } | null>(null);
-  const [savingStructure, setSavingStructure] = useState(false);
-
-  const loadClaims = useCallback(async () => {
-    const res = await fetch(`${SERVER}/api/admin/fees/claims?status=PENDING`, {
-      credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to load claims");
-    setClaims(data.claims || []);
-  }, []);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [payQ, setPayQ] = useState("");
+  const [payMethod, setPayMethod] = useState("ALL");
 
   const loadStructure = useCallback(async () => {
-    const res = await fetch(
-      `${SERVER}/api/admin/fees/structure?sessionYear=${year}`,
-      { credentials: "include" },
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to load structure");
-    const next = { ...DEFAULT_FEES };
-    (data.structures || [])
-      .filter((s: any) => s.feeType === "MONTHLY")
-      .forEach((s: any) => {
-        next[s.studentClass] = s.amount;
-      });
-    setAmounts(next);
-  }, [year]);
-
-  const loadRoster = useCallback(async () => {
-    const params = new URLSearchParams({
-      sessionYear: year,
-      month,
-    });
-    if (rosterSearch.trim()) params.set("search", rosterSearch.trim());
-    if (filterClass !== "All Classes") params.set("studentClass", filterClass);
-    if (filterSection !== "All Sections")
-      params.set("studentSection", filterSection);
-
-    const res = await fetch(
-      `${SERVER}/api/admin/fees/students?${params.toString()}`,
-      { credentials: "include" },
-    );
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to load roster");
-
-    setRoster(data.data || []);
-    if (data.summary) {
-      setSummary({
-        totalPaid: data.summary.totalPaid ?? 0,
-        totalDue: data.summary.totalDue ?? 0,
-        remaining: data.summary.remaining ?? 0,
-        collectedPercent: data.summary.collectedPercent ?? 0,
-        studentCount: data.summary.studentCount ?? 0,
-        paidCount: data.summary.paidCount ?? 0,
-        dueCount: data.summary.dueCount ?? 0,
-      });
-    }
-  }, [year, month, rosterSearch, filterClass, filterSection]);
-
-  const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      await Promise.all([loadClaims(), loadStructure(), loadRoster()]);
+      const res = await fetch(`${SERVER}/api/admin/fees/structure?sessionYear=${year}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setStructures(data.structures || []);
+      setSettings(data.settings);
+      const map: Record<string, string> = {};
+      (data.structures || []).forEach((s: any) => {
+        map[s.studentClass] = String(s.amount);
+      });
+      setAmounts(map);
     } catch (e: any) {
-      toast.error(e.message || "Refresh failed");
+      toast.error(e.message || "Failed to load structure");
     } finally {
       setLoading(false);
     }
-  }, [loadClaims, loadStructure, loadRoster]);
+  }, [year]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const loadCatalog = useCallback(async () => {
+    const res = await fetch(`${SERVER}/api/admin/fees/catalog?sessionYear=${year}`, {
+      credentials: "include",
+    });
+    const data = await res.json();
+    if (res.ok) setCatalog(data.catalog || []);
+  }, [year]);
 
-  // Reload roster when class/section changes (while on roster tab is enough)
-  useEffect(() => {
-    if (tab !== "roster") return;
-    loadRoster().catch(() => {});
-  }, [filterClass, filterSection, tab, loadRoster]);
-  // optional
-  useEffect(() => {
-    loadRoster().catch(() => {});
-  }, [filterClass, filterSection]);
+  const loadStudents = useCallback(async () => {
+    const res = await fetch(`${SERVER}/api/admin/fees/roster?sessionYear=${year}`, {
+      credentials: "include",
+    });
+    const data = await res.json();
+    if (res.ok) setAllStudents(data.roster || []);
+  }, [year]);
 
-  const saveStructure = async () => {
-    setSavingStructure(true);
+  const loadRoster = useCallback(async () => {
+    setLoading(true);
     try {
-      for (const [studentClass, amount] of Object.entries(amounts)) {
-        const res = await fetch(`${SERVER}/api/admin/fees/structure`, {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            studentClass,
-            feeType: "MONTHLY",
-            amount: Number(amount),
-            sessionYear: year,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Save failed");
-      }
-      toast.success("Monthly fee structure saved");
+      const qs = new URLSearchParams({ sessionYear: year });
+      if (filterClass !== "All Classes") qs.set("studentClass", filterClass);
+      if (filterSection !== "All Sections") qs.set("section", filterSection);
+      const res = await fetch(`${SERVER}/api/admin/fees/roster?${qs}`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setRoster(data.roster || []);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load roster");
+    } finally {
+      setLoading(false);
+    }
+  }, [year, filterClass, filterSection]);
+
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const qs = new URLSearchParams({ sessionYear: year, limit: "50" });
+      if (payQ) qs.set("q", payQ);
+      if (payMethod !== "ALL") qs.set("method", payMethod);
+      if (filterClass !== "All Classes") qs.set("studentClass", filterClass);
+      const res = await fetch(`${SERVER}/api/admin/fees/payments?${qs}`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPayments(data.payments || []);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load history");
+    } finally {
+      setLoading(false);
+    }
+  }, [year, payQ, payMethod, filterClass]);
+
+  useEffect(() => {
+    if (tab === "structure") loadStructure();
+    if (tab === "catalog") loadCatalog();
+    if (tab === "cash") {
+      loadCatalog();
+      loadStudents();
+    }
+    if (tab === "roster") loadRoster();
+    if (tab === "history") loadHistory();
+  }, [tab, loadStructure, loadCatalog, loadStudents, loadRoster, loadHistory]);
+
+  const studentHits = useMemo(() => {
+    const q = studentQ.trim().toLowerCase();
+    if (q.length < 1 || student) return [];
+    return allStudents
+      .filter((s) => {
+        const name = (s.name || "").toLowerCase();
+        const email = (s.email || "").toLowerCase();
+        return name.includes(q) || email.includes(q);
+      })
+      .slice(0, 12);
+  }, [allStudents, studentQ, student]);
+
+  const seed = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${SERVER}/api/admin/fees/structure/seed`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionYear: year }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success("Seeded Class 6–10");
       await loadStructure();
     } catch (e: any) {
       toast.error(e.message);
     } finally {
-      setSavingStructure(false);
+      setLoading(false);
     }
   };
 
-  const seedStructure = async () => {
+  const saveAmount = async (studentClass: string) => {
+    const amount = Number(amounts[studentClass]);
+    if (!amount) return toast.error("Invalid amount");
+    const res = await fetch(`${SERVER}/api/admin/fees/structure`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentClass, amount, sessionYear: year }),
+    });
+    const data = await res.json();
+    if (!res.ok) return toast.error(data.error);
+    toast.success(`${studentClass} updated`);
+    loadStructure();
+  };
+
+  const createCatalog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catForm.title.trim()) return toast.error("Title required");
+    if (!Number(catForm.amount)) return toast.error("Amount required");
+    const res = await fetch(`${SERVER}/api/admin/fees/catalog`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: catForm.title.trim(),
+        feeType: catForm.feeType,
+        amount: Number(catForm.amount),
+        studentClass: catForm.studentClass,
+        section: catForm.section || undefined,
+        dueDate: catForm.dueDate || undefined,
+        description: catForm.description || undefined,
+        sessionYear: year,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) return toast.error(data.error);
+    toast.success("Fee created — students will see it");
+    setCatForm({
+      title: "",
+      feeType: "EXAM",
+      amount: "",
+      studentClass: "ALL",
+      section: "",
+      dueDate: "",
+      description: "",
+    });
+    loadCatalog();
+  };
+
+  const pickStudent = (s: any) => {
+    setStudent({
+      id: s.studentId || s.id,
+      name: s.name,
+      email: s.email,
+    });
+    setStudentQ("");
+  };
+
+  const submitCash = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!student?.id) return toast.error("Select a student from the list");
+    if (cashSource !== "MONTHLY" && !cashCatalogId) {
+      return toast.error("Select a fee from the list");
+    }
+    setSavingCash(true);
     try {
-      const res = await fetch(
-        `${SERVER}/api/admin/fees/structure/seed-monthly`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionYear: year }),
-        },
-      );
+      const body: any = {
+        studentId: student.id,
+        source: cashSource,
+        sessionYear: year,
+        payFine,
+      };
+      if (cashSource === "MONTHLY") body.month = cashMonth;
+      else body.catalogId = cashCatalogId;
+      const res = await fetch(`${SERVER}/api/admin/fees/payments`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Seed failed");
-      toast.success("Default fees applied (1200–1600)");
-      await loadStructure();
-    } catch (e: any) {
-      toast.error(e.message);
+      if (!res.ok) throw new Error(data.error);
+      toast.success("Cash recorded");
+      setStudent(null);
+      setStudentQ("");
+      setCashCatalogId("");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setSavingCash(false);
     }
   };
 
-  const tabs: { id: Tab; label: string; icon: any; count?: number }[] = [
-    {
-      id: "claims",
-      label: "Pending claims",
-      icon: Clock,
-      count: claims.length,
-    },
-    { id: "roster", label: "Roster", icon: Users },
-    { id: "structure", label: "Fee structure", icon: CreditCard },
-  ];
+  const examCatalog = catalog.filter((c) => c.isActive && c.feeType === "EXAM");
+  const customCatalog = catalog.filter((c) => c.isActive && c.feeType === "CUSTOM");
+  const cashList = cashSource === "EXAM" ? examCatalog : cashSource === "CATALOG" ? customCatalog : [];
 
-  const paidCount = roster.filter((r) => r.monthly?.status === "PAID").length;
-  const dueCount = roster.filter((r) => r.monthly?.status === "DUE").length;
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "structure", label: "Monthly rates" },
+    { id: "catalog", label: "Create fee" },
+    { id: "cash", label: "Record cash" },
+    { id: "roster", label: "Student status" },
+    { id: "history", label: "History" },
+  ];
 
   return (
     <div className="p-5 sm:p-6 lg:p-8 space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center justify-between gap-4"
-      >
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
-              <Wallet className="h-5 w-5" />
+      <div>
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/25">
+            <Wallet className="h-5 w-5" />
+          </span>
+          Fees
+        </h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-500">
+          Monthly rates, extra fees, cash collection, student status.
+          {settings && (
+            <span>
+              {" "}
+              Fine ৳{settings.fineAmount} · lock after {settings.lockAfterMonths} unpaid months.
             </span>
-            Fees management
-          </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Session {year} · Month {month} · Verify claims by TrxID · Office
-            payments
-          </p>
-        </div>
+          )}
+        </p>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
+        {tabs.map((t) => (
           <button
+            key={t.id}
             type="button"
-            onClick={refresh}
-            disabled={loading}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer disabled:opacity-50 shadow-xs active:scale-[0.98]"
+            onClick={() => setTab(t.id)}
+            className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap border-b-2 cursor-pointer ${
+              tab === t.id ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500"
+            }`}
           >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${
-                loading ? "animate-spin text-indigo-600 dark:text-indigo-400" : ""
-              }`}
-            />
-            <span>{loading ? "Refreshing..." : "Refresh"}</span>
+            {t.label}
           </button>
-          <button
-            type="button"
-            onClick={() => setRecordOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 cursor-pointer"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Record payment
-          </button>
-        </div>
-      </motion.div>
+        ))}
+      </div>
 
-      {loading ? (
-        <FeesSummarySkeleton />
-      ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Total due
-            </p>
-            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              ৳{summary.totalDue.toLocaleString()}
-            </p>
+      {tab === "structure" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <button type="button" onClick={seed} className="rounded-xl border px-3 py-2 text-xs font-bold cursor-pointer">
+            Seed Class 6–10 defaults
+          </button>
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
+            {CLASSES.map((c) => (
+              <div key={c} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                <span className="w-24 text-sm font-bold">{c}</span>
+                <input
+                  type="number"
+                  value={amounts[c] ?? ""}
+                  onChange={(e) => setAmounts((a) => ({ ...a, [c]: e.target.value }))}
+                  className={`flex-1 ${inputCls}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => saveAmount(c)}
+                  className="inline-flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-2 text-xs font-bold text-white cursor-pointer"
+                >
+                  <Save className="h-3.5 w-3.5" /> Save
+                </button>
+              </div>
+            ))}
           </div>
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Total paid
-            </p>
-            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-              ৳{summary.totalPaid.toLocaleString()}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Remaining
-            </p>
-            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400">
-              ৳{summary.remaining.toLocaleString()}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Collected
-            </p>
-            <p className="mt-1 text-xl sm:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
-              {summary.collectedPercent}%
-            </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">
-              {summary.paidCount} paid · {summary.dueCount} due ·{" "}
-              {summary.studentCount} students
-            </p>
-          </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((t) => {
-          const Icon = t.icon;
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
-                active
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                  : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900"
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {t.label}
-              {typeof t.count === "number" && t.count > 0 && (
-                <span
-                  className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${
-                    active
-                      ? "bg-white/20 text-white"
-                      : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
+      {tab === "catalog" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-2 gap-4">
+          <form onSubmit={createCatalog} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 space-y-4">
+            <p className="text-sm font-bold flex items-center gap-2">
+              <Plus className="h-4 w-4 text-indigo-600" /> New fee
+            </p>
+
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Type</p>
+              <div className="flex gap-2">
+                {(["EXAM", "CUSTOM"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setCatForm({ ...catForm, feeType: t })}
+                    className={`flex-1 rounded-xl py-2.5 text-xs font-bold cursor-pointer ${
+                      catForm.feeType === t ? "bg-indigo-600 text-white" : "border border-slate-200 dark:border-slate-700"
+                    }`}
+                  >
+                    {t === "EXAM" ? "Exam" : "Custom"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <input required placeholder="Title e.g. Half Yearly Exam" value={catForm.title} onChange={(e) => setCatForm({ ...catForm, title: e.target.value })} className={inputCls} />
+            <input required type="number" placeholder="Amount ৳" value={catForm.amount} onChange={(e) => setCatForm({ ...catForm, amount: e.target.value })} className={inputCls} />
+
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Class</p>
+              <div className="flex flex-wrap gap-2">
+                {["ALL", ...CLASSES].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCatForm({ ...catForm, studentClass: c })}
+                    className={`rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer ${
+                      catForm.studentClass === c ? "bg-indigo-600 text-white" : "border border-slate-200 dark:border-slate-700"
+                    }`}
+                  >
+                    {c === "ALL" ? "All classes" : c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Section</p>
+              <div className="flex flex-wrap gap-2">
+                {["", "Section A", "Section B"].map((s) => (
+                  <button
+                    key={s || "all"}
+                    type="button"
+                    onClick={() => setCatForm({ ...catForm, section: s })}
+                    className={`rounded-xl px-3 py-2 text-[11px] font-bold cursor-pointer ${
+                      catForm.section === s ? "bg-indigo-600 text-white" : "border border-slate-200 dark:border-slate-700"
+                    }`}
+                  >
+                    {s || "All sections"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <input type="date" value={catForm.dueDate} onChange={(e) => setCatForm({ ...catForm, dueDate: e.target.value })} className={inputCls} />
+            <input placeholder="Description (optional)" value={catForm.description} onChange={(e) => setCatForm({ ...catForm, description: e.target.value })} className={inputCls} />
+            <button type="submit" className="w-full rounded-xl bg-indigo-600 py-2.5 text-xs font-bold text-white cursor-pointer">
+              Create fee
+            </button>
+          </form>
+
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden">
+            {catalog.length === 0 ? (
+              <p className="p-8 text-sm text-slate-500 text-center">No extra fees yet. Create one on the left.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                {catalog.map((c) => (
+                  <li key={c.id} className="px-4 py-3">
+                    <p className="text-sm font-bold">{c.title}</p>
+                    <p className="text-[11px] text-slate-500">
+                      {c.feeType} · {c.studentClass} · ৳{c.amount}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {tab === "cash" && (
+        <motion.form initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} onSubmit={submitCash} className="max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 space-y-3">
+          <p className="text-sm font-bold flex items-center gap-2">
+            <Banknote className="h-4 w-4 text-indigo-600" /> Record cash
+          </p>
+
+          <div className="relative">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Student</p>
+            <input
+              value={student ? `${student.name} (${student.email})` : studentQ}
+              onChange={(e) => {
+                setStudent(null);
+                setStudentQ(e.target.value);
+              }}
+              placeholder="Type name or email…"
+              className={inputCls}
+              autoComplete="off"
+            />
+            {studentHits.length > 0 && (
+              <ul className="absolute z-30 mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-xl max-h-56 overflow-y-auto">
+                {studentHits.map((s) => (
+                  <li key={s.studentId || s.id}>
+                    <button type="button" onClick={() => pickStudent(s)} className="w-full text-left px-3 py-2.5 text-xs hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer">
+                      <span className="font-bold">{s.name}</span>
+                      <span className="text-slate-500"> · {s.email}</span>
+                      <span className="text-slate-400"> · {s.studentClass}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!student && studentQ.length > 0 && studentHits.length === 0 && (
+              <p className="mt-1 text-[11px] text-slate-500">No match. Open Student status tab once so roster can load, or seed students first.</p>
+            )}
+          </div>
+
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Fee type</p>
+          <div className="flex gap-2">
+            {(["MONTHLY", "EXAM", "CATALOG"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  setCashSource(s);
+                  setCashCatalogId("");
+                }}
+                className={`flex-1 rounded-xl py-2 text-[11px] font-bold cursor-pointer ${
+                  cashSource === s ? "bg-indigo-600 text-white" : "border border-slate-200 dark:border-slate-700"
+                }`}
+              >
+                {s === "MONTHLY" ? "Monthly" : s === "EXAM" ? "Exam" : "Created"}
+              </button>
+            ))}
+          </div>
+
+          {cashSource === "MONTHLY" ? (
+            <input type="month" value={cashMonth} onChange={(e) => setCashMonth(e.target.value)} className={inputCls} />
+          ) : cashList.length === 0 ? (
+            <p className="text-xs text-amber-700 bg-amber-50 dark:bg-amber-500/10 rounded-xl px-3 py-2">
+              No {cashSource === "EXAM" ? "exam" : "custom"} fees yet. Go to <strong>Create fee</strong> and add one first.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {cashList.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCashCatalogId(c.id)}
+                  className={`w-full flex justify-between rounded-xl border px-3 py-2.5 text-left text-xs font-bold cursor-pointer ${
+                    cashCatalogId === c.id ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10" : "border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  {t.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {tab === "claims" && (
-          <motion.div
-            key="claims"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-md"
-          >
-            {loading ? (
-              <ClaimsTableSkeleton />
-            ) : claims.length === 0 ? (
-              <EmptyState
-                icon={Clock}
-                title="No pending claims"
-                text="Student submissions appear here. TrxID stays hidden until you verify it."
-              />
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800">
-                      {["Student", "Fee", "Method", "Phone", "Amount", ""].map(
-                        (h) => (
-                          <th
-                            key={h || "action"}
-                            className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500"
-                          >
-                            {h}
-                          </th>
-                        ),
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {claims.map((c) => (
-                      <tr
-                        key={c.id}
-                        className="border-b border-slate-50 dark:border-slate-800/60 last:border-0 hover:bg-slate-50/60 dark:hover:bg-slate-900/40"
-                      >
-                        <td className="px-5 py-3.5">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {c.studentName}
-                          </p>
-                          <p className="text-[11px] text-slate-500">
-                            {c.studentClass} · {c.studentEmail}
-                          </p>
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-300">
-                          {c.feeType}
-                          {c.month ? (
-                            <span className="text-slate-400"> · {c.month}</span>
-                          ) : null}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs font-semibold">
-                          {c.gateway || c.method}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs font-mono text-slate-600">
-                          {c.senderPhone || "—"}
-                        </td>
-                        <td className="px-5 py-3.5 text-sm font-extrabold text-slate-900 dark:text-white">
-                          ৳{c.amount}
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setVerifyTarget({
-                                id: c.id,
-                                name: c.studentName,
-                                amount: c.amount,
-                              })
-                            }
-                            className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 cursor-pointer"
-                          >
-                            <ShieldCheck className="h-3 w-3" />
-                            Verify
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {tab === "roster" && (
-          <motion.div
-            key="roster"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="space-y-3"
-          >
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2">
-              <div className="relative flex-1 min-w-45 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                <input
-                  value={rosterSearch}
-                  onChange={(e) => setRosterSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && loadRoster()}
-                  placeholder="Name, email or roll…"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-2 pl-9 pr-3 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-500/30"
-                />
-              </div>
-
-              <NiceSelect
-                value={filterClass}
-                onChange={(val) => setFilterClass(val)}
-                options={CLASS_OPTIONS}
-                icon={Filter}
-              />
-
-              <NiceSelect
-                value={filterSection}
-                onChange={(val) => setFilterSection(val)}
-                options={SECTION_OPTIONS}
-              />
-
-              <button
-                type="button"
-                onClick={() => loadRoster()}
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 cursor-pointer"
-              >
-                Search
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden shadow-md">
-              {loading ? (
-                <RosterTableSkeleton />
-              ) : roster.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title="No students found"
-                  text="Try another class, section, or search term. Seed fee structure if amounts are 0."
-                />
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800">
-                        {[
-                          "Student",
-                          "Class / Section",
-                          "Paid / Due",
-                          "Status",
-                        ].map((h) => (
-                          <th
-                            key={h}
-                            className="px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500"
-                          >
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roster.map((r) => (
-                        <tr
-                          key={r.id}
-                          className="border-b border-slate-50 dark:border-slate-800/60 last:border-0"
-                        >
-                          <td className="px-5 py-3.5">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                              {r.name}
-                            </p>
-                            <p className="text-[11px] text-slate-500">
-                              {r.roll ? `Roll ${r.roll} · ` : ""}
-                              {r.email}
-                            </p>
-                          </td>
-                          <td className="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-300">
-                            {r.studentClass || "—"}
-                            {r.studentSection ? ` · ${r.studentSection}` : ""}
-                          </td>
-                          <td className="px-5 py-3.5 text-sm font-bold text-slate-900 dark:text-white">
-                            ৳{r.monthly?.paid ?? 0}
-                            <span className="text-slate-400 font-medium">
-                              {" "}
-                              / ৳{r.monthly?.due ?? 0}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <StatusPill status={r.monthly?.status || "DUE"} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {tab === "structure" && (
-          <motion.div
-            key="structure"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-          >
-            {loading ? (
-              <StructureSkeleton />
-            ) : (
-              <div className="max-w-lg rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 sm:p-6 shadow-md space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Monthly fee structure
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Session {year} · amounts in BDT
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={seedStructure}
-                className="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer"
-              >
-                Seed 1200–1600
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {Object.keys(DEFAULT_FEES).map((cls) => (
-                <div
-                  key={cls}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 px-3.5 py-2.5"
-                >
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    {cls}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-400">৳</span>
-                    <input
-                      type="number"
-                      min={0}
-                      value={amounts[cls] ?? 0}
-                      onChange={(e) =>
-                        setAmounts((p) => ({
-                          ...p,
-                          [cls]: Number(e.target.value),
-                        }))
-                      }
-                      className="w-28 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-2.5 py-1.5 text-sm font-bold text-right outline-none focus:ring-2 focus:ring-indigo-500/30"
-                    />
-                  </div>
-                </div>
+                  <span>{c.title}</span>
+                  <span>৳{c.amount}</span>
+                </button>
               ))}
             </div>
+          )}
 
-            <button
-              type="button"
-              onClick={saveStructure}
-              disabled={savingStructure}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 text-xs font-bold text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
-            >
-              {savingStructure ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              Save structure
+          {cashSource === "MONTHLY" && (
+            <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+              <input type="checkbox" checked={payFine} onChange={(e) => setPayFine(e.target.checked)} />
+              Collect ৳500 monthly fine if due
+            </label>
+          )}
+
+          <button type="submit" disabled={savingCash} className="w-full rounded-xl bg-indigo-600 py-2.5 text-xs font-bold text-white disabled:opacity-50 cursor-pointer">
+            {savingCash ? "Saving…" : "Save cash payment"}
+          </button>
+        </motion.form>
+      )}
+
+      {tab === "roster" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <div className="flex gap-2">
+            <select value={filterClass} onChange={(e) => setFilterClass(e.target.value)} className={inputCls}>
+              <option>All Classes</option>
+              {CLASSES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+            <select value={filterSection} onChange={(e) => setFilterSection(e.target.value)} className={inputCls}>
+              {SECTIONS.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+            <button type="button" onClick={loadRoster} className="rounded-xl border px-3 cursor-pointer">
+              <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
-        )}
-      </motion.div>
-    )}
-      </AnimatePresence>
+          <div className="rounded-2xl border overflow-x-auto bg-white dark:bg-slate-950 dark:border-slate-800">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              </div>
+            ) : (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800">
+                    {["Student", "Class", "Unpaid months", "Fine", "Catalog due", "Access"].map((h) => (
+                      <th key={h} className="px-4 py-3 text-[11px] font-bold uppercase text-slate-500">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {roster.map((r) => (
+                    <tr key={r.studentId} className="border-b border-slate-50 dark:border-slate-800/60">
+                      <td className="px-4 py-3">
+                        <p className="text-xs font-bold">{r.name}</p>
+                        <p className="text-[10px] text-slate-400">{r.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {r.studentClass} {r.section}
+                      </td>
+                      <td className="px-4 py-3 text-xs font-bold">{r.unpaidMonths}</td>
+                      <td className="px-4 py-3 text-xs">৳{r.fineDue}</td>
+                      <td className="px-4 py-3 text-xs">৳{r.catalogDue}</td>
+                      <td className="px-4 py-3">
+                        {r.blocked ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                            <Lock className="h-3 w-3" /> Locked
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-emerald-600">Open</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </motion.div>
+      )}
 
-      <RecordPaymentModal
-        isOpen={recordOpen}
-        onClose={() => setRecordOpen(false)}
-        onSuccess={() => {
-          loadRoster();
-          loadClaims();
-        }}
-      />
-
-      <VerifyPaymentModal
-        isOpen={Boolean(verifyTarget)}
-        claimId={verifyTarget?.id ?? null}
-        studentName={verifyTarget?.name}
-        amount={verifyTarget?.amount}
-        onClose={() => setVerifyTarget(null)}
-        onSuccess={async () => {
-          await Promise.all([loadClaims(), loadRoster()]);
-        }}
-      />
-    </div>
-  );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    PAID: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800",
-    PARTIAL:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800",
-    DUE: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800",
-  };
-  return (
-    <span
-      className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
-        map[status] || map.DUE
-      }`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function EmptyState({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: any;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-400">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">
-        {title}
-      </h3>
-      <p className="mt-1 max-w-xs text-xs text-slate-500 dark:text-slate-400">
-        {text}
-      </p>
+      {tab === "history" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input value={payQ} onChange={(e) => setPayQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && loadHistory()} placeholder="Search…" className={`pl-9 ${inputCls}`} />
+            </div>
+            <select value={payMethod} onChange={(e) => setPayMethod(e.target.value)} className={inputCls}>
+              <option value="ALL">All</option>
+              <option value="CASH">Cash</option>
+              <option value="SSL">SSLCommerz</option>
+            </select>
+            <button type="button" onClick={loadHistory} className="rounded-xl border px-3 text-xs font-bold cursor-pointer">
+              Refresh
+            </button>
+          </div>
+          <div className="rounded-2xl border overflow-x-auto bg-white dark:bg-slate-950 dark:border-slate-800">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800">
+                  {["Student", "Type", "Amount", "Method", "Status", "Receipt"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-[11px] font-bold uppercase text-slate-500">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => (
+                  <tr key={p.id} className="border-b border-slate-50 dark:border-slate-800/60">
+                    <td className="px-4 py-3 text-xs font-bold">{p.studentName}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {p.feeType} {p.month || ""}
+                    </td>
+                    <td className="px-4 py-3 text-xs font-bold">৳{p.amount}</td>
+                    <td className="px-4 py-3 text-xs">{p.methodLabel || p.gateway || p.method}</td>
+                    <td className="px-4 py-3 text-xs">{p.gatewayStatus || p.status}</td>
+                    <td className="px-4 py-3 text-[11px] font-mono">{p.receiptNo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
