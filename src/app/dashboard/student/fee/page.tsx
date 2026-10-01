@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
 type Payment = {
   id: string;
