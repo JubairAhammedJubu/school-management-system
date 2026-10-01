@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Award,
@@ -27,10 +27,26 @@ export default function TeacherResultsPage() {
   const [resultsRefreshKey, setResultsRefreshKey] = useState(0);
   const [results, setResults] = useState<Result[]>([]);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [isResultsLoading, setIsResultsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Delete modal state
   const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
   const [isDeletingResult, setIsDeletingResult] = useState(false);
+
+  const handleRefreshResults = () => {
+    setIsRefreshing(true);
+    setResultsRefreshKey((current) => current + 1);
+  };
+
+  const handleResultsChange = useCallback((fetchedResults: Result[]) => {
+    setResults(fetchedResults);
+  }, []);
+
+  const handleLoadingChange = useCallback((loading: boolean) => {
+    setIsResultsLoading(loading);
+    if (!loading) setIsRefreshing(false);
+  }, []);
 
   const dynamicGradeDistribution = ["A+", "A", "B+", "B", "C", "D", "F"].map(
     (grade) => {
@@ -287,7 +303,22 @@ export default function TeacherResultsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 z-10">
+        <div className="flex items-center gap-3 shrink-0 z-10 flex-wrap">
+          <button
+            type="button"
+            onClick={handleRefreshResults}
+            disabled={isRefreshing || isResultsLoading}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            title="Refresh Results"
+          >
+            <RefreshCw
+              className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 ${
+                isRefreshing || isResultsLoading ? "animate-spin" : ""
+              }`}
+            />
+            <span>Refresh Results</span>
+          </button>
+
           <button
             type="button"
             onClick={handleExportPDFReport}
@@ -321,6 +352,7 @@ export default function TeacherResultsPage() {
           value={String(results.length)}
           detail="Graded this academic term"
           delay={0.05}
+          isLoading={isResultsLoading || isRefreshing}
           iconClass="text-indigo-600 dark:text-indigo-400"
           iconBg="bg-indigo-50 dark:bg-indigo-500/10"
         />
@@ -339,6 +371,7 @@ export default function TeacherResultsPage() {
           }
           detail="+4.2% overall class growth"
           delay={0.1}
+          isLoading={isResultsLoading || isRefreshing}
           iconClass="text-emerald-600 dark:text-emerald-400"
           iconBg="bg-emerald-50 dark:bg-emerald-500/10"
         />
@@ -350,6 +383,7 @@ export default function TeacherResultsPage() {
           )}
           detail="Results visible to students"
           delay={0.15}
+          isLoading={isResultsLoading || isRefreshing}
           iconClass="text-blue-600 dark:text-blue-400"
           iconBg="bg-blue-50 dark:bg-blue-500/10"
         />
@@ -361,6 +395,7 @@ export default function TeacherResultsPage() {
           )}
           detail="Awaiting review or publish"
           delay={0.2}
+          isLoading={isResultsLoading || isRefreshing}
           iconClass="text-amber-600 dark:text-amber-400"
           iconBg="bg-amber-50 dark:bg-amber-500/10"
         />
@@ -371,7 +406,8 @@ export default function TeacherResultsPage() {
         {/* Recent Results Section */}
         <ResultList
           refreshKey={resultsRefreshKey}
-          onResultsChange={setResults}
+          onResultsChange={handleResultsChange}
+          onLoadingChange={handleLoadingChange}
           onDelete={openDeleteModal}
           onView={setSelectedResult}
           onEdit={setEditingResult}
@@ -399,59 +435,73 @@ export default function TeacherResultsPage() {
               </span>
             </div>
 
-            <div className="mt-6 space-y-4">
-              {dynamicGradeDistribution.map((item, index) => (
-                <motion.div
-                  key={item.grade}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    duration: 0.35,
-                    delay: 0.3 + index * 0.05,
-                  }}
-                >
-                  <div className="mb-1.5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`flex h-6 w-6 items-center justify-center rounded-lg text-[10px] font-black ${
-                          item.grade === "A+"
-                            ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                            : item.grade === "A"
-                              ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
-                              : item.grade === "B+"
-                                ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
-                                : item.grade === "B"
-                                  ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                        }`}
-                      >
-                        {item.grade}
-                      </span>
+            {isResultsLoading || isRefreshing ? (
+              <div className="mt-6 space-y-4 animate-pulse">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                      <div className="h-4 w-10 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    </div>
+                    <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {dynamicGradeDistribution.map((item, index) => (
+                  <motion.div
+                    key={item.grade}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.35,
+                      delay: 0.3 + index * 0.05,
+                    }}
+                  >
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`flex h-6 w-6 items-center justify-center rounded-lg text-[10px] font-black ${
+                            item.grade === "A+"
+                              ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
+                              : item.grade === "A"
+                                ? "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"
+                                : item.grade === "B+"
+                                  ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400"
+                                  : item.grade === "B"
+                                    ? "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+                                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          }`}
+                        >
+                          {item.grade}
+                        </span>
 
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {item.count} {item.count === 1 ? "student" : "students"}
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {item.count} {item.count === 1 ? "student" : "students"}
+                        </span>
+                      </div>
+
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                        {item.percentage}%
                       </span>
                     </div>
 
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                      {item.percentage}%
-                    </span>
-                  </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800/80">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${item.percentage}%` }}
-                      transition={{
-                        duration: 0.6,
-                        delay: 0.35 + index * 0.05,
-                      }}
-                      className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500"
-                    />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800/80">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${item.percentage}%` }}
+                        transition={{
+                          duration: 0.6,
+                          delay: 0.35 + index * 0.05,
+                        }}
+                        className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500"
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Performance Callout Footer */}
@@ -519,6 +569,7 @@ function SummaryCard({
   value,
   detail,
   delay,
+  isLoading = false,
   iconClass = "text-indigo-600 dark:text-indigo-400",
   iconBg = "bg-indigo-50 dark:bg-indigo-500/10",
 }: {
@@ -527,6 +578,7 @@ function SummaryCard({
   value: string;
   detail: string;
   delay: number;
+  isLoading?: boolean;
   iconClass?: string;
   iconBg?: string;
 }) {
@@ -549,9 +601,13 @@ function SummaryCard({
         {label}
       </p>
 
-      <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
-        {value}
-      </p>
+      {isLoading ? (
+        <div className="my-1 h-7 w-16 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
+      ) : (
+        <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+          {value}
+        </p>
+      )}
 
       <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
         {detail}
