@@ -264,7 +264,7 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 font-sans text-slate-900 dark:text-slate-100">
+    <div className="w-full space-y-6 font-sans text-slate-900 dark:text-slate-100">
       {/* Executive Header Banner */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
