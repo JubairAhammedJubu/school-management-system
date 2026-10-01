@@ -82,11 +82,11 @@ export default function TeacherRoutinePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${SERVER}/api/teacher/routine`, {
+      const res = await fetch(`${SERVER}/api/teacher/routine?t=${Date.now()}`, {
         credentials: "include",
+        cache: "no-store",
       });
       const data = await res.json();
-      console.log(data)
       if (!res.ok) throw new Error(data.error || "Failed to load routine");
       setPeriods(data.periods || []);
       setGrid(data.grid || {});
@@ -189,9 +189,10 @@ export default function TeacherRoutinePage() {
           <button
             type="button"
             onClick={load}
-            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-200 dark:border-indigo-900/50 transition-all cursor-pointer shadow-xs"
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm border border-indigo-200 dark:border-indigo-900/50 transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <RefreshCw className={`h-4 w-4 text-indigo-600 dark:text-indigo-400 ${loading ? "animate-spin" : ""}`} />
             Refresh Routine
           </button>
 
@@ -223,27 +224,30 @@ export default function TeacherRoutinePage() {
         <SummaryCard
           icon={Clock3}
           label="Daily Periods"
-          value={String(teachingPeriods.length)}
+          value={loading ? "..." : String(teachingPeriods.length)}
           detail="Configured teaching periods per day"
           delay={0.05}
+          isLoading={loading}
           iconClass="text-indigo-600 dark:text-indigo-400"
           iconBg="bg-indigo-50 dark:bg-indigo-500/10"
         />
         <SummaryCard
           icon={BookOpen}
           label="Assigned Slots"
-          value={String(filledCount)}
+          value={loading ? "..." : String(filledCount)}
           detail="Weekly allocated class sessions"
           delay={0.1}
+          isLoading={loading}
           iconClass="text-emerald-600 dark:text-emerald-400"
           iconBg="bg-emerald-50 dark:bg-emerald-500/10"
         />
         <SummaryCard
           icon={CalendarDays}
           label="School Days"
-          value={String(DAYS.length)}
+          value={loading ? "..." : String(DAYS.length)}
           detail="Weekly scheduled academic days"
           delay={0.15}
+          isLoading={loading}
           iconClass="text-blue-600 dark:text-blue-400"
           iconBg="bg-blue-50 dark:bg-blue-500/10"
         />
@@ -426,6 +430,7 @@ function SummaryCard({
   value,
   detail,
   delay,
+  isLoading = false,
   iconClass = "text-indigo-600 dark:text-indigo-400",
   iconBg = "bg-indigo-50 dark:bg-indigo-500/10",
 }: {
@@ -434,6 +439,7 @@ function SummaryCard({
   value: string;
   detail: string;
   delay: number;
+  isLoading?: boolean;
   iconClass?: string;
   iconBg?: string;
 }) {
@@ -456,8 +462,8 @@ function SummaryCard({
         {label}
       </p>
 
-      {value === "..." ? (
-        <div className="mt-2 h-7 w-16 rounded-md bg-slate-200/90 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+      {isLoading || value === "..." ? (
+        <div className="my-1 h-7 w-16 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
       ) : (
         <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
           {value}
