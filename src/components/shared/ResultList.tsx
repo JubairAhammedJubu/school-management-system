@@ -37,6 +37,7 @@ export type Result = {
 type ResultListProps = {
   refreshKey?: number;
   onResultsChange?: (results: Result[]) => void;
+  onLoadingChange?: (loading: boolean) => void;
   onView?: (result: Result) => void;
   onEdit?: (result: Result) => void;
   onDelete?: (result: Result) => void;
@@ -53,6 +54,7 @@ const CLASS_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9"
 export default function ResultList({
   refreshKey = 0,
   onResultsChange,
+  onLoadingChange,
   onView,
   onEdit,
   onDelete,
@@ -72,9 +74,18 @@ export default function ResultList({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
 
+  const onResultsChangeRef = useRef(onResultsChange);
+  const onLoadingChangeRef = useRef(onLoadingChange);
+
+  useEffect(() => {
+    onResultsChangeRef.current = onResultsChange;
+    onLoadingChangeRef.current = onLoadingChange;
+  });
+
   const fetchResults = useCallback(async () => {
     try {
       setIsLoading(true);
+      onLoadingChangeRef.current?.(true);
       setError("");
 
       const response = await fetch(
@@ -92,14 +103,15 @@ export default function ResultList({
 
       const fetchedResults: Result[] = data.results || [];
       setResults(fetchedResults);
-      onResultsChange?.(fetchedResults);
+      onResultsChangeRef.current?.(fetchedResults);
     } catch (error: any) {
       console.error("Error fetching results:", error);
       setError(error?.message || "Failed to load results.");
     } finally {
       setIsLoading(false);
+      onLoadingChangeRef.current?.(false);
     }
-  }, [onResultsChange]);
+  }, []);
 
   useEffect(() => {
     fetchResults();
