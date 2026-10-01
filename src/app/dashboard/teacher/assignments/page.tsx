@@ -14,6 +14,7 @@ import {
   Layers,
   Check,
   ChevronDown,
+  RefreshCw,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "react-toastify";
@@ -36,6 +37,7 @@ export default function TeacherAssignmentsPage() {
 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [, setError] = useState("");
 
   const [search, setSearch] = useState("");
@@ -88,8 +90,14 @@ export default function TeacherAssignmentsPage() {
       toast.error(message);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [teacherEmail]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchAssignments();
+  };
 
   useEffect(() => {
     if (teacherEmail) {
@@ -250,14 +258,31 @@ const handleDelete = async (assignmentId: string) => {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleCreate}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02] shrink-0 z-10"
-        >
-          <Plus className="w-4 h-4" />
-          Create Assignment
-        </button>
+        <div className="flex items-center gap-3 shrink-0 z-10 flex-wrap">
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
+            className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            title="Refresh Assignments"
+          >
+            <RefreshCw
+              className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 ${
+                isRefreshing || isLoading ? "animate-spin" : ""
+              }`}
+            />
+            <span>Refresh</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCreate}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/25 transition-all cursor-pointer hover:scale-[1.02] shrink-0 z-10"
+          >
+            <Plus className="w-4 h-4" />
+            Create Assignment
+          </button>
+        </div>
       </motion.div>
 
       {/* Metric Cards Row */}
@@ -265,24 +290,27 @@ const handleDelete = async (assignmentId: string) => {
         <SummaryCard
           icon={BookOpen}
           label="Total Courseworks"
-          value={isLoading ? "..." : String(totalAssignments)}
+          value={isLoading || isRefreshing ? "..." : String(totalAssignments)}
           detail="Assignments created across all sections"
           delay={0.05}
+          isLoading={isLoading || isRefreshing}
         />
         <SummaryCard
           icon={Clock3}
           label="Active & Open"
-          value={isLoading ? "..." : String(activeAssignments)}
+          value={isLoading || isRefreshing ? "..." : String(activeAssignments)}
           detail="Currently accepting student submissions"
           delay={0.1}
+          isLoading={isLoading || isRefreshing}
           badgeColor="text-emerald-600 dark:text-emerald-400"
         />
         <SummaryCard
           icon={CheckCircle2}
           label="Closed / Locked"
-          value={isLoading ? "..." : String(closedAssignments)}
+          value={isLoading || isRefreshing ? "..." : String(closedAssignments)}
           detail="Past deadline or locked by teacher"
           delay={0.15}
+          isLoading={isLoading || isRefreshing}
           badgeColor="text-slate-600 dark:text-slate-400"
         />
       </div>
@@ -340,27 +368,27 @@ const handleDelete = async (assignmentId: string) => {
         </div>
 
         {/* Assignments Grid */}
-        {isLoading && assignments.length === 0 ? (
+        {isLoading || isRefreshing ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-5 shadow-md dark:shadow-xl space-y-4 flex flex-col justify-between"
+                className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-5 shadow-md dark:shadow-xl space-y-4 flex flex-col justify-between animate-pulse"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="h-6 w-20 rounded-full skeleton-shimmer" />
-                    <div className="h-4 w-16 rounded-md skeleton-shimmer-subtle" />
+                    <div className="h-6 w-20 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-4 w-16 rounded-md bg-slate-200 dark:bg-slate-800" />
                   </div>
-                  <div className="h-5 w-3/4 rounded-md skeleton-shimmer" />
-                  <div className="h-3 w-1/2 rounded-md skeleton-shimmer-subtle" />
+                  <div className="h-5 w-3/4 rounded-md bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-3 w-1/2 rounded-md bg-slate-200/60 dark:bg-slate-800/60" />
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                  <div className="h-4 w-28 rounded-md skeleton-shimmer-subtle" />
+                  <div className="h-4 w-28 rounded-md bg-slate-200 dark:bg-slate-800" />
                   <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg skeleton-shimmer" />
-                    <div className="h-7 w-7 rounded-lg skeleton-shimmer" />
+                    <div className="h-7 w-7 rounded-lg bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-7 w-7 rounded-lg bg-slate-200 dark:bg-slate-800" />
                   </div>
                 </div>
               </div>
@@ -461,12 +489,15 @@ function SummaryCard({
   value,
   detail,
   delay,
+  isLoading = false,
+  badgeColor,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
   detail: string;
   delay: number;
+  isLoading?: boolean;
   badgeColor?: string;
 }) {
   return (
@@ -486,15 +517,15 @@ function SummaryCard({
         {label}
       </p>
 
-      {value === "..." ? (
-        <div className="mt-2 h-7 w-16 rounded-md bg-slate-200/90 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
+      {isLoading || value === "..." ? (
+        <div className="mt-2 h-7 w-16 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse" />
       ) : (
         <p className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
           {value}
         </p>
       )}
 
-      <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <p className={`mt-1 text-xs font-semibold ${badgeColor || "text-slate-500 dark:text-slate-400"}`}>
         {detail}
       </p>
     </motion.div>
