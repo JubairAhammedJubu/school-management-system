@@ -277,10 +277,9 @@ export default function TeacherExaminationsPage() {
 
   // Fetch Exams & Requests from DB on Mount
   const fetchExams = useCallback(async (showRefreshSpinner = false) => {
+    setIsLoading(true);
     if (showRefreshSpinner) {
       setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
     }
 
     try {
@@ -771,11 +770,13 @@ export default function TeacherExaminationsPage() {
           <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
+              disabled={isLoading || isRefreshing}
               onClick={() => fetchExams(true)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold text-slate-700 transition-all hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
               title="Refresh Data"
             >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin text-indigo-600" : ""}`} />
+              <RefreshCw className={`h-4 w-4 text-indigo-600 dark:text-indigo-400 ${isRefreshing || isLoading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
             </button>
 
             <button
@@ -2195,7 +2196,7 @@ function SummaryCard({
 
       <div className="mt-1 text-2xl font-black tracking-tight text-slate-950 dark:text-white">
         {value === "..." ? (
-          <div className="h-7 w-12 rounded-md skeleton-shimmer my-0.5" />
+          <div className="h-7 w-16 rounded-md bg-slate-200 dark:bg-slate-800 animate-pulse my-0.5" />
         ) : (
           value
         )}
