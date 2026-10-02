@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -22,7 +23,7 @@ import {
   FileCheck,
 } from "lucide-react";
 
-const rawApi = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const rawApi = API_BASE_URL;
 const API = rawApi.replace(/\/+$/, "");
 
 type PaymentDetails = {
@@ -31,11 +32,11 @@ type PaymentDetails = {
   feeType: string;
   month?: string | null;
   amount: number;
+  gatewayAmount?: number | null; // <-- add
   paidAt: string;
   methodLabel?: string;
   gatewayTranId?: string;
 };
-
 const taka = (n: number) => `৳${Number(n || 0).toLocaleString("en-BD")}`;
 
 function monthLabel(key?: string | null) {
@@ -105,7 +106,10 @@ function CartoonHappyMascot() {
         transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         className="relative z-10 w-full h-full flex items-center justify-center"
       >
-        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl overflow-visible">
+        <svg
+          viewBox="0 0 200 200"
+          className="w-full h-full drop-shadow-xl overflow-visible"
+        >
           {/* Shadow underneath */}
           <ellipse cx="100" cy="180" rx="48" ry="8" fill="rgba(0,0,0,0.12)" />
 
@@ -152,7 +156,11 @@ function CartoonHappyMascot() {
             {/* Left Starry Eye */}
             <motion.g
               animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-              transition={{ duration: 4, repeat: Infinity, times: [0, 0.9, 0.93, 0.96, 1] }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                times: [0, 0.9, 0.93, 0.96, 1],
+              }}
               style={{ originX: "72px", originY: "75px" }}
             >
               <circle cx="72" cy="75" r="14" fill="#ffffff" />
@@ -165,7 +173,11 @@ function CartoonHappyMascot() {
             {/* Right Starry Eye */}
             <motion.g
               animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
-              transition={{ duration: 4, repeat: Infinity, times: [0, 0.9, 0.93, 0.96, 1] }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                times: [0, 0.9, 0.93, 0.96, 1],
+              }}
               style={{ originX: "128px", originY: "75px" }}
             >
               <circle cx="128" cy="75" r="14" fill="#ffffff" />
@@ -176,19 +188,27 @@ function CartoonHappyMascot() {
             </motion.g>
 
             {/* Blushing Cheeks */}
-            <ellipse cx="58" cy="88" rx="8" ry="5" fill="#f472b6" opacity="0.8" />
-            <ellipse cx="142" cy="88" rx="8" ry="5" fill="#f472b6" opacity="0.8" />
+            <ellipse
+              cx="58"
+              cy="88"
+              rx="8"
+              ry="5"
+              fill="#f472b6"
+              opacity="0.8"
+            />
+            <ellipse
+              cx="142"
+              cy="88"
+              rx="8"
+              ry="5"
+              fill="#f472b6"
+              opacity="0.8"
+            />
 
             {/* Big Open Happy Smile */}
-            <path
-              d="M 82 92 Q 100 114 118 92 Z"
-              fill="#0f172a"
-            />
+            <path d="M 82 92 Q 100 114 118 92 Z" fill="#0f172a" />
             {/* Tongue */}
-            <path
-              d="M 90 98 Q 100 114 110 98 Q 100 106 90 98"
-              fill="#fb7185"
-            />
+            <path d="M 90 98 Q 100 114 110 98 Q 100 106 90 98" fill="#fb7185" />
           </g>
 
           {/* Raised Waving Celebration Arm holding Check Shield */}
@@ -197,8 +217,21 @@ function CartoonHappyMascot() {
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             style={{ originX: "155px", originY: "110px" }}
           >
-            <circle cx="170" cy="95" r="14" fill="#34d399" stroke="#059669" strokeWidth="2.5" />
-            <path d="M 164 95 L 168 99 L 176 90" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+            <circle
+              cx="170"
+              cy="95"
+              r="14"
+              fill="#34d399"
+              stroke="#059669"
+              strokeWidth="2.5"
+            />
+            <path
+              d="M 164 95 L 168 99 L 176 90"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
           </motion.g>
 
           {/* Cartoon Feet */}
@@ -207,7 +240,13 @@ function CartoonHappyMascot() {
 
           {/* Gradients */}
           <defs>
-            <linearGradient id="emerald-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient
+              id="emerald-grad"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#34d399" />
               <stop offset="100%" stopColor="#059669" />
             </linearGradient>
@@ -222,8 +261,14 @@ function CartoonHappyMascot() {
 function ConfettiExplosion() {
   const particles = Array.from({ length: 36 });
   const colors = [
-    "#10b981", "#3b82f6", "#f59e0b", "#8b5cf6",
-    "#ec4899", "#14b8a6", "#f43f5e", "#6366f1"
+    "#10b981",
+    "#3b82f6",
+    "#f59e0b",
+    "#8b5cf6",
+    "#ec4899",
+    "#14b8a6",
+    "#f43f5e",
+    "#6366f1",
   ];
 
   return (
@@ -283,7 +328,11 @@ const containerVariants: Variants = {
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0, 0, 0.2, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0, 0, 0.2, 1] },
+  },
 };
 
 function SuccessContent() {
@@ -294,36 +343,47 @@ function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [showSlipModal, setShowSlipModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [fineAmount, setFineAmount] = useState(0);
+
+  // Fine alada FINE row e thake, tai fee + fine jog kore total
+  const totalPaid = payment
+    ? fineAmount > 0
+      ? payment.amount + fineAmount
+      : (payment.gatewayAmount ?? payment.amount) // fine row na pele gateway er total
+    : 0;
+  const fineShown = payment ? Math.max(totalPaid - payment.amount, 0) : 0;
 
   useEffect(() => {
     // Fire canvas-confetti celebration burst
     try {
-      import("canvas-confetti").then((confettiModule) => {
-        const confetti = confettiModule.default;
-        confetti({
-          particleCount: 90,
-          spread: 80,
-          origin: { y: 0.6 },
-          colors: ["#10b981", "#6366f1", "#f59e0b", "#3b82f6", "#ec4899"],
-        });
+      import("canvas-confetti")
+        .then((confettiModule) => {
+          const confetti = confettiModule.default;
+          confetti({
+            particleCount: 90,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ["#10b981", "#6366f1", "#f59e0b", "#3b82f6", "#ec4899"],
+          });
 
-        setTimeout(() => {
-          confetti({
-            particleCount: 50,
-            angle: 60,
-            spread: 60,
-            origin: { x: 0 },
-            colors: ["#10b981", "#3b82f6", "#f59e0b"],
-          });
-          confetti({
-            particleCount: 50,
-            angle: 120,
-            spread: 60,
-            origin: { x: 1 },
-            colors: ["#6366f1", "#ec4899", "#10b981"],
-          });
-        }, 300);
-      }).catch(() => {});
+          setTimeout(() => {
+            confetti({
+              particleCount: 50,
+              angle: 60,
+              spread: 60,
+              origin: { x: 0 },
+              colors: ["#10b981", "#3b82f6", "#f59e0b"],
+            });
+            confetti({
+              particleCount: 50,
+              angle: 120,
+              spread: 60,
+              origin: { x: 1 },
+              colors: ["#6366f1", "#ec4899", "#10b981"],
+            });
+          }, 300);
+        })
+        .catch(() => {});
     } catch {
       // fallback to framer-motion particles
     }
@@ -339,11 +399,25 @@ function SuccessContent() {
         });
         const json = await res.json();
         if (res.ok && json.history) {
-          const match = json.history.find(
-            (h: PaymentDetails) =>
-              h.gatewayTranId === tranId || h.receiptNo === tranId || h.id === tranId
-          ) || json.history[0];
-          if (match) setPayment(match);
+          const history: PaymentDetails[] = json.history;
+          const match =
+            history.find(
+              (h) =>
+                h.gatewayTranId === tranId ||
+                h.receiptNo === tranId ||
+                h.id === tranId,
+            ) || history[0];
+
+          if (match) {
+            setPayment(match);
+            // Backend fine row er gatewayTranId = `${monthlyTranId}-FINE`
+            const fineRow = history.find(
+              (h) =>
+                h.feeType === "FINE" &&
+                h.gatewayTranId === `${match.gatewayTranId}-FINE`,
+            );
+            setFineAmount(fineRow?.amount ?? 0);
+          }
         }
       } catch (e) {
         console.error("Failed to fetch receipt:", e);
@@ -405,13 +479,17 @@ function SuccessContent() {
             variants={itemVariants}
             className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed"
           >
-            Your payment has been verified and successfully recorded into your official student ledger.
+            Your payment has been verified and successfully recorded into your
+            official student ledger.
           </motion.p>
         </div>
 
         {/* Essential Transaction Summary Grid */}
         {payment ? (
-          <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-2xl mx-auto">
+          <motion.div
+            variants={itemVariants}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-2xl mx-auto"
+          >
             {/* Box 1: Receipt Number */}
             <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/60 space-y-1">
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
@@ -430,7 +508,9 @@ function SuccessContent() {
                   {copied ? (
                     <>
                       <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Copied
+                      </span>
                     </>
                   ) : (
                     <>
@@ -448,8 +528,13 @@ function SuccessContent() {
                 <Wallet className="h-3 w-3 text-emerald-500" />
                 Fee Particular:
               </span>
-              <p className="font-bold text-slate-900 dark:text-slate-100 text-xs truncate">
-                {payment.feeType === "MONTHLY" ? `Monthly (${monthLabel(payment.month)})` : payment.feeType}
+              <p className="font-bold text-slate-900 dark:text-slate-100 text-xs leading-snug">
+                {payment.feeType === "MONTHLY"
+                  ? `Monthly (${monthLabel(payment.month)})`
+                  : payment.feeType === "FINE"
+                    ? "Late Fine"
+                    : payment.feeType}
+                {fineShown > 0 && " + Late Fine"}
               </p>
             </div>
 
@@ -459,8 +544,13 @@ function SuccessContent() {
                 Total Paid Amount:
               </span>
               <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
-                <AnimatedAmount value={payment.amount} />
+                <AnimatedAmount value={totalPaid} />
               </p>
+              {fineShown > 0 && (
+                <p className="text-[11px] font-medium text-emerald-700/80 dark:text-emerald-400/80">
+                  Fee {taka(payment.amount)} + Fine {taka(fineShown)}
+                </p>
+              )}
             </div>
           </motion.div>
         ) : loading ? (
@@ -474,7 +564,11 @@ function SuccessContent() {
                 <div className="h-5 w-24 rounded-md bg-slate-300/80 dark:bg-slate-700/80 animate-pulse" />
                 <motion.div
                   animate={{ x: ["-100%", "200%"] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent pointer-events-none"
                 />
               </div>
@@ -486,14 +580,17 @@ function SuccessContent() {
             className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900"
           >
             Payment recorded successfully. Reference Trx:{" "}
-            <span className="font-mono font-bold text-indigo-600">{tranId || "Verified"}</span>
+            <span className="font-mono font-bold text-indigo-600">
+              {tranId || "Verified"}
+            </span>
           </motion.div>
         )}
 
-
-
         {/* Clean Direct Action Buttons */}
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-4 pt-2 max-w-xl mx-auto">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row items-center gap-4 pt-2 max-w-xl mx-auto"
+        >
           <motion.button
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.97 }}
@@ -536,7 +633,7 @@ function SuccessContent() {
       <AnimatePresence>
         {showSlipModal && payment && (
           <ExecutivePaymentReceiptSlip
-            payment={payment}
+            payment={{ ...payment, amount: totalPaid }}
             onClose={() => setShowSlipModal(false)}
             printableId="printable-success-slip"
           />

@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useState, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -85,7 +86,7 @@ export default function TeacherResultsPage() {
     try {
       setIsDeletingResult(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results/${resultToDelete.id}`,
+        `${API_BASE_URL || ""}/api/teacher/results/${resultToDelete.id}`,
         {
           method: "DELETE",
           credentials: "include",

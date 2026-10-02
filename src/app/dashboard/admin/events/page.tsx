@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -240,7 +241,7 @@ export default function AdminEventsPage() {
   const loadEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/events`, {
+      const res = await fetch(`${API_BASE_URL || ""}/api/events`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -317,8 +318,8 @@ export default function AdminEventsPage() {
     setIsSaving(true);
     try {
       const url = editingEvent
-        ? `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events/${editingEvent.id}`
-        : `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events`;
+        ? `${API_BASE_URL || ""}/api/admin/events/${editingEvent.id}`
+        : `${API_BASE_URL || ""}/api/admin/events`;
 
       const method = editingEvent ? "PUT" : "POST";
 
@@ -358,7 +359,7 @@ export default function AdminEventsPage() {
     if (!deletingEvent) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/admin/events/${deletingEvent.id}`, {
+      const res = await fetch(`${API_BASE_URL || ""}/api/admin/events/${deletingEvent.id}`, {
         method: "DELETE",
         credentials: "include",
       });

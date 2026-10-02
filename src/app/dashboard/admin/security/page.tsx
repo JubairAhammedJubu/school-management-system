@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,7 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER_URL = API_BASE_URL;
 
 // Mirrors the bearer-token pattern in @/lib/auth-client so these plain
 // fetches to our own /api/admin/* routes carry the same auth as the rest

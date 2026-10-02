@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
@@ -143,7 +144,7 @@ export default function NoticeBoard({
     setBusy(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/notices/draft`,
+        `${API_BASE_URL}/api/notices/draft`,
         {
           method: "POST",
           credentials: "include",

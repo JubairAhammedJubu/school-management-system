@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import { adminClient ,inferAdditionalFields } from "better-auth/client/plugins";
 import { twoFactorClient } from "better-auth/client/plugins";
+import { API_BASE_URL } from "@/lib/api-url";
 
 // Points at the Express API's Better Auth routes (server/src/routes/auth.routes.ts).
 // Set NEXT_PUBLIC_SERVER_URL in .env.local when the API isn't on localhost:5000.
@@ -11,7 +12,7 @@ import { twoFactorClient } from "better-auth/client/plugins";
 // with the `additionalFields` in server/src/lib/auth.ts.
 
 export const authClient = createAuthClient({
-  baseURL: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/auth`,
+  baseURL: API_BASE_URL ? `${API_BASE_URL}/api/auth` : undefined,
   fetchOptions: {
     credentials: "include",
   },

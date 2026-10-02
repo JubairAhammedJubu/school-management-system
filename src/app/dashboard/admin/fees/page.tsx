@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,7 +36,7 @@ import {
   Pencil,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER = API_BASE_URL;
 const CLASSES = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTIONS = ["All Sections", "Section A", "Section B"];
 
