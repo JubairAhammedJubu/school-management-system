@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import QRCode from "qrcode";
 import {
   Eye,
   EyeOff,
@@ -416,7 +415,8 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           await authClient.twoFactor.enable({ password, method: "totp" });
 
         if (!enableError && enableData && enableData.method === "totp") {
-          const qrDataUrl = await QRCode.toDataURL(enableData.totpURI);
+          const { toDataURL } = await import("qrcode");
+          const qrDataUrl = await toDataURL(enableData.totpURI);
           const secretMatch = /secret=([^&]+)/.exec(enableData.totpURI);
           setTotpQrDataUrl(qrDataUrl);
           setTotpSecret(secretMatch ? decodeURIComponent(secretMatch[1]) : "");

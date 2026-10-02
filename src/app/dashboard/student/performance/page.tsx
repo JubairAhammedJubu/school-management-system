@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -169,7 +170,7 @@ export default function StudentPerformancePage() {
       if (refresh) setIsRefreshing(true);
       setError("");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/performance`,
+        `${API_BASE_URL}/api/student/performance`,
         { credentials: "include" }
       );
       const data = await response.json();
@@ -199,7 +200,7 @@ export default function StudentPerformancePage() {
     setInsightError("");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/performance/insight`,
+        `${API_BASE_URL}/api/student/performance/insight`,
         { method: "POST", credentials: "include" }
       );
       const data = await response.json();

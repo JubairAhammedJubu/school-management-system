@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -302,8 +303,8 @@ export default function SubmitResultModal({
     try {
       setIsSubmitting(true);
       const url = isEditMode
-        ? `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results/${result?.id}`
-        : `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results`;
+        ? `${API_BASE_URL || ""}/api/teacher/results/${result?.id}`
+        : `${API_BASE_URL || ""}/api/teacher/results`;
 
       const method = isEditMode ? "PATCH" : "POST";
 

@@ -1,11 +1,12 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { CalendarDays, Printer, BookOpen, RefreshCw } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 const WEBSITE_NAME = "EduNexus";
 const SCHOOL_NAME = "EduNexus Academy";
 

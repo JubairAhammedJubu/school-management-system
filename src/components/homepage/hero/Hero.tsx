@@ -2,6 +2,7 @@
 
 import { useState, useEffect, cloneElement } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Play } from "lucide-react";
 import { motion } from "framer-motion";
@@ -89,9 +90,11 @@ export default function Hero() {
       transition={{ duration: 0.25 }}
       className="relative h-[140px] w-[170px] sm:h-[155px] sm:w-[210px] shrink-0 overflow-hidden rounded-[20px] sm:rounded-[25px] bg-slate-800 border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
     >
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=700&q=85"
         alt="Team collaborating in a modern workspace"
+        fill
+        sizes="(max-width: 640px) 170px, 210px"
         className="h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-black/5" />
@@ -119,9 +122,11 @@ export default function Hero() {
       transition={{ duration: 0.25 }}
       className="relative h-[200px] w-[145px] sm:h-[240px] sm:w-[170px] lg:h-[275px] lg:w-[195px] shrink-0 overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
     >
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=85"
         alt="Student studying with a laptop"
+        fill
+        sizes="(max-width: 640px) 145px, (max-width: 1024px) 170px, 195px"
         className="h-full w-full object-cover"
       />
     </motion.div>,
@@ -132,9 +137,11 @@ export default function Hero() {
       transition={{ duration: 0.25 }}
       className="relative h-[200px] w-[80px] sm:h-[240px] sm:w-[95px] lg:h-[275px] lg:w-[105px] shrink-0 overflow-hidden rounded-[35px] lg:rounded-[45px] border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-black/40"
     >
-      <img
+      <Image
         src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=500&q=85"
         alt="Student working on a laptop"
+        fill
+        sizes="(max-width: 640px) 80px, (max-width: 1024px) 95px, 105px"
         className="h-full w-full object-cover"
       />
     </motion.div>,
@@ -264,7 +271,7 @@ export default function Hero() {
             {[...heroCards, ...heroCards].map((card, index) =>
               // Re-key each duplicate so React doesn't warn about
               // reused keys across the two copies of the track.
-              cloneElement(card, { key: `${card.key}-${index}` })
+              cloneElement(card, { key: `${card.key}-${index}` }),
             )}
           </motion.div>
         </motion.div>

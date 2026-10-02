@@ -3,8 +3,7 @@ import { Sora, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "@/components/Navbar/Navbar";
-import Footer from "@/components/Footer/Footer";
+import PublicChrome from "@/components/PublicChrome";
 import { ToastContainer } from "react-toastify";
 
 const sora = Sora({
@@ -55,9 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         suppressHydrationWarning
         className="min-h-full flex flex-col bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300"
       >
-        <Navbar />
-        {children}
-        <Footer />
+        <PublicChrome>{children}</PublicChrome>
         <ToastContainer
           position="top-right"
           autoClose={3500}

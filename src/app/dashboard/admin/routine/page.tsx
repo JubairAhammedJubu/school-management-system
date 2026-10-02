@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +19,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER = API_BASE_URL;
 
 const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY"] as const;
 const DAY_SHORT: Record<string, string> = {
