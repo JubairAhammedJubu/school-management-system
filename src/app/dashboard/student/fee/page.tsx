@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExecutivePaymentReceiptSlip } from "@/components/shared/ExecutivePaymentReceiptSlip";
 import {
@@ -171,6 +172,7 @@ function FeeSkeleton() {
 }
 
 export default function StudentFeePage() {
+  const router = useRouter();
   const [data, setData] = useState<FeesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -212,15 +214,15 @@ export default function StudentFeePage() {
     const status = params.get("status");
     const tran = params.get("tran") || params.get("tran_id") || "";
     if (status === "success") {
-      window.location.href = `/dashboard/student/fee/success?status=success&tran=${encodeURIComponent(tran)}`;
+      router.replace(`/dashboard/student/fee/success?status=success&tran=${encodeURIComponent(tran)}`);
       return;
     }
     if (status === "cancel" || status === "fail" || status === "error") {
-      window.location.href = `/dashboard/student/fee/cancel?status=${status}&tran=${encodeURIComponent(tran)}`;
+      router.replace(`/dashboard/student/fee/cancel?status=${status}&tran=${encodeURIComponent(tran)}`);
       return;
     }
     load();
-  }, [load]);
+  }, [load, router]);
 
   async function startPayment(key: string, body: Record<string, unknown>) {
     setBusyKey(key);
