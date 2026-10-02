@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -139,7 +140,7 @@ export default function StudentPerformanceOverviewPage() {
         : {};
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/at-risk`,
+        `${API_BASE_URL}/api/teacher/at-risk`,
         { credentials: "include", headers }
       );
       const data = await parseJsonResponse(response);
@@ -175,7 +176,7 @@ export default function StudentPerformanceOverviewPage() {
       if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/teacher/at-risk/${student.id}/insight`,
+        `${API_BASE_URL}/api/teacher/at-risk/${student.id}/insight`,
         { method: "POST", credentials: "include", headers }
       );
       const data = await parseJsonResponse(response);

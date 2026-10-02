@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 const WEBSITE_NAME = "EduNexus";
 const SCHOOL_NAME = "Your School Name";
 

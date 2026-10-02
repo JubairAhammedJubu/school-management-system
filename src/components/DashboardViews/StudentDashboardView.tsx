@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -89,71 +90,93 @@ export default function StudentOverviewPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [feeOverdue, setFeeOverdue] = useState<FeeOverdue | null>(null);
-  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary | null>(null);
+  const [attendanceSummary, setAttendanceSummary] =
+    useState<AttendanceSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(true);
+  const [isLoadingResults, setIsLoadingResults] = useState(true);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
+  const [isLoadingFees, setIsLoadingFees] = useState(true);
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchAll = useCallback(async (refresh = false) => {
-    if (!studentEmail) return;
-    setIsLoading(true);
-    if (refresh) setIsRefreshing(true);
+  const fetchAll = useCallback(
+    async (refresh = false) => {
+      if (!studentEmail) return;
+      setIsLoading(true);
+      setIsLoadingAssignments(true);
+      setIsLoadingResults(true);
+      setIsLoadingSubjects(true);
+      setIsLoadingFees(true);
+      setIsLoadingAttendance(true);
+      if (refresh) setIsRefreshing(true);
 
-    try {
-      const [assignRes, resultRes, subjectRes, feeRes, attendRes] = await Promise.all([
-        fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
-          { credentials: "include" }
-        ).catch(() => null),
-        fetch(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/results?status=PUBLISHED`,
-          { credentials: "include" }
-        ).catch(() => null),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`, {
-          credentials: "include",
-        }).catch(() => null),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/fees`, {
-          credentials: "include",
-        }).catch(() => null),
-        fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/attendance`, {
-          credentials: "include",
-        }).catch(() => null),
-      ]);
+      try {
+        const fetchJson = async (url: string) => {
+          try {
+            const response = await fetch(url, { credentials: "include" });
+            return response.ok ? await response.json() : null;
+          } catch {
+            return null;
+          }
+        };
 
-      if (assignRes && assignRes.ok) {
-        const assignData = await assignRes.json();
-        if (assignData.success) setAssignments(assignData.assignments || []);
+        const assignmentsPromise = fetchJson(
+          `${API_BASE_URL}/api/student/assignments`,
+        )
+          .then((data) => {
+            if (data?.success) setAssignments(data.assignments || []);
+          })
+          .finally(() => setIsLoadingAssignments(false));
+
+        const resultsPromise = fetchJson(
+          `${API_BASE_URL}/api/student/results?status=PUBLISHED`,
+        )
+          .then((data) => {
+            if (data?.success) setResults(data.results || []);
+          })
+          .finally(() => setIsLoadingResults(false));
+
+        const subjectsPromise = fetchJson(
+          `${API_BASE_URL}/api/student/subjects`,
+        )
+          .then((data) => {
+            if (data?.success) setSubjects(data.subjects || []);
+          })
+          .finally(() => setIsLoadingSubjects(false));
+
+        const feesPromise = fetchJson(
+          `${API_BASE_URL}/api/student/fees`,
+        )
+          .then((data) => {
+            if (data?.overdue) setFeeOverdue(data.overdue);
+          })
+          .finally(() => setIsLoadingFees(false));
+
+        const attendancePromise = fetchJson(
+          `${API_BASE_URL}/api/student/attendance`,
+        )
+          .then((data) => {
+            if (data?.summary) setAttendanceSummary(data.summary);
+          })
+          .finally(() => setIsLoadingAttendance(false));
+
+        await Promise.all([
+          assignmentsPromise,
+          resultsPromise,
+          subjectsPromise,
+          feesPromise,
+          attendancePromise,
+        ]);
+      } catch (err) {
+        console.error("Overview fetch error:", err);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
       }
-
-      if (resultRes && resultRes.ok) {
-        const resultData = await resultRes.json();
-        if (resultData.success) setResults(resultData.results || []);
-      }
-
-      if (subjectRes && subjectRes.ok) {
-        const subjectData = await subjectRes.json();
-        if (subjectData.success) setSubjects(subjectData.subjects || []);
-      }
-
-      if (feeRes && feeRes.ok) {
-        const feeData = await feeRes.json();
-        if (feeData && feeData.overdue) {
-          setFeeOverdue(feeData.overdue);
-        }
-      }
-
-      if (attendRes && attendRes.ok) {
-        const attendData = await attendRes.json();
-        if (attendData && attendData.summary) {
-          setAttendanceSummary(attendData.summary);
-        }
-      }
-    } catch (err) {
-      console.error("Overview fetch error:", err);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [studentEmail]);
+    },
+    [studentEmail],
+  );
 
   useEffect(() => {
     fetchAll();
@@ -204,25 +227,64 @@ export default function StudentOverviewPage() {
   const subjectProgressData = React.useMemo(() => {
     if (subjects.length > 0) {
       return subjects.slice(0, 5).map((s) => {
-        const totalSubjectAssigns = assignments.filter((a) => a.subject?.toLowerCase() === s.subject.toLowerCase()).length || 2;
-        const submittedSubjectAssigns = assignments.filter(
-          (a) => a.subject?.toLowerCase() === s.subject.toLowerCase() && a.submitStatus !== "PENDING"
-        ).length || 1;
+        const totalSubjectAssigns =
+          assignments.filter(
+            (a) => a.subject?.toLowerCase() === s.subject.toLowerCase(),
+          ).length || 2;
+        const submittedSubjectAssigns =
+          assignments.filter(
+            (a) =>
+              a.subject?.toLowerCase() === s.subject.toLowerCase() &&
+              a.submitStatus !== "PENDING",
+          ).length || 1;
         return {
-          name: s.subject.length > 10 ? s.subject.slice(0, 10) + "…" : s.subject,
+          name:
+            s.subject.length > 10 ? s.subject.slice(0, 10) + "…" : s.subject,
           fullName: s.subject,
           completed: submittedSubjectAssigns,
           total: totalSubjectAssigns,
-          progress: Math.round((submittedSubjectAssigns / (totalSubjectAssigns || 1)) * 100),
+          progress: Math.round(
+            (submittedSubjectAssigns / (totalSubjectAssigns || 1)) * 100,
+          ),
         };
       });
     }
     return [
-      { name: "Math", fullName: "Mathematics", completed: 4, total: 5, progress: 80 },
-      { name: "Physics", fullName: "Physics", completed: 3, total: 4, progress: 75 },
-      { name: "English", fullName: "English Language", completed: 5, total: 5, progress: 100 },
-      { name: "ICT", fullName: "Computer & ICT", completed: 4, total: 4, progress: 100 },
-      { name: "Chemistry", fullName: "Chemistry", completed: 2, total: 3, progress: 66 },
+      {
+        name: "Math",
+        fullName: "Mathematics",
+        completed: 4,
+        total: 5,
+        progress: 80,
+      },
+      {
+        name: "Physics",
+        fullName: "Physics",
+        completed: 3,
+        total: 4,
+        progress: 75,
+      },
+      {
+        name: "English",
+        fullName: "English Language",
+        completed: 5,
+        total: 5,
+        progress: 100,
+      },
+      {
+        name: "ICT",
+        fullName: "Computer & ICT",
+        completed: 4,
+        total: 4,
+        progress: 100,
+      },
+      {
+        name: "Chemistry",
+        fullName: "Chemistry",
+        completed: 2,
+        total: 3,
+        progress: 66,
+      },
     ];
   }, [subjects, assignments]);
 
@@ -245,7 +307,10 @@ export default function StudentOverviewPage() {
   // 4. Computed Average Score
   const avgPerformancePct = React.useMemo(() => {
     if (results.length > 0 && !isRestricted) {
-      const sum = results.reduce((acc, r) => acc + (r.score / (r.total || 100)) * 100, 0);
+      const sum = results.reduce(
+        (acc, r) => acc + (r.score / (r.total || 100)) * 100,
+        0,
+      );
       return Math.round(sum / results.length);
     }
     return 88;
@@ -327,11 +392,15 @@ export default function StudentOverviewPage() {
               </div>
 
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
-                Welcome back, <span className="text-indigo-600 dark:text-indigo-400">{studentName}</span>
+                Welcome back,{" "}
+                <span className="text-indigo-600 dark:text-indigo-400">
+                  {studentName}
+                </span>
               </h1>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
-                Here is your live academic overview: enrolled subjects, pending assignments, exam results, and schedule updates.
+                Here is your live academic overview: enrolled subjects, pending
+                assignments, exam results, and schedule updates.
               </p>
             </div>
           </div>
@@ -374,75 +443,71 @@ export default function StudentOverviewPage() {
 
       {/* High-Contrast Summary Stat Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {isLoading || isRefreshing
-          ? [...Array(4)].map((_, idx) => (
-              <div
-                key={idx}
-                className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs animate-pulse dark:border-slate-800 dark:bg-slate-950 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="h-9 w-9 rounded-xl bg-slate-200 dark:bg-slate-800" />
-                </div>
-                <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-16 rounded-lg bg-slate-200 dark:bg-slate-800" />
-                <div className="h-2.5 w-32 rounded bg-slate-100 dark:bg-slate-800/60" />
+        {[
+          {
+            label: "Pending Coursework",
+            value: pendingCount,
+            icon: Clock3,
+            detail: "Assignments requiring submission",
+            loading: isLoadingAssignments,
+          },
+          {
+            label: "Submitted Assignments",
+            value: submittedCount,
+            icon: CheckCircle2,
+            detail: "Turned in & under evaluation",
+            loading: isLoadingAssignments,
+          },
+          {
+            label: "Attendance Rate",
+            value: `${currentAttendanceRate}%`,
+            icon: CalendarCheck,
+            detail: "Overall recorded presence",
+            loading: isLoadingAttendance,
+          },
+          {
+            label: "Published Results",
+            value: resultsCount,
+            icon: Trophy,
+            detail: isRestricted
+              ? "Locked due to fee overdue"
+              : "Exam marksheets recorded",
+            badge: isRestricted ? "Locked" : undefined,
+            loading: isLoadingResults || isLoadingFees,
+          },
+        ].map((item, index) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
+                <item.icon className="h-4 w-4" />
               </div>
-            ))
-          : [
-              {
-                label: "Pending Coursework",
-                value: pendingCount,
-                icon: Clock3,
-                detail: "Assignments requiring submission",
-              },
-              {
-                label: "Submitted Assignments",
-                value: submittedCount,
-                icon: CheckCircle2,
-                detail: "Turned in & under evaluation",
-              },
-              {
-                label: "Attendance Rate",
-                value: `${currentAttendanceRate}%`,
-                icon: CalendarCheck,
-                detail: "Overall recorded presence",
-              },
-              {
-                label: "Published Results",
-                value: resultsCount,
-                icon: Trophy,
-                detail: isRestricted ? "Locked due to fee overdue" : "Exam marksheets recorded",
-                badge: isRestricted ? "Locked" : undefined,
-              },
-            ].map((item, idx) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:shadow-xl hover:border-indigo-500/40"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  {item.badge && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                      <Lock className="w-3 h-3" /> {item.badge}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
-                  {item.label}
-                </p>
-                <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                  {item.value}
-                </p>
-                <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
-                  {item.detail}
-                </p>
-              </motion.div>
-            ))}
+              {item.badge && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <Lock className="w-3 h-3" /> {item.badge}
+                </span>
+              )}
+            </div>
+            <p className="mt-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">
+              {item.label}
+            </p>
+            <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+              {item.loading ? (
+                <span className="inline-block h-6 w-8 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+              ) : (
+                item.value
+              )}
+            </p>
+            <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
+              {item.detail}
+            </p>
+          </motion.div>
+        ))}
       </div>
 
       {/* ===================================================== */}
@@ -469,7 +534,8 @@ export default function StudentOverviewPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Live examination trends, coursework completion metrics, and attendance distribution
+                Live examination trends, coursework completion metrics, and
+                attendance distribution
               </p>
             </div>
           </div>
@@ -495,12 +561,14 @@ export default function StudentOverviewPage() {
                 Exam Percentage Trend (%)
               </span>
               <span className="text-[10px] font-semibold text-slate-400">
-                {results.length > 0 && !isRestricted ? `${results.length} Published Exams` : "Academic Season Stats"}
+                {results.length > 0 && !isRestricted
+                  ? `${results.length} Published Exams`
+                  : "Academic Season Stats"}
               </span>
             </div>
 
             <div className="h-[230px] w-full">
-              {isLoading || isRefreshing ? (
+              {isLoadingResults || isLoadingFees ? (
                 <div className="h-full w-full rounded-xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
               ) : isRestricted ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-2">
@@ -509,26 +577,77 @@ export default function StudentOverviewPage() {
                     Exam Performance Chart Locked
                   </p>
                   <p className="text-[11px] text-slate-400 max-w-xs">
-                    Clear your overdue tuition fee balance to view live marksheet charts.
+                    Clear your overdue tuition fee balance to view live
+                    marksheet charts.
                   </p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={performanceTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart
+                    data={performanceTrendData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
                     <defs>
-                      <linearGradient id="studentScoreColor" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                      <linearGradient
+                        id="studentScoreColor"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0.35}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
-                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(v) => `${v}%`} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e2e8f0"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#64748b" }}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#64748b" }}
+                      tickFormatter={(v) => `${v}%`}
+                    />
                     <Tooltip
-                      contentStyle={{ borderRadius: "12px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }}
+                      contentStyle={{
+                        borderRadius: "12px",
+                        fontSize: "11px",
+                        backgroundColor: "#0f172a",
+                        borderColor: "#334155",
+                        color: "#ffffff",
+                      }}
                       formatter={(val) => [`${val}%`, "Score"]}
                     />
-                    <Area type="monotone" dataKey="scorePct" stroke="#4f46e5" strokeWidth={2.5} fill="url(#studentScoreColor)" dot={{ r: 4, fill: "#4f46e5", stroke: "#ffffff", strokeWidth: 2 }} />
+                    <Area
+                      type="monotone"
+                      dataKey="scorePct"
+                      stroke="#4f46e5"
+                      strokeWidth={2.5}
+                      fill="url(#studentScoreColor)"
+                      dot={{
+                        r: 4,
+                        fill: "#4f46e5",
+                        stroke: "#ffffff",
+                        strokeWidth: 2,
+                      }}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -552,7 +671,7 @@ export default function StudentOverviewPage() {
               </div>
 
               <div className="relative h-[170px] w-full flex items-center justify-center">
-                {isLoading || isRefreshing ? (
+                {isLoadingAttendance ? (
                   <div className="h-full w-full rounded-xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
                 ) : (
                   <>
@@ -566,11 +685,21 @@ export default function StudentOverviewPage() {
                           dataKey="value"
                         >
                           {attendanceDonutData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.color}
+                              stroke="none"
+                            />
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }}
+                          contentStyle={{
+                            borderRadius: "10px",
+                            fontSize: "11px",
+                            backgroundColor: "#0f172a",
+                            borderColor: "#334155",
+                            color: "#ffffff",
+                          }}
                           formatter={(val) => [`${val} Days`, "Count"]}
                         />
                       </PieChart>
@@ -598,8 +727,12 @@ export default function StudentOverviewPage() {
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-slate-600 dark:text-slate-300">{item.name}:</span>
-                  <span className="text-slate-900 dark:text-white">{item.value}</span>
+                  <span className="text-slate-600 dark:text-slate-300">
+                    {item.name}:
+                  </span>
+                  <span className="text-slate-900 dark:text-white">
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
@@ -617,35 +750,66 @@ export default function StudentOverviewPage() {
               Overall Completion Rate:{" "}
               <strong className="text-indigo-600 dark:text-indigo-400 font-bold">
                 {Math.round(
-                  subjectProgressData.reduce((acc, curr) => acc + curr.progress, 0) / (subjectProgressData.length || 1)
-                )}%
+                  subjectProgressData.reduce(
+                    (acc, curr) => acc + curr.progress,
+                    0,
+                  ) / (subjectProgressData.length || 1),
+                )}
+                %
               </strong>
             </span>
           </div>
 
           <div className="h-[180px] w-full">
-            {isLoading || isRefreshing ? (
+            {isLoadingAssignments || isLoadingSubjects ? (
               <div className="h-full w-full rounded-xl bg-slate-200 dark:bg-slate-800/60 animate-pulse" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={subjectProgressData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
-                  <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(v) => `${v}%`} />
+                <BarChart
+                  data={subjectProgressData}
+                  margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#e2e8f0"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tickFormatter={(v) => `${v}%`}
+                  />
                   <Tooltip
                     cursor={{ fill: "transparent" }}
-                    contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }}
+                    contentStyle={{
+                      borderRadius: "10px",
+                      fontSize: "11px",
+                      backgroundColor: "#0f172a",
+                      borderColor: "#334155",
+                      color: "#ffffff",
+                    }}
                     formatter={(val) => [`${val}%`, "Completion Rate"]}
                   />
-                  <Bar dataKey="progress" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={28} />
+                  <Bar
+                    dataKey="progress"
+                    fill="#6366f1"
+                    radius={[6, 6, 0, 0]}
+                    barSize={28}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
       </motion.section>
-
-
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Assignments */}
@@ -671,7 +835,7 @@ export default function StudentOverviewPage() {
           </div>
 
           <div className="p-5">
-            {isLoading || isRefreshing ? (
+            {isLoadingAssignments ? (
               <div className="space-y-3 animate-pulse">
                 {[...Array(3)].map((_, idx) => (
                   <div
@@ -739,7 +903,7 @@ export default function StudentOverviewPage() {
           </div>
 
           <div className="p-5">
-            {isLoading || isRefreshing ? (
+            {isLoadingResults || isLoadingFees ? (
               <div className="space-y-3 animate-pulse">
                 {[...Array(3)].map((_, idx) => (
                   <div
@@ -820,7 +984,7 @@ export default function StudentOverviewPage() {
           </h2>
         </div>
 
-        {isLoading || isRefreshing ? (
+        {isLoadingSubjects ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-pulse">
             {[...Array(6)].map((_, idx) => (
               <div
@@ -836,7 +1000,9 @@ export default function StudentOverviewPage() {
             ))}
           </div>
         ) : subjects.length === 0 ? (
-          <p className="text-xs text-slate-500 py-4 text-center">No enrolled subjects found</p>
+          <p className="text-xs text-slate-500 py-4 text-center">
+            No enrolled subjects found
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {subjects.slice(0, 6).map((subject) => (

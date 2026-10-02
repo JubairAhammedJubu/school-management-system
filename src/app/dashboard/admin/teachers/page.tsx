@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -29,7 +30,7 @@ import {
   Lock,
 } from "lucide-react";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER_URL = API_BASE_URL;
 
 function authedFetch(path: string, init?: RequestInit) {
   return fetch(`${SERVER_URL}${path}`, {

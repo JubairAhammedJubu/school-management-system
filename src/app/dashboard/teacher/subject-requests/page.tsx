@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,7 +24,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 
 type Section = { id: string; name: string; isActive?: boolean };
 type SchoolClass = {

@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import HomeReveal from "@/components/homepage/HomeReveal";
 
 export default function ManagementShowcase() {
   return (
@@ -13,13 +11,7 @@ export default function ManagementShowcase() {
             SECTION HEADING
         ====================================================== */}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="mx-auto max-w-[680px] text-center"
-        >
+        <HomeReveal className="mx-auto max-w-[680px] text-center">
           <h2 className="text-[31px] font-extrabold leading-[1.08] tracking-[-0.045em] text-slate-900 dark:text-white sm:text-[38px] lg:text-[42px]">
             Revolutionize Your Innovative
             <br />
@@ -30,23 +22,13 @@ export default function ManagementShowcase() {
             Streamline Operations, Enhance Engagement, and Empower Educators,
             Discover Seamless Efficiency and Innovation in Education Management
           </p>
-        </motion.div>
+        </HomeReveal>
 
         {/* =====================================================
             DASHBOARD SHOWCASE
         ====================================================== */}
 
-        <motion.div
-          initial={{ opacity: 0, y: 35 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{
-            duration: 0.75,
-            delay: 0.1,
-            ease: "easeOut",
-          }}
-          className="relative mt-9"
-        >
+        <HomeReveal className="relative mt-9">
           {/* Outer gray showcase */}
 
           <div className="relative h-[365px] overflow-hidden rounded-[18px] bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 px-5 pt-11 sm:h-[410px] sm:px-10 sm:pt-12 lg:h-[455px] lg:px-16">
@@ -75,7 +57,6 @@ export default function ManagementShowcase() {
                 <div className="flex h-full items-center gap-6 text-[7px] font-medium text-slate-600 dark:text-slate-400 sm:gap-9">
                   <div className="relative flex h-full items-center font-bold text-slate-900 dark:text-white">
                     Overview
-
                     <span className="absolute bottom-0 left-1/2 h-[3px] w-7 -translate-x-1/2 rounded-t-full bg-indigo-600 dark:bg-indigo-400" />
                   </div>
 
@@ -87,12 +68,18 @@ export default function ManagementShowcase() {
                 {/* Right controls */}
 
                 <div className="ml-auto flex items-center gap-3">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">⚙</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">♧</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                    ⚙
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                    ♧
+                  </span>
 
                   <div className="h-7 w-7 overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-purple-600" />
 
-                  <span className="text-[8px] text-slate-500 dark:text-slate-400">⌄</span>
+                  <span className="text-[8px] text-slate-500 dark:text-slate-400">
+                    ⌄
+                  </span>
                 </div>
               </div>
 
@@ -280,12 +267,7 @@ export default function ManagementShowcase() {
                             strokeDasharray="3 3"
                           />
 
-                          <circle
-                            cx="385"
-                            cy="50"
-                            r="3"
-                            fill="#6366f1"
-                          />
+                          <circle cx="385" cy="50" r="3" fill="#6366f1" />
                         </svg>
 
                         {/* Tooltip */}
@@ -327,7 +309,10 @@ export default function ManagementShowcase() {
                       </p>
 
                       <p className="text-[14px] font-bold text-indigo-600 dark:text-indigo-400">
-                        13<span className="text-slate-400 dark:text-slate-500">/42</span>
+                        13
+                        <span className="text-slate-400 dark:text-slate-500">
+                          /42
+                        </span>
                       </p>
 
                       <p className="mt-2 text-[6px] text-slate-500 dark:text-slate-400">
@@ -335,7 +320,10 @@ export default function ManagementShowcase() {
                       </p>
 
                       <p className="text-[14px] font-bold text-amber-500">
-                        08<span className="text-slate-400 dark:text-slate-500">/12</span>
+                        08
+                        <span className="text-slate-400 dark:text-slate-500">
+                          /12
+                        </span>
                       </p>
 
                       {/* Donut */}
@@ -419,7 +407,7 @@ export default function ManagementShowcase() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </HomeReveal>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
@@ -309,7 +310,7 @@ export default function ProfilePage() {
       formData.append("file", file);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/profile/image`,
+        `${API_BASE_URL}/api/user/profile/image`,
         {
           method: "POST",
           credentials: "include",

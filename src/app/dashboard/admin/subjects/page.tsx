@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +21,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const SERVER = API_BASE_URL;
 
 type Group = { id: string; name: string };
 

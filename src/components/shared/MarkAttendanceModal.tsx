@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER_URL = API_BASE_URL || "";
 
 const CLASS_OPTIONS = ["Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTION_OPTIONS = ["Section A", "Section B"]; // Strictly Section A and Section B

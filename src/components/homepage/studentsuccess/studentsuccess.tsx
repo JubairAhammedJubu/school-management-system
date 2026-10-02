@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import HomeReveal from "@/components/homepage/HomeReveal";
 
 export default function StudentSuccess() {
   return (
@@ -15,13 +13,7 @@ export default function StudentSuccess() {
             LEFT CONTENT
         ====================================================== */}
 
-        <motion.div
-          initial={{ opacity: 0, x: -25 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.65, ease: "easeOut" }}
-          className="max-w-[430px]"
-        >
+        <HomeReveal direction="left" className="max-w-[430px]">
           <h2 className="text-[34px] font-extrabold leading-[1.1] tracking-[-0.045em] text-slate-900 dark:text-white sm:text-[39px]">
             Institution, Elevate
             <br />
@@ -40,27 +32,16 @@ export default function StudentSuccess() {
             className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-indigo-700 px-7 text-[10px] font-semibold text-white shadow-md shadow-indigo-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-indigo-500/40"
           >
             Learn More
-
-            <ArrowRight
-              size={12}
-              className="ml-2"
-            />
+            <ArrowRight size={12} className="ml-2" />
           </Link>
-        </motion.div>
+        </HomeReveal>
 
         {/* =====================================================
             RIGHT — LEARNING ACTIVITY CHART
         ====================================================== */}
 
-        <motion.div
-          initial={{ opacity: 0, x: 25 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{
-            duration: 0.65,
-            delay: 0.1,
-            ease: "easeOut",
-          }}
+        <HomeReveal
+          direction="right"
           className="relative mx-auto h-[285px] w-full max-w-[500px]"
         >
           {/* Background rounded shape */}
@@ -87,10 +68,7 @@ export default function StudentSuccess() {
 
               <div className="absolute inset-0 flex flex-col justify-between">
                 {[80, 60, 40, 20, 0].map((value) => (
-                  <div
-                    key={value}
-                    className="flex items-center gap-2"
-                  >
+                  <div key={value} className="flex items-center gap-2">
                     <span className="w-[15px] text-[7px] font-medium text-slate-400 dark:text-slate-500">
                       {value}
                     </span>
@@ -157,50 +135,19 @@ export default function StudentSuccess() {
 
                 {/* Marker point */}
 
-                <circle
-                  cx="296"
-                  cy="57"
-                  r="3"
-                  fill="#6366f1"
-                />
+                <circle cx="296" cy="57" r="3" fill="#6366f1" />
 
                 {/* Gradients */}
 
                 <defs>
-                  <linearGradient
-                    id="blueFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="#6366f1"
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="#6366f1"
-                      stopOpacity="0"
-                    />
+                  <linearGradient id="blueFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
                   </linearGradient>
 
-                  <linearGradient
-                    id="orangeFill"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="0%"
-                      stopColor="#ff7629"
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="#ff7629"
-                      stopOpacity="0"
-                    />
+                  <linearGradient id="orangeFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ff7629" />
+                    <stop offset="100%" stopColor="#ff7629" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -209,9 +156,7 @@ export default function StudentSuccess() {
 
               <div className="absolute right-[12px] top-[17px]">
                 <div className="relative rounded-[5px] bg-slate-900 dark:bg-slate-800 px-3 py-1.5 text-center text-white shadow-lg border border-slate-700">
-                  <p className="text-[8px] font-medium leading-none">
-                    60
-                  </p>
+                  <p className="text-[8px] font-medium leading-none">60</p>
 
                   <p className="mt-0.5 text-[7px] leading-none text-white/80">
                     hours
@@ -238,7 +183,7 @@ export default function StudentSuccess() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </HomeReveal>
       </div>
     </section>
   );
