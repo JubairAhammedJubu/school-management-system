@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,7 +46,7 @@ import {
 import { toast } from "react-toastify";
 import MarkAttendanceModal from "@/components/shared/MarkAttendanceModal";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER_URL = API_BASE_URL || "";
 
 const CLASS_FILTER_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];
 const SECTION_FILTER_OPTIONS = ["All Sections", "Section A", "Section B"]; // Strictly Section A and Section B
