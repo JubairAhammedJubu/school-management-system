@@ -29,7 +29,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const rawApi = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const API = rawApi.replace(/\/+$/, "");
 
 type Payment = {
   id: string;
