@@ -31,44 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${sora.variable} ${inter.variable} h-full antialiased`}
     >
-      <head>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (theme === 'dark' || (!theme && supportDarkMode)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body
-        suppressHydrationWarning
-        className="min-h-full flex flex-col bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300"
-      >
-        <PublicChrome>{children}</PublicChrome>
-        <NoInternetScreen />
-        <ToastContainer
-          position="top-right"
-          autoClose={3500}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          pauseOnHover
-          draggable
-          style={{ top: "60px" }}
-        />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
