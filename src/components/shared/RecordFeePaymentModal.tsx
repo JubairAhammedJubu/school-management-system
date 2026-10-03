@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +18,7 @@ import {
   BookOpen,
 } from "lucide-react";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 
 const METHODS = [
   { id: "bkash", label: "bKash", icon: Smartphone },

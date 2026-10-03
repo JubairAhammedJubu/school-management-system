@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,8 +31,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const rawApi = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+const rawApi = API_BASE_URL;
 const API = rawApi.replace(/\/+$/, "");
+
+// Backend (fees.ts) er FINE_MARK er sathe mile thakte hobe
+const FINE_MARK = "SSL_INCLUDES_FINE:";
 
 type Payment = {
   id: string;
@@ -43,6 +47,7 @@ type Payment = {
   paidAt: string;
   status: string;
   methodLabel?: string;
+  note?: string | null;
 };
 
 type CatalogItem = {
@@ -110,6 +115,35 @@ const STATUS_MESSAGES: Record<
     icon: AlertCircle,
   },
 };
+
+function FineToggle({
+  amount,
+  checked,
+  onChange,
+}: {
+  amount: number;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50/60 px-3.5 py-2.5 text-xs font-semibold text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 cursor-pointer accent-indigo-600"
+      />
+      <span>
+        Include late fine ({taka(amount)}) in this payment
+        {!checked && (
+          <span className="ml-1 font-normal text-amber-700 dark:text-amber-400">
+            (fine pore alada pay korte parbe)
+          </span>
+        )}
+      </span>
+    </label>
+  );
+}
 
 function FeeSkeleton() {
   return (
@@ -185,6 +219,9 @@ export default function StudentFeePage() {
   const [activeTab, setActiveTab] = useState<TabType>("current");
   const [historyPage, setHistoryPage] = useState(1);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+
+  // Monthly payment e late fine include korbe kina
+  const [includeFine, setIncludeFine] = useState(true);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -298,6 +335,21 @@ export default function StudentFeePage() {
   const hasPendingMonthly = (m: string) =>
     pending.some((p) => p.feeType === "MONTHLY" && p.month === m);
 
+  // Fine already kono pending payment e ache kina (duibar charge ruktey)
+  const fineInPending = pending.some(
+    (p) =>
+      p.feeType === "FINE" ||
+      (p.feeType === "MONTHLY" && p.note?.startsWith(FINE_MARK)),
+  );
+  const fineAvailable = fine.due > 0 && !fineInPending;
+  const oldestUnpaid = unpaidMonths[0];
+
+  // Current month payment e fine jabe kina (shudhu oldest unpaid month e fine add hoy)
+  const currentWithFine =
+    fineAvailable && includeFine && oldestUnpaid === monthly.month
+      ? fine.due
+      : 0;
+
   // History Pagination (10 items per page)
   const ITEMS_PER_PAGE = 10;
   const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE) || 1;
@@ -337,7 +389,7 @@ export default function StudentFeePage() {
       detail: fine.paid
         ? "Fine Settled"
         : fine.applicable
-          ? "Auto added on next pay"
+          ? "Pay with monthly fee or alone"
           : "No fine applicable",
     },
     {
@@ -638,6 +690,16 @@ export default function StudentFeePage() {
             </div>
 
             <div className="p-6 space-y-6">
+              {monthly.status === "DUE" &&
+                fineAvailable &&
+                oldestUnpaid === monthly.month && (
+                  <FineToggle
+                    amount={fine.due}
+                    checked={includeFine}
+                    onChange={setIncludeFine}
+                  />
+                )}
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-slate-200/80 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -654,13 +716,24 @@ export default function StudentFeePage() {
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Monthly Tuition Rate: <span className="font-bold text-slate-800 dark:text-slate-200">{taka(rate)}</span>
+                    {currentWithFine > 0 && (
+                      <span className="ml-1 font-medium text-rose-600 dark:text-rose-400">
+                        + {taka(currentWithFine)} fine
+                      </span>
+                    )}
                   </p>
                 </div>
 
                 {monthly.status === "DUE" ? (
                   <button
                     disabled={busyKey !== null}
-                    onClick={() => startPayment(`month-${monthly.month}`, { feeType: "MONTHLY", month: monthly.month })}
+                    onClick={() =>
+                      startPayment(`month-${monthly.month}`, {
+                        feeType: "MONTHLY",
+                        month: monthly.month,
+                        includeFine: currentWithFine > 0,
+                      })
+                    }
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-xs font-bold text-white shadow-md hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer"
                   >
                     {busyKey === `month-${monthly.month}` ? (
@@ -670,7 +743,7 @@ export default function StudentFeePage() {
                       </>
                     ) : (
                       <>
-                        <span>Pay {taka(rate)} Now</span>
+                        <span>Pay {taka(rate + currentWithFine)} Now</span>
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
@@ -711,6 +784,16 @@ export default function StudentFeePage() {
               </div>
             </div>
 
+            {unpaidMonths.length > 0 && fineAvailable && (
+              <div className="border-b border-slate-100 p-4 dark:border-slate-800/60">
+                <FineToggle
+                  amount={fine.due}
+                  checked={includeFine}
+                  onChange={setIncludeFine}
+                />
+              </div>
+            )}
+
             {unpaidMonths.length === 0 ? (
               <div className="p-6 text-center sm:p-8">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60">
@@ -727,7 +810,7 @@ export default function StudentFeePage() {
               <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {unpaidMonths.map((m, i) => {
                   const isPending = hasPendingMonthly(m);
-                  const withFine = i === 0 ? fine.due : 0;
+                  const withFine = i === 0 && fineAvailable && includeFine ? fine.due : 0;
                   const key = `month-${m}`;
                   const isBusy = busyKey === key;
 
@@ -759,7 +842,13 @@ export default function StudentFeePage() {
 
                       <button
                         disabled={busyKey !== null}
-                        onClick={() => startPayment(key, { feeType: "MONTHLY", month: m })}
+                        onClick={() =>
+                          startPayment(key, {
+                            feeType: "MONTHLY",
+                            month: m,
+                            includeFine: withFine > 0, // baki month e false
+                          })
+                        }
                         className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer"
                       >
                         {isBusy ? (
@@ -816,17 +905,55 @@ export default function StudentFeePage() {
                     {fine.due > 0 ? taka(fine.due) : "No Active Fine"}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {fine.paid ? "Previous fines settled." : fine.applicable ? "Fine automatically applies after the 10th of every month." : "No penalty active on your profile."}
+                    {fine.paid
+                      ? "Previous fines settled."
+                      : fine.applicable
+                        ? "Fine applies once you have any unpaid month."
+                        : "No penalty active on your profile."}
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 dark:border-amber-800/60 dark:bg-amber-950/20 space-y-2">
                   <span className="text-xs font-bold text-amber-900 dark:text-amber-300">Late Payment Policy Note</span>
                   <p className="text-xs text-amber-800 dark:text-amber-400 leading-relaxed">
-                    Late fine is calculated per unpaid monthly billing period and is appended to the payment total of your first pending monthly tuition transaction.
+                    Late fine is charged once per session. You can pay it together with a monthly tuition payment, or pay the fine alone.
                   </p>
                 </div>
               </div>
+
+              {fineAvailable ? (
+                <div className="flex flex-col gap-3 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/40 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      Pay late fine only
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Monthly fee na diye shudhu fine {taka(fine.due)} clear korte paro.
+                    </p>
+                  </div>
+                  <button
+                    disabled={busyKey !== null}
+                    onClick={() => startPayment("fine", { feeType: "FINE" })}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 active:scale-[0.98] disabled:opacity-50 transition-all cursor-pointer"
+                  >
+                    {busyKey === "fine" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Redirecting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Pay {taka(fine.due)}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : fine.due > 0 && fineInPending ? (
+                <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Fine er payment already pending ache. Pending tab theke cancel kore abar try korte paro.
+                </p>
+              ) : null}
             </div>
           </motion.section>
         )}
@@ -973,7 +1100,9 @@ export default function StudentFeePage() {
                         <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                           {p.feeType === "MONTHLY"
                             ? `Monthly Fee (${monthLabel(p.month)})`
-                            : p.feeType}
+                            : p.feeType === "FINE"
+                              ? "Late Fine"
+                              : p.feeType}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
                           Amount: <span className="font-semibold text-slate-700 dark:text-slate-300">{taka(p.gatewayAmount ?? p.amount)}</span>

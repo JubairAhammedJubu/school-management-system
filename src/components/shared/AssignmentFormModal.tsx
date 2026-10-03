@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -322,7 +323,7 @@ export default function AssignmentFormModal({
         return;
       }
 
-      const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+      const SERVER_URL = API_BASE_URL || "";
       const url = isEditing
         ? `${SERVER_URL}/api/teacher/assignments/${assignment?.id}`
         : `${SERVER_URL}/api/teacher/assignments`;

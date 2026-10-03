@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -85,93 +86,150 @@ export default function TeacherDashboardView() {
 
   // Real Data States
   const [assignedClassesCount, setAssignedClassesCount] = useState<number>(0);
-  const [approvedRequests, setApprovedRequests] = useState<ClassSubjectRequestItem[]>([]);
+  const [approvedRequests, setApprovedRequests] = useState<
+    ClassSubjectRequestItem[]
+  >([]);
   const [totalStudentsCount, setTotalStudentsCount] = useState<number>(0);
   const [studentsList, setStudentsList] = useState<StudentUser[]>([]);
   const [studentSearch, setStudentSearch] = useState<string>("");
-  const [assignmentsCount, setAssignmentsCount] = useState<{ total: number; active: number }>({ total: 0, active: 0 });
+  const [assignmentsCount, setAssignmentsCount] = useState<{
+    total: number;
+    active: number;
+  }>({ total: 0, active: 0 });
   const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
   const [upcomingExams, setUpcomingExams] = useState<ExamItem[]>([]);
   const [recentNotices, setRecentNotices] = useState<NoticeItem[]>([]);
   const [resultsList, setResultsList] = useState<Result[]>([]);
-  const [attendanceStats, setAttendanceStats] = useState<AttendanceStatsData | null>(null);
+  const [attendanceStats, setAttendanceStats] =
+    useState<AttendanceStatsData | null>(null);
   const [isLoadingRealData, setIsLoadingRealData] = useState<boolean>(true);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+  const [isLoadingAssignments, setIsLoadingAssignments] = useState(true);
+  const [isLoadingExams, setIsLoadingExams] = useState(true);
+  const [isLoadingNotices, setIsLoadingNotices] = useState(true);
+  const [isLoadingResults, setIsLoadingResults] = useState(true);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState<boolean>(true);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string>("");
-
-
 
   // Fetch Real Database Metrics
   const fetchRealData = async () => {
     setIsLoadingRealData(true);
+    setIsLoadingRequests(true);
+    setIsLoadingStudents(true);
+    setIsLoadingAssignments(true);
+    setIsLoadingExams(true);
+    setIsLoadingNotices(true);
+    setIsLoadingResults(true);
     setIsLoadingAttendance(true);
     try {
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
-
-      if (teacherEmail) {
-        const requestsRes = await getTeacherRequestsAction(teacherEmail);
-        if (requestsRes.success) {
-          const approved = requestsRes.requests.filter((r) => r.status === "APPROVED");
-          setApprovedRequests(approved);
-          setAssignedClassesCount(approved.length);
+      const serverUrl = API_BASE_URL || "";
+      const fetchJson = async (url: string) => {
+        try {
+          const response = await fetch(url, { credentials: "include" });
+          return { ok: response.ok, data: await response.json() };
+        } catch (error) {
+          console.error("Failed to fetch teacher dashboard data:", error);
+          return null;
         }
-      }
+      };
 
-      const studentsRes = await getTeacherStudentsAction({ limit: 6 });
-      if (studentsRes.success) {
-        setStudentsList(studentsRes.students || []);
-        setTotalStudentsCount(studentsRes.pagination?.total || studentsRes.students?.length || 0);
-      }
+      const requestsPromise = teacherEmail
+        ? getTeacherRequestsAction(teacherEmail)
+            .then((requestsRes) => {
+              if (requestsRes.success) {
+                const approved = requestsRes.requests.filter(
+                  (r) => r.status === "APPROVED",
+                );
+                setApprovedRequests(approved);
+                setAssignedClassesCount(approved.length);
+              }
+            })
+            .finally(() => setIsLoadingRequests(false))
+        : Promise.resolve().then(() => setIsLoadingRequests(false));
 
-      if (teacherEmail) {
-        const assignRes = await fetch(`${serverUrl}/api/teacher/assignments?teacherEmail=${encodeURIComponent(teacherEmail)}`, {
-          credentials: "include",
-        });
-        const assignData = await assignRes.json();
-        if (assignData.success) {
-          const list = assignData.assignments || [];
-          const active = list.filter((a: any) => a.status === "ACTIVE").length;
-          setAssignmentsCount({ total: list.length, active });
-          setRecentAssignments(list.slice(0, 3));
-        }
-      }
+      const studentsPromise = getTeacherStudentsAction({ limit: 6 })
+        .then((studentsRes) => {
+          if (studentsRes.success) {
+            setStudentsList(studentsRes.students || []);
+            setTotalStudentsCount(
+              studentsRes.pagination?.total ||
+                studentsRes.students?.length ||
+                0,
+            );
+          }
+        })
+        .finally(() => setIsLoadingStudents(false));
 
-      const examsRes = await getTeacherExamsAction();
-      if (examsRes.success) {
-        setUpcomingExams((examsRes.exams || []).slice(0, 3));
-      }
+      const assignmentsPromise = teacherEmail
+        ? fetchJson(
+            `${serverUrl}/api/teacher/assignments?teacherEmail=${encodeURIComponent(teacherEmail)}`,
+          )
+            .then((assignmentResponse) => {
+              if (assignmentResponse?.ok && assignmentResponse.data.success) {
+                const list = assignmentResponse.data.assignments || [];
+                const active = list.filter(
+                  (a: any) => a.status === "ACTIVE",
+                ).length;
+                setAssignmentsCount({ total: list.length, active });
+                setRecentAssignments(list.slice(0, 3));
+              }
+            })
+            .finally(() => setIsLoadingAssignments(false))
+        : Promise.resolve().then(() => setIsLoadingAssignments(false));
 
-      const noticesRes = await getNoticesAction();
-      if (noticesRes.success) {
-        setRecentNotices((noticesRes.notices || []).slice(0, 3));
-      }
+      const examsPromise = getTeacherExamsAction()
+        .then((examsRes) => {
+          if (examsRes.success) {
+            setUpcomingExams((examsRes.exams || []).slice(0, 3));
+          }
+        })
+        .finally(() => setIsLoadingExams(false));
 
-      // Fetch Real Results from /api/teacher/results
-      const resultsRes = await fetch(`${serverUrl}/api/teacher/results`, {
-        credentials: "include",
-      });
-      const resultsData = await resultsRes.json();
-      if (resultsRes.ok && resultsData.success) {
-        setResultsList(resultsData.results || []);
-      }
+      const noticesPromise = getNoticesAction()
+        .then((noticesRes) => {
+          if (noticesRes.success) {
+            setRecentNotices((noticesRes.notices || []).slice(0, 3));
+          }
+        })
+        .finally(() => setIsLoadingNotices(false));
 
-      // Fetch Dynamic Real-time Attendance Stats
-      try {
-        const attendanceRes = await fetch(`${serverUrl}/api/teacher/attendance/stats`, {
-          credentials: "include",
-        });
-        const attendanceData = await attendanceRes.json();
-        if (attendanceRes.ok && attendanceData.success && attendanceData.stats) {
-          setAttendanceStats(attendanceData.stats);
-        }
-      } catch (attErr) {
-        console.error("Error fetching attendance stats:", attErr);
-      } finally {
-        setIsLoadingAttendance(false);
-      }
+      const resultsPromise = fetchJson(`${serverUrl}/api/teacher/results`)
+        .then((resultsResponse) => {
+          if (resultsResponse?.ok && resultsResponse.data.success) {
+            setResultsList(resultsResponse.data.results || []);
+          }
+        })
+        .finally(() => setIsLoadingResults(false));
+
+      const attendancePromise = fetchJson(
+        `${serverUrl}/api/teacher/attendance/stats`,
+      )
+        .then((attendanceResponse) => {
+          if (
+            attendanceResponse?.ok &&
+            attendanceResponse.data.success &&
+            attendanceResponse.data.stats
+          ) {
+            setAttendanceStats(attendanceResponse.data.stats);
+          }
+        })
+        .finally(() => setIsLoadingAttendance(false));
+
+      await Promise.all([
+        requestsPromise,
+        studentsPromise,
+        assignmentsPromise,
+        examsPromise,
+        noticesPromise,
+        resultsPromise,
+        attendancePromise,
+      ]);
 
       const now = new Date();
-      setLastRefreshedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setLastRefreshedAt(
+        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      );
     } catch (err) {
       console.error("Error fetching real teacher dashboard metrics:", err);
     } finally {
@@ -217,7 +275,10 @@ export default function TeacherDashboardView() {
   }, [attendanceStats]);
 
   const weeklyAttendanceChartData = React.useMemo(() => {
-    if (attendanceStats?.weeklyAttendance && attendanceStats.weeklyAttendance.length > 0) {
+    if (
+      attendanceStats?.weeklyAttendance &&
+      attendanceStats.weeklyAttendance.length > 0
+    ) {
       return attendanceStats.weeklyAttendance;
     }
     return [
@@ -253,7 +314,10 @@ export default function TeacherDashboardView() {
   }, [attendanceStats]);
 
   const classAttendanceRatesData = React.useMemo(() => {
-    if (attendanceStats?.classAttendance && attendanceStats.classAttendance.length > 0) {
+    if (
+      attendanceStats?.classAttendance &&
+      attendanceStats.classAttendance.length > 0
+    ) {
       return attendanceStats.classAttendance.slice(0, 5).map((c) => ({
         name: c.name,
         rate: c.attendance,
@@ -265,7 +329,10 @@ export default function TeacherDashboardView() {
   // Computed Exam Bar Chart Data from Real Results
   const examBarData = React.useMemo(() => {
     if (resultsList.length === 0) return [];
-    const map: Record<string, { totalPct: number; count: number; fullName: string }> = {};
+    const map: Record<
+      string,
+      { totalPct: number; count: number; fullName: string }
+    > = {};
     resultsList.forEach((r) => {
       const examName = r.exam || "General Exam";
       const pct = (r.score / (r.total || 100)) * 100;
@@ -276,14 +343,15 @@ export default function TeacherDashboardView() {
       map[examName].count += 1;
     });
     return Object.values(map).map((item) => ({
-      name: item.fullName.length > 14 ? item.fullName.slice(0, 14) + "…" : item.fullName,
+      name:
+        item.fullName.length > 14
+          ? item.fullName.slice(0, 14) + "…"
+          : item.fullName,
       fullName: item.fullName,
       avgScore: Math.round(item.totalPct / item.count),
       count: item.count,
     }));
   }, [resultsList]);
-
-
 
   const filteredStudents = studentsList.filter((s) => {
     if (!studentSearch.trim()) return true;
@@ -328,11 +396,16 @@ export default function TeacherDashboardView() {
               </div>
 
               <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-2xl lg:text-3xl">
-                Welcome back, <span className="text-indigo-600 dark:text-indigo-400">{teacherName}</span>
+                Welcome back,{" "}
+                <span className="text-indigo-600 dark:text-indigo-400">
+                  {teacherName}
+                </span>
               </h1>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-2xl sm:text-sm">
-                Manage your daily teaching workflow: live sections, room schedules, enrolled student directory, assignments, and test evaluation metrics.
+                Manage your daily teaching workflow: live sections, room
+                schedules, enrolled student directory, assignments, and test
+                evaluation metrics.
               </p>
             </div>
           </div>
@@ -345,7 +418,9 @@ export default function TeacherDashboardView() {
               title="Refresh Metrics"
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 disabled:opacity-50 transition-all cursor-pointer"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${isLoadingRealData ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-3.5 w-3.5 ${isLoadingRealData ? "animate-spin" : ""}`}
+              />
             </button>
 
             <Link
@@ -375,7 +450,7 @@ export default function TeacherDashboardView() {
           icon={BookOpen}
           label="Assigned Classes"
           value={String(assignedClassesCount)}
-          isLoading={isLoadingRealData}
+          isLoading={isLoadingRequests}
           detail="Active database sections"
           delay={0}
         />
@@ -383,7 +458,7 @@ export default function TeacherDashboardView() {
           icon={Users}
           label="Total Students"
           value={String(totalStudentsCount)}
-          isLoading={isLoadingRealData}
+          isLoading={isLoadingStudents}
           detail="Enrolled directory count"
           delay={0.04}
         />
@@ -391,7 +466,7 @@ export default function TeacherDashboardView() {
           icon={FileText}
           label="Active Courseworks"
           value={String(assignmentsCount.active)}
-          isLoading={isLoadingRealData}
+          isLoading={isLoadingAssignments}
           detail={`${assignmentsCount.total} total courseworks`}
           delay={0.08}
         />
@@ -399,7 +474,7 @@ export default function TeacherDashboardView() {
           icon={Clock}
           label="Scheduled Exams"
           value={String(upcomingExams.length)}
-          isLoading={isLoadingRealData}
+          isLoading={isLoadingExams}
           detail="Active exam schedules"
           delay={0.12}
         />
@@ -407,7 +482,7 @@ export default function TeacherDashboardView() {
           icon={CalendarCheck}
           label="Attendance Rate"
           value={computedAttendanceRate}
-          isLoading={isLoadingRealData || isLoadingAttendance}
+          isLoading={isLoadingAttendance}
           detail={
             attendanceStats
               ? `${attendanceStats.presentCount} present today`
@@ -423,12 +498,12 @@ export default function TeacherDashboardView() {
               ? `${(
                   resultsList.reduce(
                     (sum, r) => sum + (r.score / (r.total || 100)) * 100,
-                    0
+                    0,
                   ) / resultsList.length
                 ).toFixed(1)}%`
               : "0.0%"
           }
-          isLoading={isLoadingRealData}
+          isLoading={isLoadingResults}
           detail={`${resultsList.length} total results recorded`}
           delay={0.2}
         />
@@ -453,7 +528,9 @@ export default function TeacherDashboardView() {
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
                   Today&apos;s Room Schedule
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Scheduled room sessions and class times</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Scheduled room sessions and class times
+                </p>
               </div>
             </div>
 
@@ -499,10 +576,12 @@ export default function TeacherDashboardView() {
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {item.time}
+                          <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                          {item.time}
                         </span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {item.room}
+                          <MapPin className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                          {item.room}
                         </span>
                       </div>
                     </div>
@@ -510,16 +589,23 @@ export default function TeacherDashboardView() {
 
                   <div className="flex items-center gap-2 pt-1 sm:pt-0 shrink-0">
                     <span
-                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase flex items-center gap-1 border ${item.status === "In Progress"
+                      className={`rounded-md px-2 py-0.5 text-[9px] font-bold uppercase flex items-center gap-1 border ${
+                        item.status === "In Progress"
                           ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20"
                           : item.status === "Completed"
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                             : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
-                        }`}
+                      }`}
                     >
-                      {item.status === "In Progress" && <Activity className="h-3 w-3 animate-pulse" />}
-                      {item.status === "Completed" && <CheckSquare className="h-3 w-3" />}
-                      {item.status === "Up Next" && <Hourglass className="h-3 w-3" />}
+                      {item.status === "In Progress" && (
+                        <Activity className="h-3 w-3 animate-pulse" />
+                      )}
+                      {item.status === "Completed" && (
+                        <CheckSquare className="h-3 w-3" />
+                      )}
+                      {item.status === "Up Next" && (
+                        <Hourglass className="h-3 w-3" />
+                      )}
                       {item.status}
                     </span>
 
@@ -591,10 +677,13 @@ export default function TeacherDashboardView() {
         </div>
 
         {/* Roster Cards Grid */}
-        {isLoadingRealData ? (
+        {isLoadingStudents ? (
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+              <div
+                key={i}
+                className="h-16 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse"
+              />
             ))}
           </div>
         ) : filteredStudents.length === 0 ? (
@@ -623,7 +712,9 @@ export default function TeacherDashboardView() {
                   <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
                     <Hash className="h-3 w-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <strong>{st.rollNumber || "N/A"}</strong>
-                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-slate-300 dark:text-slate-700">
+                      •
+                    </span>
                     <Mail className="h-3 w-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span className="truncate">{st.email}</span>
                   </p>
@@ -659,7 +750,8 @@ export default function TeacherDashboardView() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Daily presence trends, status breakdown, and section performance rates
+                Daily presence trends, status breakdown, and section performance
+                rates
               </p>
             </div>
           </div>
@@ -683,7 +775,9 @@ export default function TeacherDashboardView() {
                   <TrendingUp className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                   Weekly Attendance Trend (%)
                 </h3>
-                <p className="text-[10px] text-slate-500">Monday to Friday presence percentage</p>
+                <p className="text-[10px] text-slate-500">
+                  Monday to Friday presence percentage
+                </p>
               </div>
               {attendanceStats && (
                 <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
@@ -698,18 +792,71 @@ export default function TeacherDashboardView() {
                 <div className="h-full w-full rounded-xl bg-slate-100 dark:bg-slate-800/60 animate-pulse" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={weeklyAttendanceChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart
+                    data={weeklyAttendanceChartData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
                     <defs>
-                      <linearGradient id="attendanceColor" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                      <linearGradient
+                        id="attendanceColor"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0.25}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#4f46e5"
+                          stopOpacity={0}
+                        />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
-                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(val) => `${val}%`} />
-                    <Tooltip contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }} formatter={(val) => [`${val}%`, "Rate"]} />
-                    <Area type="monotone" dataKey="attendance" stroke="#4f46e5" strokeWidth={2.5} fill="url(#attendanceColor)" dot={{ r: 3.5, fill: "#4f46e5", stroke: "#ffffff", strokeWidth: 2 }} />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e2e8f0"
+                    />
+                    <XAxis
+                      dataKey="day"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#64748b" }}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#64748b" }}
+                      tickFormatter={(val) => `${val}%`}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        backgroundColor: "#0f172a",
+                        borderColor: "#334155",
+                        color: "#ffffff",
+                      }}
+                      formatter={(val) => [`${val}%`, "Rate"]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="attendance"
+                      stroke="#4f46e5"
+                      strokeWidth={2.5}
+                      fill="url(#attendanceColor)"
+                      dot={{
+                        r: 3.5,
+                        fill: "#4f46e5",
+                        stroke: "#ffffff",
+                        strokeWidth: 2,
+                      }}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -722,25 +869,42 @@ export default function TeacherDashboardView() {
               <PieChart className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
               Status Breakdown
             </h3>
-            <p className="text-[10px] text-slate-500 mb-3">Today&apos;s session status distribution</p>
+            <p className="text-[10px] text-slate-500 mb-3">
+              Today&apos;s session status distribution
+            </p>
 
             {isLoadingAttendance ? (
               <div className="space-y-2.5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-9 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-9 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse"
+                  />
                 ))}
               </div>
             ) : (
               <div className="space-y-2.5">
                 {attendanceDistributionData.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between rounded-lg bg-white p-2.5 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between rounded-lg bg-white p-2.5 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white">{item.name}</span>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
+                        {item.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-slate-900 dark:text-white">{item.value}</span>
-                      <span className="text-[10px] text-slate-500 font-mono">({item.percentage})</span>
+                      <span className="text-xs font-black text-slate-900 dark:text-white">
+                        {item.value}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        ({item.percentage})
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -749,23 +913,34 @@ export default function TeacherDashboardView() {
 
             <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white block flex items-center gap-1">
-                <BarChart3 className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> Class Rates
+                <BarChart3 className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                Class Rates
               </span>
               {isLoadingAttendance ? (
                 <div className="space-y-2">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-4 rounded bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                    <div
+                      key={i}
+                      className="h-4 rounded bg-slate-100 dark:bg-slate-800 animate-pulse"
+                    />
                   ))}
                 </div>
               ) : (
                 classAttendanceRatesData.map((cls) => (
                   <div key={cls.name} className="space-y-1">
                     <div className="flex justify-between text-[10px] font-bold">
-                      <span className="text-slate-900 dark:text-white">{cls.name}</span>
-                      <span className="text-indigo-600 dark:text-indigo-400">{cls.rate}%</span>
+                      <span className="text-slate-900 dark:text-white">
+                        {cls.name}
+                      </span>
+                      <span className="text-indigo-600 dark:text-indigo-400">
+                        {cls.rate}%
+                      </span>
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400" style={{ width: `${cls.rate}%` }} />
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 dark:from-indigo-500 dark:to-indigo-400"
+                        style={{ width: `${cls.rate}%` }}
+                      />
                     </div>
                   </div>
                 ))
@@ -800,7 +975,8 @@ export default function TeacherDashboardView() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Live academic performance metrics, student grade distributions, and examination log records
+                Live academic performance metrics, student grade distributions,
+                and examination log records
               </p>
             </div>
           </div>
@@ -827,15 +1003,19 @@ export default function TeacherDashboardView() {
                   Grade Breakdown & Class Pass Rate
                 </h3>
                 <p className="text-[10px] text-slate-500">
-                  Distribution across {resultsList.length} student result entries
+                  Distribution across {resultsList.length} student result
+                  entries
                 </p>
               </div>
             </div>
 
-            {isLoadingRealData ? (
+            {isLoadingResults ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-6 rounded-md bg-slate-200/80 dark:bg-slate-800 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-6 rounded-md bg-slate-200/80 dark:bg-slate-800 animate-pulse"
+                  />
                 ))}
               </div>
             ) : resultsList.length === 0 ? (
@@ -853,7 +1033,7 @@ export default function TeacherDashboardView() {
               <div className="space-y-3">
                 {["A+", "A", "B+", "B", "C", "D", "F"].map((gradeCategory) => {
                   const count = resultsList.filter(
-                    (r) => r.grade?.toUpperCase() === gradeCategory
+                    (r) => r.grade?.toUpperCase() === gradeCategory,
                   ).length;
                   const percentage =
                     resultsList.length > 0
@@ -905,10 +1085,25 @@ export default function TeacherDashboardView() {
 
                 <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px]">
                   <span className="text-slate-500 dark:text-slate-400 font-medium">
-                    Published: <strong className="text-emerald-600 dark:text-emerald-400">{resultsList.filter((r) => r.status?.toUpperCase() === "PUBLISHED").length}</strong> / {resultsList.length}
+                    Published:{" "}
+                    <strong className="text-emerald-600 dark:text-emerald-400">
+                      {
+                        resultsList.filter(
+                          (r) => r.status?.toUpperCase() === "PUBLISHED",
+                        ).length
+                      }
+                    </strong>{" "}
+                    / {resultsList.length}
                   </span>
                   <span className="text-slate-500 dark:text-slate-400 font-medium">
-                    Drafts: <strong className="text-amber-600 dark:text-amber-400">{resultsList.filter((r) => r.status?.toUpperCase() === "DRAFT").length}</strong>
+                    Drafts:{" "}
+                    <strong className="text-amber-600 dark:text-amber-400">
+                      {
+                        resultsList.filter(
+                          (r) => r.status?.toUpperCase() === "DRAFT",
+                        ).length
+                      }
+                    </strong>
                   </span>
                 </div>
               </div>
@@ -931,10 +1126,13 @@ export default function TeacherDashboardView() {
               </div>
             </div>
 
-            {isLoadingRealData ? (
+            {isLoadingResults ? (
               <div className="space-y-2.5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-slate-200/80 dark:bg-slate-800 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-16 rounded-xl bg-slate-200/80 dark:bg-slate-800 animate-pulse"
+                  />
                 ))}
               </div>
             ) : resultsList.length === 0 ? (
@@ -967,7 +1165,8 @@ export default function TeacherDashboardView() {
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span
                             className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase border ${
-                              res.grade?.toUpperCase() === "A+" || res.grade?.toUpperCase() === "A"
+                              res.grade?.toUpperCase() === "A+" ||
+                              res.grade?.toUpperCase() === "A"
                                 ? "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40"
                                 : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
                             }`}
@@ -988,7 +1187,12 @@ export default function TeacherDashboardView() {
 
                       <div className="mt-2 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px]">
                         <span className="text-slate-500 dark:text-slate-400">
-                          Score: <strong className="text-slate-900 dark:text-white">{res.score}/{res.total} ({Math.round((res.score / (res.total || 100)) * 100)}%)</strong>
+                          Score:{" "}
+                          <strong className="text-slate-900 dark:text-white">
+                            {res.score}/{res.total} (
+                            {Math.round((res.score / (res.total || 100)) * 100)}
+                            %)
+                          </strong>
                         </span>
                         <span className="text-slate-500 dark:text-slate-400">
                           {new Date(res.createdAt).toLocaleDateString()}
@@ -1013,7 +1217,9 @@ export default function TeacherDashboardView() {
                 <h3 className="text-xs font-black text-slate-900 dark:text-white">
                   Examination Result Performance Bar Chart (%)
                 </h3>
-                <p className="text-[10px] text-slate-500">Average student score performance breakdown per examination</p>
+                <p className="text-[10px] text-slate-500">
+                  Average student score performance breakdown per examination
+                </p>
               </div>
             </div>
             <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-2 py-0.5 text-[9px] font-mono font-bold flex items-center gap-1">
@@ -1021,7 +1227,7 @@ export default function TeacherDashboardView() {
             </span>
           </div>
 
-          {isLoadingRealData ? (
+          {isLoadingResults ? (
             <div className="h-[180px] w-full rounded-xl bg-slate-200/60 dark:bg-slate-800/60 animate-pulse" />
           ) : examBarData.length === 0 ? (
             <div className="flex h-[140px] w-full items-center justify-center text-xs text-slate-400">
@@ -1030,17 +1236,48 @@ export default function TeacherDashboardView() {
           ) : (
             <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={examBarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} />
-                  <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#64748b" }} tickFormatter={(val) => `${val}%`} />
+                <BarChart
+                  data={examBarData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#e2e8f0"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    tickFormatter={(val) => `${val}%`}
+                  />
                   <Tooltip
                     cursor={{ fill: "rgba(99, 102, 241, 0.15)", rx: 6 }}
-                    contentStyle={{ borderRadius: "10px", fontSize: "11px", backgroundColor: "#0f172a", borderColor: "#334155", color: "#ffffff" }}
+                    contentStyle={{
+                      borderRadius: "10px",
+                      fontSize: "11px",
+                      backgroundColor: "#0f172a",
+                      borderColor: "#334155",
+                      color: "#ffffff",
+                    }}
                     formatter={(val: any) => [`${val}%`, "Average Score"]}
-                    labelFormatter={(label: any, items: any) => items[0]?.payload?.fullName || label}
+                    labelFormatter={(label: any, items: any) =>
+                      items[0]?.payload?.fullName || label
+                    }
                   />
-                  <Bar dataKey="avgScore" fill="#4f46e5" radius={[6, 6, 0, 0]} maxBarSize={45} />
+                  <Bar
+                    dataKey="avgScore"
+                    fill="#4f46e5"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={45}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1078,28 +1315,47 @@ export default function TeacherDashboardView() {
               </Link>
             </div>
 
-            {isLoadingRealData ? (
+            {isLoadingExams ? (
               <div className="space-y-2.5">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse"
+                  />
                 ))}
               </div>
             ) : upcomingExams.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400">No upcoming exam schedules in system.</p>
+              <p className="py-6 text-center text-xs text-slate-400">
+                No upcoming exam schedules in system.
+              </p>
             ) : (
               <div className="space-y-2.5">
                 {upcomingExams.map((exam) => (
-                  <div key={exam.id} className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30">
+                  <div
+                    key={exam.id}
+                    className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase flex items-center gap-1">
-                        <GraduationCap className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {exam.subject}
+                        <GraduationCap className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                        {exam.subject}
                       </span>
-                      <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40 px-1.5 py-0.5 text-[9px] font-bold">{exam.studentClass}</span>
+                      <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40 px-1.5 py-0.5 text-[9px] font-bold">
+                        {exam.studentClass}
+                      </span>
                     </div>
-                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">{exam.title}</h4>
+                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {exam.title}
+                    </h4>
                     <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {exam.date}</span>
-                      <span className="flex items-center gap-1"><MapPin className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {exam.roomNo}</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                        {exam.date}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                        {exam.roomNo}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -1134,29 +1390,41 @@ export default function TeacherDashboardView() {
               </Link>
             </div>
 
-            {isLoadingRealData ? (
+            {isLoadingAssignments ? (
               <div className="space-y-2.5">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse"
+                  />
                 ))}
               </div>
             ) : recentAssignments.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400">No active courseworks found.</p>
+              <p className="py-6 text-center text-xs text-slate-400">
+                No active courseworks found.
+              </p>
             ) : (
               <div className="space-y-2.5">
                 {recentAssignments.map((asgn) => (
-                  <div key={asgn.id} className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30">
+                  <div
+                    key={asgn.id}
+                    className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                        <FileCode className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> {asgn.subject}
+                        <FileCode className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                        {asgn.subject}
                       </span>
                       <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 px-1.5 py-0.5 text-[9px] font-bold">
                         {asgn.status}
                       </span>
                     </div>
-                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">{asgn.title}</h4>
+                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {asgn.title}
+                    </h4>
                     <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" /> Due: {asgn.dueDate || "N/A"}
+                      <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />{" "}
+                      Due: {asgn.dueDate || "N/A"}
                     </p>
                   </div>
                 ))}
@@ -1191,25 +1459,37 @@ export default function TeacherDashboardView() {
               </Link>
             </div>
 
-            {isLoadingRealData ? (
+            {isLoadingNotices ? (
               <div className="space-y-2.5">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-14 rounded-xl bg-slate-100 dark:bg-slate-900 animate-pulse"
+                  />
                 ))}
               </div>
             ) : recentNotices.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400">No notices published yet.</p>
+              <p className="py-6 text-center text-xs text-slate-400">
+                No notices published yet.
+              </p>
             ) : (
               <div className="space-y-2.5">
                 {recentNotices.map((notice) => (
-                  <div key={notice.id} className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30">
+                  <div
+                    key={notice.id}
+                    className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3 transition-all hover:border-indigo-500/40 dark:border-slate-800/80 dark:bg-slate-900/40 dark:hover:border-indigo-500/30"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900/40 px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-1">
                         <Bell className="h-3 w-3" /> {notice.category}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono">{notice.date}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {notice.date}
+                      </span>
                     </div>
-                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">{notice.title}</h4>
+                    <h4 className="mt-1 text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {notice.title}
+                    </h4>
                   </div>
                 ))}
               </div>
@@ -1229,7 +1509,8 @@ export default function TeacherDashboardView() {
       >
         <div className="flex items-center justify-between mb-3.5">
           <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" /> Portal Route Shortcuts
+            <SlidersHorizontal className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />{" "}
+            Portal Route Shortcuts
           </h3>
           <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
             Direct Navigation Hub
@@ -1237,13 +1518,41 @@ export default function TeacherDashboardView() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
-          <RouteShortcut href="/dashboard/teacher/my-class" label="My Classes" icon={BookOpen} />
-          <RouteShortcut href="/dashboard/teacher/students" label="Students" icon={Users} />
-          <RouteShortcut href="/dashboard/teacher/assignments" label="Assignments" icon={FileText} />
-          <RouteShortcut href="/dashboard/teacher/examinations" label="Exams" icon={Clock} />
-          <RouteShortcut href="/dashboard/teacher/notices" label="Notices" icon={Megaphone} />
-          <RouteShortcut href="/dashboard/teacher/attendance" label="Attendance" icon={CalendarCheck} />
-          <RouteShortcut href="/dashboard/teacher/results" label="Results" icon={Award} />
+          <RouteShortcut
+            href="/dashboard/teacher/my-class"
+            label="My Classes"
+            icon={BookOpen}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/students"
+            label="Students"
+            icon={Users}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/assignments"
+            label="Assignments"
+            icon={FileText}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/examinations"
+            label="Exams"
+            icon={Clock}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/notices"
+            label="Notices"
+            icon={Megaphone}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/attendance"
+            label="Attendance"
+            icon={CalendarCheck}
+          />
+          <RouteShortcut
+            href="/dashboard/teacher/results"
+            label="Results"
+            icon={Award}
+          />
         </div>
       </motion.div>
     </div>
@@ -1296,10 +1605,14 @@ function StatCard({
       {isLoading || value === "..." ? (
         <div className="my-1.5 h-6 w-16 rounded-md bg-slate-200/90 dark:bg-slate-800 animate-pulse skeleton-shimmer" />
       ) : (
-        <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">{value}</p>
+        <p className="mt-0.5 text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+          {value}
+        </p>
       )}
 
-      <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">{detail}</p>
+      <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500 truncate font-medium">
+        {detail}
+      </p>
     </motion.div>
   );
 }
@@ -1324,10 +1637,11 @@ function RouteShortcut({
   return (
     <Link
       href={href}
-      className={`group flex flex-col justify-between rounded-xl border p-3 transition-all hover:border-indigo-500 hover:shadow-sm dark:hover:border-indigo-500/40 ${isDemo
+      className={`group flex flex-col justify-between rounded-xl border p-3 transition-all hover:border-indigo-500 hover:shadow-sm dark:hover:border-indigo-500/40 ${
+        isDemo
           ? "border-slate-200/90 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40"
           : "border-slate-200/90 bg-white dark:border-slate-800 dark:bg-slate-950"
-        }`}
+      }`}
     >
       <div>
         <div className="flex items-center justify-between">
@@ -1336,11 +1650,15 @@ function RouteShortcut({
           </div>
           <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
         </div>
-        <p className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white truncate">{label}</p>
+        <p className="mt-2.5 text-xs font-bold text-slate-900 dark:text-white truncate">
+          {label}
+        </p>
       </div>
 
       {badge && (
-        <span className="mt-2 text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400">{badge}</span>
+        <span className="mt-2 text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400">
+          {badge}
+        </span>
       )}
     </Link>
   );

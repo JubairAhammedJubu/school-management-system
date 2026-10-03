@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -70,7 +71,7 @@ export default function StudentSubjectsPage() {
       setError("");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/subjects`,
+        `${API_BASE_URL}/api/student/subjects`,
         {
           credentials: "include",
         }
