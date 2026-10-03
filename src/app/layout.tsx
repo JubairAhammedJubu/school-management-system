@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   description: "EduNexus - School Management System",
 };
 
+import NoInternetScreen from "@/components/Offline/NoInternetScreen";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -55,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         className="min-h-full flex flex-col bg-white dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300"
       >
         <PublicChrome>{children}</PublicChrome>
+        <NoInternetScreen />
         <ToastContainer
           position="top-right"
           autoClose={3500}
