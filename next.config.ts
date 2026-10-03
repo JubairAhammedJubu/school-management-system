@@ -11,13 +11,19 @@ const nextConfig: NextConfig = {
         hostname: "pub-6206e14077b248589a5c3dca443b6dc5.r2.dev",
         pathname: "/profile-images/**",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      }
     ],
   },
   async rewrites() {
+    const serverUrl = (process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000").replace(/\/+$/, "");
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000"}/api/:path*`,
+        destination: `${serverUrl}/api/:path*`,
       },
     ];
   },

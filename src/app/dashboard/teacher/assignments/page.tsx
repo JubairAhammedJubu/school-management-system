@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,7 +25,7 @@ import AssignmentFormModal from "@/components/shared/AssignmentFormModal";
 import DeleteConfirmationModal from "@/components/shared/DeleteConfirmationModal";
 import SubmissionsModal from "@/components/shared/SubmissionsModal";
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER_URL = API_BASE_URL || "";
 
 const STATUS_OPTIONS = ["All Status", "ACTIVE", "DRAFT", "CLOSED"];
 const CLASS_OPTIONS = ["All Classes", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10"];

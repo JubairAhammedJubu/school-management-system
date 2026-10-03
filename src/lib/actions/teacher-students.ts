@@ -1,5 +1,6 @@
+import { API_BASE_URL } from "@/lib/api-url";
 const SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+  API_BASE_URL;
 
 export interface StudentUser {
   id: string;

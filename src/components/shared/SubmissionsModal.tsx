@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,7 +73,7 @@ type SubmissionsModalProps = {
   ) => void;
 };
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER_URL = API_BASE_URL || "";
 
 type GradeFields = { marks: string; feedback: string };
 

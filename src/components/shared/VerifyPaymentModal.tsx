@@ -1,11 +1,12 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "react-toastify";
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 
 type Props = {
   isOpen: boolean;

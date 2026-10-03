@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -75,7 +76,7 @@ const parseJsonResponse = async (response: Response) => {
 const getAssignments = async () => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments`,
+      `${API_BASE_URL}/api/student/assignments`,
       {
         method: "GET",
         credentials: "include",
@@ -384,7 +385,7 @@ export default function StudentAssignmentsPage() {
       formData.append("file", selectedFile);
 
       const uploadResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
+        `${API_BASE_URL}/api/student/assignments/${selectedAssignment.id}/upload`,
         {
           method: "POST",
           credentials: "include",
@@ -411,7 +412,7 @@ export default function StudentAssignmentsPage() {
       const safeFileUrl = fileUrl.trim();
 
       const submitResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
+        `${API_BASE_URL}/api/student/assignments/${selectedAssignment.id}/submit`,
         {
           method: "POST",
           credentials: "include",

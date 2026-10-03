@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -273,7 +274,7 @@ function SectionDetailDrawerSkeleton() {
   );
 }
 
-const SERVER = process.env.NEXT_PUBLIC_SERVER_URL || "";
+const SERVER = API_BASE_URL || "";
 
 export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
   const [detail, setDetail] = useState<SectionDetail | null>(null);
@@ -298,7 +299,7 @@ export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [detailRes, teachersRes, subjectsRes] = await Promise.all([
+      const [detailRes, teachersRes, subjectsRes, catalogRes] = await Promise.all([
         fetch(`${SERVER}/api/admin/classes/sections/${sectionId}`, {
           credentials: "include",
         }),
@@ -306,10 +307,12 @@ export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
         fetch(`${SERVER}/api/admin/classes/sections/${sectionId}/subjects`, {
           credentials: "include",
         }),
+        fetch(`${SERVER}/api/admin/subjects`, { credentials: "include" }),
       ]);
       const detailData = await detailRes.json();
       const teachersData = await teachersRes.json();
       const subjectsData = await subjectsRes.json();
+      const catalogData = catalogRes.ok ? await catalogRes.json() : null;
 
       if (!detailRes.ok)
         throw new Error(detailData.error || "Failed to load section");
@@ -323,11 +326,6 @@ export default function SectionDetailDrawer({ sectionId, onClose }: Props) {
       setTeacherPick(detailData.teacher?.id ?? "");
       setSubstitutePick(detailData.substituteTeacher?.id ?? "");
       setSubjects(subjectsData.subjects || []);
-
-      const catalogRes = await fetch(`${SERVER}/api/admin/subjects`, {
-        credentials: "include",
-      });
-      const catalogData = await catalogRes.json();
       if (catalogRes.ok) setAllSubjects(catalogData.subjects || []);
     } catch (err: any) {
       toast.error(err.message || "Could not load section details");

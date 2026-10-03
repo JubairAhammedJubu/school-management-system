@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -89,7 +90,7 @@ export default function ResultList({
       setError("");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL || ""}/api/teacher/results`,
+        `${API_BASE_URL || ""}/api/teacher/results`,
         {
           credentials: "include",
         }

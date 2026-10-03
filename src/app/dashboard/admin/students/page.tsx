@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -42,7 +43,7 @@ import {
 import { log } from "console";
 
 const SERVER_URL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+  API_BASE_URL;
 
 function authedFetch(path: string, init?: RequestInit) {
   return fetch(`${SERVER_URL}${path}`, {

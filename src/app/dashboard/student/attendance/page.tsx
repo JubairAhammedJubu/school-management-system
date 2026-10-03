@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE_URL } from "@/lib/api-url";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
@@ -202,7 +203,7 @@ useEffect(() => {
       }
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/student/attendance?${params.toString()}`,
+        `${API_BASE_URL}/api/student/attendance?${params.toString()}`,
         {
           credentials: "include",
           headers: {
