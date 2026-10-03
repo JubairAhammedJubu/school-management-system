@@ -12,51 +12,47 @@ import {
   Activity,
   Server,
   Sparkles,
-  Zap,
   ShieldAlert,
   CheckCircle2,
   AlertTriangle,
   Eye,
   Check,
   ArrowRight,
-  ShieldCheck,
   Clock,
+  ShieldCheck,
 } from "lucide-react";
 
 // ============================================================================
-// Cartoon Mascot 1: Offline Mascot (Responsive Sizing)
+// Cartoon Mascot 1: Offline Mascot
 // ============================================================================
 function CartoonOfflineMascot() {
   return (
-    <div className="relative mx-auto w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 flex items-center justify-center select-none shrink-0">
-      {/* Background Pulsing Aura */}
+    <div className="relative mx-auto w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 flex items-center justify-center select-none shrink-0 my-0.5">
       <motion.div
-        animate={{ scale: [0.9, 1.15, 0.9], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute inset-1 sm:inset-2 rounded-full blur-xl sm:blur-2xl bg-gradient-to-tr from-rose-500/30 to-amber-500/20"
+        animate={{ scale: [0.95, 1.2, 0.95], opacity: [0.4, 0.75, 0.4] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-full blur-xl bg-gradient-to-tr from-rose-500/30 via-indigo-500/20 to-amber-500/25"
       />
 
-      {/* Floating Speech Bubbles */}
       <motion.div
-        animate={{ y: [-4, -10, -4], opacity: [0.5, 1, 0.5], scale: [0.9, 1.05, 0.9] }}
-        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-1 left-2 sm:left-4 bg-rose-500 text-white font-black text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 rounded-full shadow-md z-20 border border-rose-400"
+        animate={{ y: [-3, -8, -3], opacity: [0.7, 1, 0.7], scale: [0.92, 1.03, 0.92] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-1.5 left-0 sm:left-2 bg-gradient-to-r from-rose-600 to-indigo-600 text-white font-extrabold text-[9px] sm:text-[10px] md:text-[11px] px-2.5 py-0.5 rounded-full shadow-lg z-20 border border-rose-300/40"
       >
         NO INTERNET!
       </motion.div>
 
       <motion.div
-        animate={{ y: [-3, -9, -3], opacity: [0.4, 0.9, 0.4] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        className="absolute top-1 right-2 sm:right-4 bg-amber-400 text-amber-950 font-black text-[10px] sm:text-xs h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center shadow-md z-20"
+        animate={{ y: [-2, -7, -2], opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+        className="absolute top-0 right-0 sm:right-2 bg-gradient-to-tr from-amber-400 to-orange-400 text-amber-950 font-black text-[10px] sm:text-xs h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center shadow-lg z-20 border border-amber-200"
       >
         ?
       </motion.div>
 
-      {/* Main Cartoon Character Body */}
       <motion.div
-        animate={{ y: [-3, 3, -3], rotate: [-1.5, 1.5, -1.5] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ y: [-2, 2, -2], rotate: [-1.2, 1.2, -1.2] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
         className="relative z-10 w-full h-full flex items-center justify-center"
       >
         <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl overflow-visible">
@@ -67,7 +63,7 @@ function CartoonOfflineMascot() {
             y="45"
             width="110"
             height="115"
-            rx="32"
+            rx="20"
             fill="url(#rose-offline-grad)"
             stroke="#f43f5e"
             strokeWidth="4"
@@ -78,7 +74,7 @@ function CartoonOfflineMascot() {
             y="110"
             width="80"
             height="38"
-            rx="16"
+            rx="10"
             fill="rgba(255,255,255,0.25)"
           />
 
@@ -167,15 +163,15 @@ function CartoonOfflineMascot() {
 }
 
 // ============================================================================
-// Cartoon Mascot 2: Connected Mascot (Responsive Sizing)
+// Cartoon Mascot 2: Connected Mascot
 // ============================================================================
 function CartoonConnectedMascot() {
   return (
-    <div className="relative mx-auto w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 flex items-center justify-center select-none shrink-0">
+    <div className="relative mx-auto w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 flex items-center justify-center select-none shrink-0 my-0.5">
       <motion.div
         animate={{ scale: [0.95, 1.2, 0.95], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute inset-1 sm:inset-2 rounded-full bg-gradient-to-tr from-emerald-500/30 via-teal-400/25 to-indigo-500/30 blur-xl sm:blur-2xl"
+        className="absolute inset-0 rounded-full blur-xl bg-gradient-to-tr from-emerald-500/35 via-teal-400/25 to-indigo-500/30"
       />
 
       <motion.div
@@ -183,14 +179,14 @@ function CartoonConnectedMascot() {
         transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
         className="absolute inset-0 pointer-events-none z-20"
       >
-        <Sparkles className="absolute top-1 left-3 h-4 sm:h-5 w-4 sm:w-5 text-amber-400" />
-        <Sparkles className="absolute top-2 right-3 h-3.5 sm:h-4 w-3.5 sm:w-4 text-emerald-400" />
-        <Sparkles className="absolute bottom-5 left-2 h-3.5 sm:h-4 w-3.5 sm:w-4 text-indigo-400" />
-        <Sparkles className="absolute bottom-3 right-2 h-4 sm:h-5 w-4 sm:w-5 text-pink-400" />
+        <Sparkles className="absolute top-1 left-3 h-3.5 sm:h-4 w-3.5 sm:w-4 text-amber-400" />
+        <Sparkles className="absolute top-2 right-3 h-3 sm:h-3.5 w-3 sm:w-3.5 text-emerald-400" />
+        <Sparkles className="absolute bottom-5 left-2 h-3 sm:h-3.5 w-3 sm:w-3.5 text-indigo-400" />
+        <Sparkles className="absolute bottom-3 right-2 h-3.5 sm:h-4 w-3.5 sm:w-4 text-pink-400" />
       </motion.div>
 
       <motion.div
-        animate={{ y: [-6, 2, -6], rotate: [-1, 1, -1] }}
+        animate={{ y: [-4, 2, -4], rotate: [-1, 1, -1] }}
         transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
         className="relative z-10 w-full h-full flex items-center justify-center"
       >
@@ -202,7 +198,7 @@ function CartoonConnectedMascot() {
             y="45"
             width="110"
             height="115"
-            rx="32"
+            rx="20"
             fill="url(#emerald-connected-grad)"
             stroke="#10b981"
             strokeWidth="4"
@@ -213,7 +209,7 @@ function CartoonConnectedMascot() {
             y="110"
             width="80"
             height="38"
-            rx="16"
+            rx="10"
             fill="rgba(255,255,255,0.25)"
           />
 
@@ -340,23 +336,23 @@ function ConfettiExplosion() {
 }
 
 const containerVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  hidden: { opacity: 0, scale: 0.96, y: 15 },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
     transition: {
-      duration: 0.4,
+      duration: 0.35,
       ease: [0.16, 1, 0.3, 1],
       when: "beforeChildren",
-      staggerChildren: 0.07,
+      staggerChildren: 0.06,
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0, 0, 0.2, 1] } },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0, 0, 0.2, 1] } },
 };
 
 // ============================================================================
@@ -618,22 +614,20 @@ export default function NoInternetScreen() {
 
   return (
     <>
-      {/* ==================================================================== */}
-      {/* 1. Connection Restored Modal                                         */}
-      {/* ==================================================================== */}
+      {/* 1. Connection Restored Modal */}
       <AnimatePresence>
         {showSuccessModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 dark:bg-black/90 backdrop-blur-2xl overflow-y-auto"
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/80 dark:bg-black/90 backdrop-blur-2xl overflow-y-auto"
           >
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
               <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.35, 0.6, 0.35] }}
+                animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.6, 0.35] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full bg-gradient-to-tr from-emerald-500/25 via-teal-500/20 to-indigo-500/25 blur-3xl"
+                className="h-[320px] sm:h-[400px] w-[320px] sm:w-[400px] rounded-full bg-gradient-to-tr from-emerald-500/25 via-teal-500/20 to-indigo-500/25 blur-2xl"
               />
             </div>
 
@@ -644,15 +638,24 @@ export default function NoInternetScreen() {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="relative w-full max-w-[92%] sm:max-w-md md:max-w-lg max-h-[85vh] sm:max-h-[90vh] my-auto flex flex-col rounded-3xl border border-slate-200/90 bg-white/95 p-5 sm:p-7 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-950/90 space-y-4 sm:space-y-5 text-center overflow-y-auto custom-scrollbar"
+              className="relative w-[94%] sm:w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 md:p-6 shadow-2xl backdrop-blur-3xl dark:border-slate-800/90 dark:bg-slate-950/95 space-y-3 sm:space-y-4 text-center overflow-y-auto custom-scrollbar"
             >
+              {/* Top Laser Accent */}
+              <div className="relative h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shrink-0">
+                <motion.div
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-full w-1/3 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"
+                />
+              </div>
+
               <motion.div variants={itemVariants}>
                 <CartoonConnectedMascot />
               </motion.div>
 
-              <div className="space-y-1.5 sm:space-y-2 max-w-sm mx-auto">
+              <div className="space-y-1 max-w-sm mx-auto shrink-0">
                 <motion.div variants={itemVariants}>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-emerald-700 dark:border-emerald-800/80 dark:bg-emerald-950/80 dark:text-emerald-300 shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 shadow-sm backdrop-blur-md">
                     <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
                     Back Online 🎉
                   </span>
@@ -660,7 +663,7 @@ export default function NoInternetScreen() {
 
                 <motion.h3
                   variants={itemVariants}
-                  className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white"
+                  className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-heading"
                 >
                   Connection Restored
                 </motion.h3>
@@ -675,37 +678,37 @@ export default function NoInternetScreen() {
 
               <motion.div
                 variants={itemVariants}
-                className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5 sm:p-4 dark:border-slate-800 dark:bg-slate-900/60 space-y-2 text-left text-xs"
+                className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 sm:p-3.5 dark:border-slate-800 dark:bg-slate-900/60 space-y-1.5 text-left text-xs shrink-0"
               >
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="font-medium text-slate-400">Network State:</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="font-medium text-slate-400 text-[11px]">Network State:</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 text-[11px]">
                     <Check className="w-3.5 h-3.5" /> Connected
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="font-medium text-slate-400">Response Latency:</span>
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200">~22 ms</span>
+                  <span className="font-medium text-slate-400 text-[11px]">Response Latency:</span>
+                  <span className="font-mono font-extrabold text-slate-800 dark:text-slate-200 text-[11px]">~22 ms</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                  <span className="font-medium text-slate-400">Data Sync:</span>
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">100% Verified</span>
+                  <span className="font-medium text-slate-400 text-[11px]">Data Sync:</span>
+                  <span className="font-extrabold text-indigo-600 dark:text-indigo-400 text-[11px]">100% Verified</span>
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="space-y-2.5 pt-1">
+              <motion.div variants={itemVariants} className="space-y-2 pt-0.5 shrink-0">
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.015, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="w-full inline-flex items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 px-6 py-3.5 text-xs font-bold text-white shadow-xl shadow-emerald-600/20 transition-all cursor-pointer group"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 px-5 sm:px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-emerald-500/20 transition-all cursor-pointer group active:scale-[0.98]"
                 >
                   <span>Continue to EduNexus</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </motion.button>
 
-                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400">
                   <Clock className="w-3 h-3" />
                   <span>Closing automatically in {countdown}s</span>
                 </div>
@@ -719,25 +722,25 @@ export default function NoInternetScreen() {
       <AnimatePresence>
         {isOffline && isMinimized && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.85 }}
+            initial={{ opacity: 0, y: 40, scale: 0.88 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.85 }}
-            whileHover={{ scale: 1.03 }}
-            className="fixed bottom-5 right-5 z-[99998] flex items-center gap-3 px-4 py-2.5 bg-slate-900/95 dark:bg-slate-950/95 text-white rounded-2xl shadow-2xl border border-rose-500/40 backdrop-blur-xl cursor-pointer group"
+            exit={{ opacity: 0, y: 40, scale: 0.88 }}
+            whileHover={{ scale: 1.02 }}
+            className="fixed bottom-4 right-4 z-[99998] flex items-center gap-2.5 px-3.5 py-2 bg-slate-900/95 dark:bg-slate-950/95 text-white rounded-xl shadow-xl border border-rose-500/40 backdrop-blur-xl cursor-pointer group"
             onClick={() => setIsMinimized(false)}
           >
             <div className="relative flex items-center justify-center">
-              <span className="animate-ping absolute inline-flex h-3.5 w-3.5 rounded-full bg-rose-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500" />
+              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-rose-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
             </div>
-            <div className="flex items-center gap-2">
-              <WifiOff className="w-4 h-4 text-rose-400 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="text-xs font-semibold tracking-wide text-slate-200">
+            <div className="flex items-center gap-1.5">
+              <WifiOff className="w-3.5 h-3.5 text-rose-400 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="text-[11px] font-semibold tracking-wide text-slate-200">
                 Offline Mode
               </span>
             </div>
             <button
-              className="ml-2 px-2.5 py-1 text-xs bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-medium rounded-xl transition-colors border border-indigo-500/30"
+              className="ml-1 px-2 py-0.5 text-[10px] bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-medium rounded-lg transition-colors border border-indigo-500/30"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsMinimized(false);
@@ -749,22 +752,20 @@ export default function NoInternetScreen() {
         )}
       </AnimatePresence>
 
-      {/* ==================================================================== */}
-      {/* 2. No Internet Modal (Fixed Height & Responsive Layout for All Devices) */}
-      {/* ==================================================================== */}
+      {/* 2. No Internet Modal (Premium Semi-Rounded UI) */}
       <AnimatePresence>
         {isOffline && !isMinimized && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 dark:bg-black/90 backdrop-blur-3xl overflow-y-auto"
+            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/85 dark:bg-black/90 backdrop-blur-3xl overflow-y-auto"
           >
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10">
               <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.25, 0.5, 0.25] }}
+                animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full blur-3xl bg-gradient-to-tr from-rose-500/25 to-amber-500/15"
+                className="h-[320px] sm:h-[400px] w-[320px] sm:w-[400px] rounded-full blur-2xl bg-gradient-to-tr from-rose-500/25 via-indigo-500/20 to-amber-500/15"
               />
             </div>
 
@@ -773,39 +774,48 @@ export default function NoInternetScreen() {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="relative w-full max-w-[92%] sm:max-w-md md:max-w-lg max-h-[85vh] sm:max-h-[90vh] my-auto flex flex-col rounded-3xl border border-slate-200/90 bg-white/95 p-5 sm:p-7 shadow-2xl backdrop-blur-2xl dark:border-slate-800/90 dark:bg-slate-950/90 space-y-4 sm:space-y-5 text-center overflow-y-auto custom-scrollbar"
+              className="relative w-[94%] sm:w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[85vh] sm:max-h-[88vh] my-auto flex flex-col rounded-2xl border border-slate-200/90 bg-white/95 p-4 sm:p-5 md:p-6 shadow-2xl backdrop-blur-3xl dark:border-slate-800/90 dark:bg-slate-950/95 space-y-3 sm:space-y-4 text-center overflow-y-auto custom-scrollbar"
             >
+              {/* Top Laser Accent */}
+              <div className="relative h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shrink-0">
+                <motion.div
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+                  className="h-full w-1/3 bg-gradient-to-r from-transparent via-rose-500 to-transparent"
+                />
+              </div>
+
               {/* Top Inspect Bar */}
               <div className="flex items-center justify-between text-xs shrink-0">
                 <motion.div variants={itemVariants}>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-black uppercase tracking-wider text-rose-700 dark:border-rose-800/80 dark:bg-rose-950/80 dark:text-rose-300 shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400 shadow-sm backdrop-blur-md">
                     <ShieldAlert className="h-3.5 w-3.5 text-rose-500" />
-                    No Internet Connection
+                    Connection Lost
                   </span>
                 </motion.div>
 
                 <button
                   onClick={() => setIsMinimized(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   title="Minimize overlay to inspect cached page"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Inspect Screen</span>
+                  <span>Inspect</span>
                 </button>
               </div>
 
-              {/* Cartoon Mascot Hero */}
+              {/* Mascot */}
               <motion.div variants={itemVariants} className="shrink-0">
                 <CartoonOfflineMascot />
               </motion.div>
 
-              {/* Title & Copy */}
-              <div className="space-y-1.5 sm:space-y-2 max-w-sm mx-auto shrink-0">
+              {/* Copy */}
+              <div className="space-y-1 max-w-sm mx-auto shrink-0">
                 <motion.h2
                   variants={itemVariants}
-                  className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white"
+                  className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white font-heading"
                 >
-                  Connection Interrupted
+                  No Internet Connection
                 </motion.h2>
 
                 <motion.p
@@ -817,26 +827,26 @@ export default function NoInternetScreen() {
               </div>
 
               {/* Primary Action Button */}
-              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-3 pt-0.5 max-w-sm mx-auto shrink-0 w-full">
+              <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center gap-2.5 pt-0.5 max-w-sm mx-auto shrink-0 w-full">
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.015, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={runDiagnostics}
                   disabled={isChecking}
-                  className="w-full inline-flex items-center justify-center gap-2.5 rounded-2xl bg-indigo-600 px-6 py-3.5 text-xs font-bold text-white shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all cursor-pointer group disabled:opacity-75"
+                  className="w-full inline-flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 px-5 sm:px-6 py-3 text-xs sm:text-sm font-extrabold text-white shadow-lg shadow-indigo-500/25 transition-all cursor-pointer active:scale-[0.98] disabled:opacity-75"
                 >
                   <motion.div animate={isChecking ? { rotate: 360 } : {}} transition={isChecking ? { duration: 1, repeat: Infinity, ease: "linear" } : {}}>
-                    <RefreshCw className="h-4.5 w-4.5" />
+                    <RefreshCw className="h-4 w-4" />
                   </motion.div>
-                  <span>{isChecking ? "Testing Connection..." : "Try Reconnecting"}</span>
+                  <span>{isChecking ? "Testing Connection..." : "Check & Reconnect"}</span>
                 </motion.button>
               </motion.div>
 
               {/* Check Message */}
               {checkMessage && (
                 <motion.div
-                  initial={{ opacity: 0, y: -4 }}
+                  initial={{ opacity: 0, y: -3 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-xs font-bold text-indigo-700 dark:text-indigo-300 text-center border border-indigo-200 dark:border-indigo-800/60 shrink-0"
                 >
@@ -844,67 +854,64 @@ export default function NoInternetScreen() {
                 </motion.div>
               )}
 
-              {/* Tabs Section */}
+              {/* Segmented Pill Tabs Navigation */}
               <motion.div variants={itemVariants} className="pt-1 shrink-0">
-                <div className="border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
-                  <div className="flex gap-3 sm:gap-4 min-w-max justify-center">
+                <div className="p-1 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+                  <div className="flex gap-1 overflow-x-auto no-scrollbar">
                     <button
                       onClick={() => setActiveTab("status")}
-                      className={`pb-2 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors border-b-2 ${
+                      className={`relative flex-1 py-1.5 px-2.5 text-[10px] sm:text-xs font-extrabold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                         activeTab === "status"
-                          ? "border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
-                          : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-800"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                     >
                       <Activity className="w-3.5 h-3.5" />
-                      Status
+                      <span>Status</span>
                     </button>
+
                     <button
                       onClick={() => setActiveTab("diagnostics")}
-                      className={`pb-2 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors border-b-2 ${
+                      className={`relative flex-1 py-1.5 px-2.5 text-[10px] sm:text-xs font-extrabold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                         activeTab === "diagnostics"
-                          ? "border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
-                          : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-800"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                     >
                       <Server className="w-3.5 h-3.5" />
-                      Diagnostics
+                      <span>Diagnostics</span>
                     </button>
+
                     <button
                       onClick={() => setActiveTab("help")}
-                      className={`pb-2 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5 transition-colors border-b-2 ${
+                      className={`relative flex-1 py-1.5 px-2.5 text-[10px] sm:text-xs font-extrabold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                         activeTab === "help"
-                          ? "border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
-                          : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-800"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                     >
                       <HelpCircle className="w-3.5 h-3.5" />
-                      Troubleshooting
+                      <span>Troubleshooting</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Tab 1: Status */}
                 {activeTab === "status" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 space-y-2 text-left"
-                  >
-                    <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-medium">
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 space-y-2 text-left">
+                    <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs font-medium">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                        <span className="text-slate-700 dark:text-slate-300">Network Status:</span>
+                        <span className="text-slate-700 dark:text-slate-300 font-extrabold">Network Status:</span>
                       </div>
-                      <span className="font-bold text-rose-600 dark:text-rose-400">Disconnected</span>
+                      <span className="font-extrabold text-rose-600 dark:text-rose-400">Disconnected</span>
                     </div>
 
-                    <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
+                    <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-xs">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-slate-700 dark:text-slate-300 font-medium">Signal Wave Scanner:</span>
-                        <span className="font-mono text-slate-400 text-[11px]">Searching...</span>
+                        <span className="text-slate-700 dark:text-slate-300 font-extrabold">Signal Wave Scanner:</span>
+                        <span className="font-mono text-slate-400 text-[10px]">Searching...</span>
                       </div>
-                      <div className="flex items-end gap-1.5 h-4 sm:h-5">
+                      <div className="flex items-end gap-1.5 h-5">
                         {[0.2, 0.4, 0.6, 0.8, 1].map((_, i) => (
                           <motion.div
                             key={i}
@@ -919,32 +926,27 @@ export default function NoInternetScreen() {
                   </motion.div>
                 )}
 
-                {/* Tab 2: Diagnostics */}
                 {activeTab === "diagnostics" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 space-y-1.5 sm:space-y-2 text-left text-xs"
-                  >
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 space-y-2 text-left text-xs">
                     {diagnosticSteps.map((step) => (
                       <div
                         key={step.id}
-                        className="p-2 sm:p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between"
+                        className="p-2.5 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between"
                       >
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs">{step.name}</span>
+                        <span className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">{step.name}</span>
                         {step.status === "pending" && <span className="text-slate-400 font-mono text-[11px]">Pending</span>}
                         {step.status === "running" && (
-                          <span className="inline-flex items-center gap-1 text-indigo-500 font-bold text-[11px]">
+                          <span className="inline-flex items-center gap-1 text-indigo-500 font-extrabold text-[11px]">
                             <RefreshCw className="w-3 h-3 animate-spin" /> Testing
                           </span>
                         )}
                         {step.status === "success" && (
-                          <span className="inline-flex items-center gap-1 text-emerald-500 font-bold text-[11px]">
+                          <span className="inline-flex items-center gap-1 text-emerald-500 font-extrabold text-[11px]">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Passed
                           </span>
                         )}
                         {step.status === "failed" && (
-                          <span className="inline-flex items-center gap-1 text-rose-500 font-bold text-[11px]">
+                          <span className="inline-flex items-center gap-1 text-rose-500 font-extrabold text-[11px]">
                             <AlertTriangle className="w-3.5 h-3.5" /> Failed
                           </span>
                         )}
@@ -953,30 +955,25 @@ export default function NoInternetScreen() {
                   </motion.div>
                 )}
 
-                {/* Tab 3: Troubleshooting */}
                 {activeTab === "help" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 space-y-2 text-xs text-left"
-                  >
-                    <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
-                      <div className="p-1 bg-indigo-500/10 text-indigo-500 rounded-lg mt-0.5">
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="mt-2.5 space-y-2 text-left text-xs">
+                    <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-start gap-2.5">
+                      <div className="p-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg mt-0.5">
                         <Wifi className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-200">1. Toggle Wi-Fi / Cellular</p>
-                        <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-[11px] sm:text-xs">Turn wireless data off and back on.</p>
+                        <p className="font-extrabold text-slate-900 dark:text-white text-xs">1. Toggle Wi-Fi / Data</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs mt-0.5 leading-relaxed">Turn wireless data off and back on.</p>
                       </div>
                     </div>
 
-                    <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-2.5">
-                      <div className="p-1 bg-indigo-500/10 text-indigo-500 rounded-lg mt-0.5">
+                    <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-start gap-2.5">
+                      <div className="p-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg mt-0.5">
                         <AlertTriangle className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-200">2. Router Power Cycle</p>
-                        <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-[11px] sm:text-xs">Restart your Wi-Fi router or modem.</p>
+                        <p className="font-extrabold text-slate-900 dark:text-white text-xs">2. Router Power Cycle</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs mt-0.5 leading-relaxed">Restart your Wi-Fi router or modem.</p>
                       </div>
                     </div>
                   </motion.div>
