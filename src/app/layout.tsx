@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 };
 
 import NoInternetScreen from "@/components/Offline/NoInternetScreen";
+import CookieGuard from "@/components/Cookie/CookieGuard";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       >
         <PublicChrome>{children}</PublicChrome>
         <NoInternetScreen />
+        <CookieGuard />
         <ToastContainer
           position="top-right"
           autoClose={3500}
