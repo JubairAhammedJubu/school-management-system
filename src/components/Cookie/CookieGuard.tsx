@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/api-url";
 
 // ============================================================================
 // Premium Cartoon Mascot: Cookie Mascot
@@ -173,9 +174,10 @@ export default function CookieGuard() {
   const [activeTab, setActiveTab] = useState<"desktop" | "mobile" | "why">("desktop");
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
-  const verifyCookies = useCallback((): boolean => {
+  const checkCookieSupport = useCallback(async (): Promise<boolean> => {
     if (typeof window === "undefined") return true;
 
+    // 1. URL Query test override
     try {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("testCookies") === "true" || urlParams.get("blockCookies") === "true") {
@@ -183,31 +185,79 @@ export default function CookieGuard() {
       }
     } catch { }
 
+    // 2. Navigator cookie status check
     if (!navigator.cookieEnabled) {
       return false;
     }
 
+    // 3. First-party document.cookie check
     try {
       const testKey = "edunexus_cookie_check";
       document.cookie = `${testKey}=1; path=/; SameSite=Lax`;
       const supported = document.cookie.indexOf(`${testKey}=1`) !== -1;
       document.cookie = `${testKey}=1; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-      return supported;
+      if (!supported) return false;
     } catch {
       return false;
     }
+
+    // 4. LocalStorage & SessionStorage accessibility check
+    try {
+      const testStorageKey = "__edunexus_test_storage__";
+      window.localStorage.setItem(testStorageKey, "1");
+      window.localStorage.removeItem(testStorageKey);
+    } catch {
+      return false;
+    }
+
+    // 5. Storage Access API & Third-party cookie check
+    let isCrossSite = false;
+    if (API_BASE_URL) {
+      try {
+        const apiUrl = new URL(API_BASE_URL);
+        if (apiUrl.hostname !== window.location.hostname) {
+          isCrossSite = true;
+        }
+      } catch { }
+    }
+
+    if (isCrossSite && typeof document !== "undefined" && "hasStorageAccess" in document) {
+      try {
+        const hasAccess = await document.hasStorageAccess();
+        if (!hasAccess) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+    }
+
+    return true;
   }, []);
+
+  const runVerification = useCallback(async () => {
+    const isEnabled = await checkCookieSupport();
+    setCookiesBlocked(!isEnabled);
+  }, [checkCookieSupport]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const isEnabled = verifyCookies();
-    setCookiesBlocked(!isEnabled);
-  }, [verifyCookies]);
+    runVerification();
 
-  const handleRetry = () => {
+    const handleTrigger = () => {
+      setCookiesBlocked(true);
+    };
+
+    window.addEventListener("edunexus:trigger-cookie-guard", handleTrigger);
+    return () => {
+      window.removeEventListener("edunexus:trigger-cookie-guard", handleTrigger);
+    };
+  }, [runVerification]);
+
+  const handleRetry = async () => {
     setIsTesting(true);
-    setAlertMessage("Activating cookies & verifying session permissions...");
+    setAlertMessage("Activating cookies & requesting storage permissions...");
 
     try {
       document.cookie = "edunexus_cookie_consent=true; path=/; max-age=31536000; SameSite=Lax";
@@ -216,8 +266,14 @@ export default function CookieGuard() {
       }
     } catch { }
 
-    setTimeout(() => {
-      const isEnabled = verifyCookies();
+    if (typeof document !== "undefined" && "requestStorageAccess" in document) {
+      try {
+        await document.requestStorageAccess();
+      } catch { }
+    }
+
+    setTimeout(async () => {
+      const isEnabled = await checkCookieSupport();
       setIsTesting(false);
 
       if (isEnabled) {
@@ -234,10 +290,10 @@ export default function CookieGuard() {
       } else {
         setCookiesBlocked(true);
         setAlertMessage(
-          "Cookies are still blocked. Please allow cookies via site settings (lock icon near address bar)."
+          "Third-party cookies are still blocked. Please enable cookies/third-party cookies in your browser settings."
         );
       }
-    }, 550);
+    }, 600);
   };
 
   return (
