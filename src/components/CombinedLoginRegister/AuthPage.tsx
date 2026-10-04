@@ -452,6 +452,15 @@ export default function AuthPage({ initialMode = "login" }: AuthPageProps) {
           : "Something went wrong. Please try again.";
       setError(message);
       toast.error(message);
+      if (
+        typeof window !== "undefined" &&
+        (message.toLowerCase().includes("cookie") ||
+          message.toLowerCase().includes("fetch") ||
+          message.toLowerCase().includes("network") ||
+          !navigator.cookieEnabled)
+      ) {
+        window.dispatchEvent(new CustomEvent("edunexus:trigger-cookie-guard"));
+      }
     } finally {
       setIsSubmitting(false);
     }
